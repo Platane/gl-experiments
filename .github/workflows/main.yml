@@ -1,0 +1,31 @@
+name: main
+
+on: [push]
+
+jobs:
+  main:
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - run: bun install --frozen-lockfile
+
+      - run: bunx vite build packages/app
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/app/dist
+
+      - uses: actions/deploy-pages@v4
+        if: github.ref == 'refs/heads/main'
+
+      - run: bun test
+
+      - run: bunx biome check .
+
+      - run: bunx tsc --noEmit

@@ -1,0 +1,16 @@
+{
+  "name": "@gl/app",
+  "author": {
+    "name": "platane"
+  },
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "gl-matrix": "3.4.3",
+    "@gl/gltf-parser": "0.0.1"
+  },
+  "devDependencies": {
+    "vite": "6.0.6"
+  }
+}

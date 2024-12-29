@@ -1,0 +1,21 @@
+{
+  "name": "gl",
+  "author": {
+    "name": "platane"
+  },
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/bun": "1.1.14",
+    "typescript": "5.7.2"
+  },
+  "scripts": {
+    "type": "tsc --noEmit",
+    "dev": "vite packages/app"
+  }
+}
