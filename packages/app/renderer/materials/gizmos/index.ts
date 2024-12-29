@@ -1,11 +1,11 @@
 import { mat4, vec3 } from "gl-matrix";
-import { createProgram } from "../../utils/program";
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
+import { createProgram } from "../../../utils/gl";
 
 export const createGizmoMaterial = <T = unknown>(
   { gl }: { gl: WebGL2RenderingContext },
-  state: { generation: T } & mat4[]
+  state: { generation: T } & mat4[],
 ) => {
   const program = createProgram(gl, codeVert, codeFrag);
 
@@ -34,6 +34,7 @@ export const createGizmoMaterial = <T = unknown>(
   //
   // color
   //
+
   const colorBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
   const a_color = gl.getAttribLocation(program, "a_color");
@@ -91,7 +92,7 @@ export const createGizmoMaterial = <T = unknown>(
     gl.bufferData(
       gl.ARRAY_BUFFER,
       new Float32Array(positions),
-      gl.DYNAMIC_DRAW
+      gl.DYNAMIC_DRAW,
     );
 
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
@@ -101,6 +102,7 @@ export const createGizmoMaterial = <T = unknown>(
   };
 
   const draw = (worldMatrix: mat4) => {
+    // update
     if (bufferGeneration !== state.generation) {
       updateGizmos(state);
       bufferGeneration = state.generation;
@@ -112,15 +114,14 @@ export const createGizmoMaterial = <T = unknown>(
 
     gl.uniformMatrix4fv(u_matrix, false, worldMatrix);
 
-    gl.disable(gl.DEPTH_TEST);
-
     gl.disable(gl.CULL_FACE);
 
+    // draw
     gl.drawArrays(gl.TRIANGLES, 0, n);
 
+    // restore
     gl.bindVertexArray(null);
-
-    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
   };
 
   return draw;

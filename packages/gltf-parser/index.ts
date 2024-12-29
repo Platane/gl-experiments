@@ -6,7 +6,5 @@ export const loadGLTF = async (uri: string) => {
 
   const json = res.parser.json;
 
-  debugger;
-
   res.scene;
 };

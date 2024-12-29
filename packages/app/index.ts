@@ -13,17 +13,25 @@ canvas.style.height = "100%";
 document.body.appendChild(canvas);
 
 const gl = canvas.getContext("webgl2")!;
+gl.enable(gl.DEPTH_TEST);
+gl.depthFunc(gl.LESS);
 
 //
 // state
 //
 
 const state = {
-  camera: { eye: [0, 1, 1], lookAt: [0, 0, 0], aspect: 1, generation: 1 },
+  camera: { eye: [0, 1, -1], lookAt: [0, 0, 0], aspect: 1, generation: 1 },
   triceratops: [],
   gizmos: Object.assign([] as mat4[], { generation: 1 }),
 };
 state.gizmos.push(mat4.create());
+state.gizmos.push(mat4.create());
+mat4.fromTranslation(state.gizmos[1], [0.4, 0, 0]);
+state.gizmos.push(mat4.create());
+mat4.fromTranslation(state.gizmos[2], [-0.4, 0, 0]);
+state.gizmos.push(mat4.create());
+mat4.fromTranslation(state.gizmos[3], [0, 0, 0.4]);
 
 //
 // camera
@@ -69,6 +77,8 @@ const drawGizmo = createGizmoMaterial(c, state.gizmos);
 //
 
 const loop = () => {
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
   drawGizmo(worldMatrix);
 
   //
