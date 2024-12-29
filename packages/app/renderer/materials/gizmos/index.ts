@@ -98,7 +98,7 @@ export const createGizmoMaterial = <T = unknown>(
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
 
-    n = positions.length;
+    n = positions.length / 3;
   };
 
   const draw = (worldMatrix: mat4) => {
