@@ -15,7 +15,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - run: bunx vite build packages/app
+      - run: bunx vite build packages/app --base gl-experiments
 
       - uses: actions/upload-pages-artifact@v3
         with:
