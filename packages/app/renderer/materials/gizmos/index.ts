@@ -3,9 +3,11 @@ import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
 import { createProgram } from "../../../utils/gl";
 
-export const createGizmoMaterial = <T = unknown>({
-  gl,
-}: { gl: WebGL2RenderingContext }) => {
+/**
+ * display a list of gizmos (= oriented pyramid )
+ * for debugging purpose
+ */
+export const createGizmoMaterial = ({ gl }: { gl: WebGL2RenderingContext }) => {
   const program = createProgram(gl, codeVert, codeFrag);
 
   //

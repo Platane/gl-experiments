@@ -1,16 +1,13 @@
 import { mat4, vec3 } from "gl-matrix";
 import { UP } from "../utils/vec3";
 
-export const createCamera = <T = unknown>(
-  {
-    gl,
-    canvas,
-  }: {
-    gl: WebGL2RenderingContext;
-    canvas: HTMLCanvasElement;
-  },
-  state: { eye: vec3; lookAtPoint: vec3; generation: T }
-) => {
+export const createCamera = ({
+  gl,
+  canvas,
+}: {
+  gl: WebGL2RenderingContext;
+  canvas: HTMLCanvasElement;
+}) => {
   const worldMatrix = mat4.create();
   const perspectiveMatrix = mat4.create();
   const lookAtMatrix = mat4.create();
@@ -20,11 +17,11 @@ export const createCamera = <T = unknown>(
   const far = 2000;
   const dpr = Math.min(window.devicePixelRatio ?? 1, 2);
 
-  const update = () => {
+  const update = (eye: vec3, lookAtPoint: vec3) => {
     const aspect = canvas.clientWidth / canvas.clientHeight;
     mat4.perspective(perspectiveMatrix, fovX, aspect, near, far);
 
-    mat4.lookAt(lookAtMatrix, state.eye, state.lookAtPoint, UP);
+    mat4.lookAt(lookAtMatrix, eye, lookAtPoint, UP);
 
     mat4.multiply(worldMatrix, perspectiveMatrix, lookAtMatrix);
 

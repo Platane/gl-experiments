@@ -1,2 +1,2 @@
-declare module "*.frag?raw";
-declare module "*.vert?raw";
+declare module "*?raw";
+declare module "*?url";
