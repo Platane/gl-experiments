@@ -69,17 +69,24 @@ window.onresize = updateCamera;
 // renderer
 //
 
-const c = { gl, lastUsedTextureIndex: 0 };
-const drawGizmo = createGizmoMaterial(c, state.gizmos);
+const c = { gl, canvas, lastUsedTextureIndex: 0 };
+const gizmoRenderer = Object.assign(createGizmoMaterial(c), { generation: 0 });
 
 //
 // game loop
 //
 
 const loop = () => {
+  // update renderers
+  if (state.gizmos.generation !== gizmoRenderer.generation) {
+    gizmoRenderer.update(state.gizmos);
+    gizmoRenderer.generation = state.gizmos.generation;
+  }
+
+  // draw
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  drawGizmo(worldMatrix);
+  gizmoRenderer.draw(worldMatrix);
 
   //
   requestAnimationFrame(loop);

@@ -3,10 +3,9 @@ import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
 import { createProgram } from "../../../utils/gl";
 
-export const createGizmoMaterial = <T = unknown>(
-  { gl }: { gl: WebGL2RenderingContext },
-  state: { generation: T } & mat4[],
-) => {
+export const createGizmoMaterial = <T = unknown>({
+  gl,
+}: { gl: WebGL2RenderingContext }) => {
   const program = createProgram(gl, codeVert, codeFrag);
 
   //
@@ -73,9 +72,8 @@ export const createGizmoMaterial = <T = unknown>(
   //
 
   let n = 0;
-  let bufferGeneration = Symbol() as T;
 
-  const updateGizmos = (gizmos: mat4[]) => {
+  const update = (gizmos: mat4[]) => {
     const positions = [];
     const colors = [];
 
@@ -102,12 +100,6 @@ export const createGizmoMaterial = <T = unknown>(
   };
 
   const draw = (worldMatrix: mat4) => {
-    // update
-    if (bufferGeneration !== state.generation) {
-      updateGizmos(state);
-      bufferGeneration = state.generation;
-    }
-
     gl.useProgram(program);
 
     gl.bindVertexArray(vao);
@@ -124,5 +116,5 @@ export const createGizmoMaterial = <T = unknown>(
     gl.enable(gl.CULL_FACE);
   };
 
-  return draw;
+  return { draw, update };
 };
