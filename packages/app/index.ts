@@ -1,11 +1,10 @@
 import { mat4, vec3 } from "gl-matrix";
-import { UP } from "./utils/vec3";
 import { createGizmoMaterial } from "./renderer/materials/gizmos";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "./renderer/materials/instantiatedSkinnedPosedMesh";
 import { loadGLTF } from "../gltf-parser";
 import { computeWeights } from "./utils/bones";
 import { getFlatShadingNormals } from "./utils/geometry-normals";
-import triceratop_model_uri from "../model-builder/model.glb?url";
+import triceratop_model_uri from "@gl/model-builder/model.glb?url";
 import { createCamera } from "./renderer/camera";
 
 (async () => {
@@ -29,19 +28,27 @@ import { createCamera } from "./renderer/camera";
 
   const state = {
     camera: {
-      eye: [0, 1, 2] as vec3,
+      eye: [0, 2, 5] as vec3,
       lookAt: [0, 0, 0] as vec3,
       generation: 1,
     },
-    triceratops: [],
+    triceratops: {
+      positions: new Float32Array([0, 0, 1, 1]),
+      directions: new Float32Array([0, 1, 0, -1]),
+      poseIndexes: new Uint8Array([0, 1, 0, 0, 0, 1, 0, 0]),
+      poseWeights: new Float32Array([0.5, 0.5, 0, 0, 1, 0, 0, 0]),
+      n: 2,
+      generation: 1,
+    },
     gizmos: Object.assign([] as mat4[], { generation: 1 }),
   };
   state.gizmos.push(mat4.create());
   state.gizmos.push(mat4.create());
+  state.gizmos.push(mat4.create());
+  state.gizmos.push(mat4.create());
+  mat4.fromTranslation(state.gizmos[0], [0, 0, 0]);
   mat4.fromTranslation(state.gizmos[1], [0.4, 0, 0]);
-  state.gizmos.push(mat4.create());
   mat4.fromTranslation(state.gizmos[2], [-0.4, 0, 0]);
-  state.gizmos.push(mat4.create());
   mat4.fromTranslation(state.gizmos[3], [0, 0, 0.4]);
 
   //
@@ -58,10 +65,17 @@ import { createCamera } from "./renderer/camera";
   });
 
   const bindPose = [mat4.create(), mat4.create()];
-  const poses = [bindPose];
+  mat4.fromTranslation(bindPose[0], [0, 0, 0]);
+  mat4.fromTranslation(bindPose[1], [-1, 0, 0]);
+
+  const secondPose = [mat4.create(), mat4.create()];
+  mat4.fromYRotation(secondPose[0], -Math.PI / 3);
+  mat4.fromTranslation(secondPose[1], [-1, 0, 0]);
+
+  const poses = [bindPose, secondPose];
   const geometry = await loadGLTF(triceratop_model_uri, "triceratops").then(
     ({ positions }) => {
-      for (let i = positions.length; i--; ) positions[i] /= 40;
+      for (let i = positions.length; i--; ) positions[i] /= 20;
 
       return {
         positions,
@@ -75,22 +89,24 @@ import { createCamera } from "./renderer/camera";
       };
     },
   );
-  const triceratopsRenderer = createInstantiatedSkinnedPosedMeshMaterial(c, {
-    geometry,
-    boneCount: poses[0].length,
-    poseCount: poses.length,
-    poses: new Float32Array(
-      poses.flatMap((pose) =>
-        pose.flatMap((mat) => [...(mat as any as number[])]),
+  const triceratopsRenderer = Object.assign(
+    createInstantiatedSkinnedPosedMeshMaterial(c, {
+      geometry,
+      boneCount: poses[0].length,
+      poseCount: poses.length,
+      poses: new Float32Array(
+        poses.flatMap((pose) =>
+          pose.flatMap((mat, j) => {
+            const m = mat4.create();
+            mat4.invert(m, bindPose[j]);
+            mat4.multiply(m, mat, m);
+
+            return [...(m as any as number[])];
+          }),
+        ),
       ),
-    ),
-  });
-  triceratopsRenderer.update(
-    new Float32Array([0, 0]),
-    new Float32Array([0, 1]),
-    new Uint8Array([0, 0, 0, 0]),
-    new Float32Array([1, 0, 0, 0]),
-    1,
+    }),
+    { generation: 0 },
   );
 
   //
@@ -102,6 +118,12 @@ import { createCamera } from "./renderer/camera";
     state.gizmos[1][12] += 0.001;
     state.gizmos.generation++;
 
+    const t = Date.now();
+    const k = Math.sin(t * 0.005) * 0.5 + 0.5;
+    state.triceratops.poseWeights[1] = k;
+    state.triceratops.poseWeights[0] = 1 - k;
+    state.triceratops.generation++;
+
     // update renderers
     if (state.gizmos.generation !== gizmoRenderer.generation) {
       gizmoRenderer.update(state.gizmos);
@@ -110,6 +132,16 @@ import { createCamera } from "./renderer/camera";
     if (state.camera.generation !== camera.generation) {
       camera.update(state.camera.eye, state.camera.lookAt);
       camera.generation = state.camera.generation;
+    }
+    if (state.triceratops.generation !== triceratopsRenderer.generation) {
+      triceratopsRenderer.update(
+        state.triceratops.positions,
+        state.triceratops.directions,
+        state.triceratops.poseIndexes,
+        state.triceratops.poseWeights,
+        state.triceratops.n,
+      );
+      triceratopsRenderer.generation = state.triceratops.generation;
     }
 
     // draw

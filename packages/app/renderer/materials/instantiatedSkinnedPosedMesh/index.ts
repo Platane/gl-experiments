@@ -195,7 +195,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     positions: Float32Array,
     directions: Float32Array,
     poseIndexes: Uint8Array,
-    poseWeight: Float32Array,
+    poseWeights: Float32Array,
     n: number,
   ) => {
     nInstances = n;
@@ -210,7 +210,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.bufferData(gl.ARRAY_BUFFER, poseIndexes, gl.DYNAMIC_DRAW);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseWeightsBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, poseWeight, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, poseWeights, gl.DYNAMIC_DRAW);
   };
 
   const draw = (worldMatrix: mat4) => {
