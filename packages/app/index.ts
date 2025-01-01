@@ -28,7 +28,7 @@ import { createCamera } from "./renderer/camera";
 
   const state = {
     camera: {
-      eye: [0, 2, 5] as vec3,
+      eye: [0, 2, -4] as vec3,
       lookAt: [0, 0, 0] as vec3,
       generation: 1,
     },
@@ -52,19 +52,19 @@ import { createCamera } from "./renderer/camera";
   mat4.fromTranslation(state.gizmos[3], [0, 0, 0.4]);
 
   {
-    const n = 256 * 2;
-    const l = 12;
+    const n = 256 * 16;
+    const l = 11;
     state.triceratops.positions = new Float32Array(
       Array.from({ length: n }, (_, i) => [
         ((i % l) - l / 2) * 0.8,
-        (Math.floor(i / l) - l / 2) * 0.9,
+        Math.floor(i / l) * 0.9,
       ]).flat(),
     );
     state.triceratops.directions = new Float32Array(
-      Array.from({ length: n }, (_, i) => [
-        Math.sin(i * 0.04),
-        Math.cos(i * 0.04),
-      ]).flat(),
+      Array.from({ length: n }, (_, i) => {
+        const a = i * 0.4;
+        return [Math.sin(a), Math.cos(a)];
+      }).flat(),
     );
     state.triceratops.poseIndexes = new Uint8Array(
       Array.from({ length: n }, () => [0, 1, 0, 0]).flat(),
