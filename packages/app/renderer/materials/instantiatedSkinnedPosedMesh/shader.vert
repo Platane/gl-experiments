@@ -97,9 +97,9 @@ void main() {
         v_color = debugWeights;
     }
 
-    v_color = vec3(a_weights);
-    v_color = vec3(float(a_instancePoseIndexes[0]) / 10.0, a_instancePoseWeights[0], float(a_boneIndexes[0]));
-    v_color = vec3(a_instanceDirection, 0.0);
+    // v_color = vec3(a_weights);
+    // v_color = vec3(float(a_instancePoseIndexes[0]) / 10.0, a_instancePoseWeights[0], float(a_boneIndexes[0]));
+    // v_color = vec3(a_instanceDirection, 0.0);
 
     v_color = a_color;
 }

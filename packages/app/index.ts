@@ -51,6 +51,30 @@ import { createCamera } from "./renderer/camera";
   mat4.fromTranslation(state.gizmos[2], [-0.4, 0, 0]);
   mat4.fromTranslation(state.gizmos[3], [0, 0, 0.4]);
 
+  {
+    const n = 256 * 2;
+    const l = 12;
+    state.triceratops.positions = new Float32Array(
+      Array.from({ length: n }, (_, i) => [
+        ((i % l) - l / 2) * 0.8,
+        (Math.floor(i / l) - l / 2) * 0.9,
+      ]).flat(),
+    );
+    state.triceratops.directions = new Float32Array(
+      Array.from({ length: n }, (_, i) => [
+        Math.sin(i * 0.04),
+        Math.cos(i * 0.04),
+      ]).flat(),
+    );
+    state.triceratops.poseIndexes = new Uint8Array(
+      Array.from({ length: n }, () => [0, 1, 0, 0]).flat(),
+    );
+    state.triceratops.poseWeights = new Float32Array(
+      Array.from({ length: n }, (_, i) => [1, 0, 0, 0]).flat(),
+    );
+    state.triceratops.n = n;
+  }
+
   //
   // renderer
   //
@@ -70,7 +94,7 @@ import { createCamera } from "./renderer/camera";
 
   const secondPose = [mat4.create(), mat4.create()];
   mat4.fromYRotation(secondPose[0], -Math.PI / 3);
-  mat4.fromTranslation(secondPose[1], [-1, 0, 0]);
+  mat4.fromTranslation(secondPose[1], [-0.98, 0, 0]);
 
   const poses = [bindPose, secondPose];
   const geometry = await loadGLTF(triceratop_model_uri, "triceratops").then(
@@ -83,7 +107,7 @@ import { createCamera } from "./renderer/camera";
         normals: getFlatShadingNormals(positions),
         colors: new Float32Array(
           Array.from({ length: positions.length / 3 }, () => [
-            0.3, 0.1, 0.2,
+            0.1, 0.6, 0.7,
           ]).flat(),
         ),
       };
@@ -119,9 +143,12 @@ import { createCamera } from "./renderer/camera";
     state.gizmos.generation++;
 
     const t = Date.now();
-    const k = Math.sin(t * 0.005) * 0.5 + 0.5;
-    state.triceratops.poseWeights[1] = k;
-    state.triceratops.poseWeights[0] = 1 - k;
+
+    for (let i = 0; i < state.triceratops.n; i += 3) {
+      const k = Math.sin(t * 0.005 + i) * 0.5 + 0.5;
+      state.triceratops.poseWeights[i * 4 + 1] = k;
+      state.triceratops.poseWeights[i * 4 + 0] = 1 - k;
+    }
     state.triceratops.generation++;
 
     // update renderers

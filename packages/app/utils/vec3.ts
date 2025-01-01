@@ -12,7 +12,7 @@ export const copyFromArray3 = (out: vec3, arr: ArrayLike<number>, i: number) =>
 export const copyIntoArray3 = (
   arr: number[] | TypedArray,
   i: number,
-  v: vec3
+  v: vec3,
 ) =>
   setIntoArray3(
     arr,
@@ -20,7 +20,7 @@ export const copyIntoArray3 = (
 
     v[0],
     v[1],
-    v[2]
+    v[2],
   );
 
 export const setIntoArray3 = (
@@ -28,7 +28,7 @@ export const setIntoArray3 = (
   i: number,
   x: number,
   y: number,
-  z: number
+  z: number,
 ) => {
   arr[i * 3 + 0] = x;
   arr[i * 3 + 1] = y;
