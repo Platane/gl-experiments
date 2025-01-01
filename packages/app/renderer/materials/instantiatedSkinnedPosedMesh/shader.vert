@@ -30,20 +30,30 @@ mat4 getBoneMatrix(sampler2D posesTexture, uint poseIndex, uint boneIndex) {
     );
 }
 
-void main() {
+mat4 getWeightedBoneMatrix(sampler2D posesTexture, uvec2 instancePoseIndexes, vec2 instancePoseWeights, uvec4 boneIndexes, vec4 poseWeights) {
     mat4 bm0 =
-        getBoneMatrix(u_posesTexture, a_instancePoseIndexes[0], a_boneIndexes[0]) * a_weights[0] +
-            getBoneMatrix(u_posesTexture, a_instancePoseIndexes[0], a_boneIndexes[1]) * a_weights[1] +
-            getBoneMatrix(u_posesTexture, a_instancePoseIndexes[0], a_boneIndexes[2]) * a_weights[2] +
-            getBoneMatrix(u_posesTexture, a_instancePoseIndexes[0], a_boneIndexes[3]) * a_weights[3];
+        getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[0]) * poseWeights[0] +
+            getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[1]) * poseWeights[1] +
+            getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[2]) * poseWeights[2] +
+            getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[3]) * poseWeights[3];
 
     mat4 bm1 =
-        getBoneMatrix(u_posesTexture, a_instancePoseIndexes[1], a_boneIndexes[0]) * a_weights[0] +
-            getBoneMatrix(u_posesTexture, a_instancePoseIndexes[1], a_boneIndexes[1]) * a_weights[1] +
-            getBoneMatrix(u_posesTexture, a_instancePoseIndexes[1], a_boneIndexes[2]) * a_weights[2] +
-            getBoneMatrix(u_posesTexture, a_instancePoseIndexes[1], a_boneIndexes[3]) * a_weights[3];
+        getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[0]) * poseWeights[0] +
+            getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[1]) * poseWeights[1] +
+            getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[2]) * poseWeights[2] +
+            getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[3]) * poseWeights[3];
 
-    mat4 bm = bm0 * a_instancePoseWeights[0] + bm1 * a_instancePoseWeights[1];
+    return bm0 * instancePoseWeights[0] + bm1 * instancePoseWeights[1];
+}
+
+void main() {
+    mat4 bm = getWeightedBoneMatrix(
+            u_posesTexture,
+            uvec2(a_instancePoseIndexes),
+            vec2(a_instancePoseWeights),
+            a_boneIndexes,
+            a_weights
+        );
 
     mat3 rot = mat3(
             a_instanceDirection.y, 0, -a_instanceDirection.x,
