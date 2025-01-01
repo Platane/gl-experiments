@@ -100,6 +100,7 @@ void main() {
     // v_color = vec3(a_weights);
     // v_color = vec3(float(a_instancePoseIndexes[0]) / 10.0, a_instancePoseWeights[0], float(a_boneIndexes[0]));
     // v_color = vec3(a_instanceDirection, 0.0);
+    v_color = vec3(float(gl_InstanceID) / 100.0, 1.0, 0.0);
 
-    v_color = a_color;
+    // v_color = a_color;
 }
