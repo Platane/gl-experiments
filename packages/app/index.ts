@@ -6,6 +6,7 @@ import { computeWeights } from "./utils/bones";
 import { getFlatShadingNormals } from "./utils/geometry-normals";
 import triceratop_model_uri from "@gl/model-builder/model.glb?url";
 import { createCamera } from "./renderer/camera";
+import { clamp } from "./utils/math";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -99,7 +100,12 @@ import { createCamera } from "./renderer/camera";
   const poses = [bindPose, secondPose];
   const geometry = await loadGLTF(triceratop_model_uri, "triceratops").then(
     ({ positions }) => {
-      for (let i = positions.length; i--; ) positions[i] /= 20;
+      for (let i = 0; i < positions.length; i += 3) {
+        positions[i + 0] /= 20;
+        positions[i + 1] /= 20;
+        positions[i + 1] += 0.4;
+        positions[i + 2] /= 20;
+      }
 
       return {
         positions,
@@ -181,4 +187,74 @@ import { createCamera } from "./renderer/camera";
     requestAnimationFrame(loop);
   };
   loop();
+
+  {
+    let phi = Math.PI / 8;
+    let theta = Math.PI;
+    let radius = 6;
+
+    const ROTATION_SPEED = 3.5;
+
+    const update = () => {
+      state.camera.eye[0] =
+        state.camera.lookAt[0] + radius * Math.sin(theta) * Math.cos(phi);
+      state.camera.eye[2] =
+        state.camera.lookAt[2] + radius * Math.cos(theta) * Math.cos(phi);
+      state.camera.eye[1] = state.camera.lookAt[1] + radius * Math.sin(phi);
+
+      state.camera.generation++;
+    };
+    update();
+
+    type Handler = (
+      touches: { pageX: number; pageY: number; button?: number }[],
+    ) => void;
+
+    //
+
+    let rotate_px: number | null = null;
+    let rotate_py: number | null = null;
+
+    const rotateStart: Handler = ([{ pageX: x, pageY: y }]) => {
+      rotate_px = x;
+      rotate_py = y;
+    };
+    const rotateMove: Handler = ([{ pageX: x, pageY: y }]) => {
+      if (rotate_px !== null) {
+        const dx = x - rotate_px!;
+        const dy = y - rotate_py!;
+
+        theta -= (dx / window.innerHeight) * ROTATION_SPEED;
+        phi += (dy / window.innerHeight) * ROTATION_SPEED;
+
+        phi = clamp(phi, Math.PI * 0.0002, Math.PI * 0.42);
+
+        rotate_px = x;
+        rotate_py = y;
+
+        update();
+      }
+    };
+    const rotateEnd: Handler = () => {
+      rotate_px = null;
+    };
+
+    const touchStart: Handler = (touches) => {
+      if (touches[0].button === 0) rotateStart(touches);
+    };
+    const touchMove: Handler = (touches) => {
+      rotateMove(touches);
+    };
+    const touchEnd: Handler = (touches) => {
+      rotateEnd(touches);
+    };
+
+    canvas.ontouchstart = (event) => touchStart(Array.from(event.touches));
+    canvas.ontouchmove = (event) => touchMove(Array.from(event.touches));
+    canvas.ontouchend = (event) => touchEnd(Array.from(event.touches));
+
+    canvas.onmousedown = (event) => touchStart([event]);
+    canvas.onmousemove = (event) => touchMove([event]);
+    canvas.onmouseleave = canvas.onmouseup = (event) => touchEnd([]);
+  }
 })();
