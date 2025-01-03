@@ -35,6 +35,21 @@ export const colorPalettes = [
     [0.4, 0.7, 0.1],
     [0.5, 0.8, 0.1],
   ],
+  [
+    [0.4, 0.5, 0.5],
+    [0.4, 0.1, 0.55],
+    [0.5, 0.1, 0.7],
+  ],
+  [
+    [0.4, 0.5, 0.5],
+    [0.8, 0.2, 0.2],
+    [1.0, 0.2, 0.2],
+  ],
+  [
+    [0.4, 0.5, 0.5],
+    [0.2, 0.8, 0.1],
+    [0.3, 1.0, 0.2],
+  ],
 ] as [number, number, number][][];
 
 export const getGeometry = async () => {
@@ -43,7 +58,7 @@ export const getGeometry = async () => {
   for (let i = 0; i < positions.length; i += 3) {
     positions[i + 0] /= 20;
     positions[i + 1] /= 20;
-    positions[i + 1] += 0.4;
+    positions[i + 1] += 0.365;
     positions[i + 2] /= 20;
   }
 

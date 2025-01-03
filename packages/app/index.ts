@@ -56,11 +56,11 @@ import {
 
   {
     const n = 256 * 16;
-    const l = 11;
+    const l = Math.floor(Math.sqrt(n));
     state.triceratops.positions = new Float32Array(
       Array.from({ length: n }, (_, i) => [
-        ((i % l) - l / 2) * 0.8,
-        Math.floor(i / l) * 0.9,
+        (i % l) - l / 2,
+        Math.floor(i / l),
       ]).flat(),
     );
     state.triceratops.directions = new Float32Array(
@@ -73,7 +73,7 @@ import {
       Array.from({ length: n }, (_, i) => [0, 1 + (i % 2), 0, 0]).flat(),
     );
     state.triceratops.paletteIndexes = new Uint8Array(
-      Array.from({ length: n }, (_, i) => i % 3),
+      Array.from({ length: n }, (_, i) => i % 6),
     );
     state.triceratops.poseWeights = new Float32Array(
       Array.from({ length: n }, (_, i) => [1, 0, 0, 0]).flat(),
@@ -98,20 +98,7 @@ import {
     createInstantiatedSkinnedPosedMeshMaterial(c, {
       geometry: await getTriceratopsGeometry(),
       colorPalettes: triceratopsColorPalettes,
-      boneCount: triceratopsPoses[0].length,
-      poseCount: triceratopsPoses.length,
-      poses: new Float32Array(
-        triceratopsPoses.flatMap((pose) =>
-          pose.flatMap((mat, j) => {
-            const bindPose = triceratopsPoses[0];
-            const m = mat4.create();
-            mat4.invert(m, bindPose[j]);
-            mat4.multiply(m, mat, m);
-
-            return [...(m as any as number[])];
-          }),
-        ),
-      ),
+      poses: triceratopsPoses,
     }),
     { generation: 0 },
   );
