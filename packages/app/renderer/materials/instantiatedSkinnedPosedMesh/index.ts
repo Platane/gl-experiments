@@ -1,10 +1,11 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import {
   createProgram,
   getAttribLocation,
   getUniformLocation,
   linkProgram,
 } from "../../../utils/gl";
+
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
 
@@ -20,8 +21,6 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   {
     geometry,
     poses,
-    poseCount,
-    boneCount,
     colorPalettes,
   }: {
     geometry: {
@@ -32,11 +31,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
       boneIndexes: Uint8Array;
     };
 
-    colorPalettes: [number, number, number][][];
-
-    poses: Float32Array;
-    poseCount: number;
-    boneCount: number;
+    colorPalettes: vec3[][];
+    poses: mat4[][];
   },
 ) => {
   const { gl } = c;
@@ -61,12 +57,23 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.TEXTURE_2D,
     0, // level
     gl.RGBA32F, // internal format
-    4 * boneCount, // 4 pixels, each pixel has RGBA so 4 pixels is 16 values ( = one matrix ). one row contains all bones
-    poseCount, // one row per pose
+    4 * poses[0].length, // 4 pixels, each pixel has RGBA so 4 pixels is 16 values ( = one matrix ). one row contains all bones
+    poses.length, // one row per pose
     0, // border
     gl.RGBA, // format
     gl.FLOAT, // type
-    poses,
+    new Float32Array(
+      poses.flatMap((pose) =>
+        pose.flatMap((mat, j) => {
+          const bindPose = poses[0];
+          const m = mat4.create();
+          mat4.invert(m, bindPose[j]);
+          mat4.multiply(m, mat, m);
+
+          return [...(m as any as number[])];
+        }),
+      ),
+    ),
   );
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -130,7 +137,6 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   //
   const colorIndexesBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, colorIndexesBuffer);
-  console.log(geometry.colorIndexes, geometry);
   gl.bufferData(gl.ARRAY_BUFFER, geometry.colorIndexes, gl.STATIC_DRAW);
   const a_colorIndex = getAttribLocation(gl, program, "a_colorIndex");
   gl.enableVertexAttribArray(a_colorIndex);
