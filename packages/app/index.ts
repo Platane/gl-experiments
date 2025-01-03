@@ -1,12 +1,13 @@
 import { mat4, vec3 } from "gl-matrix";
 import { createGizmoMaterial } from "./renderer/materials/gizmos";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "./renderer/materials/instantiatedSkinnedPosedMesh";
-import { loadGLTF } from "../gltf-parser";
-import { computeWeights } from "./utils/bones";
-import { getFlatShadingNormals } from "./utils/geometry-normals";
-import triceratop_model_uri from "@gl/model-builder/model.glb?url";
 import { createCamera } from "./renderer/camera";
 import { clamp } from "./utils/math";
+import {
+  colorPalettes as triceratopsColorPalettes,
+  getGeometry as getTriceratopsGeometry,
+  poses as triceratopsPoses,
+} from "./renderer/geometries/triceratops";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -34,11 +35,12 @@ import { clamp } from "./utils/math";
       generation: 1,
     },
     triceratops: {
-      positions: new Float32Array([0, 0, 1, 1]),
-      directions: new Float32Array([0, 1, 0, -1]),
-      poseIndexes: new Uint8Array([0, 1, 0, 0, 0, 1, 0, 0]),
-      poseWeights: new Float32Array([0.5, 0.5, 0, 0, 1, 0, 0, 0]),
-      n: 2,
+      positions: new Float32Array([0, 0]),
+      directions: new Float32Array([0, 1]),
+      poseIndexes: new Uint8Array([0, 1, 0, 0]),
+      poseWeights: new Float32Array([0.5, 0.5, 0, 0]),
+      paletteIndexes: new Uint8Array([0]),
+      n: 1,
       generation: 1,
     },
     gizmos: Object.assign([] as mat4[], { generation: 1 }),
@@ -68,7 +70,10 @@ import { clamp } from "./utils/math";
       }).flat(),
     );
     state.triceratops.poseIndexes = new Uint8Array(
-      Array.from({ length: n }, () => [0, 1, 0, 0]).flat(),
+      Array.from({ length: n }, (_, i) => [0, 1 + (i % 2), 0, 0]).flat(),
+    );
+    state.triceratops.paletteIndexes = new Uint8Array(
+      Array.from({ length: n }, (_, i) => i % 3),
     );
     state.triceratops.poseWeights = new Float32Array(
       Array.from({ length: n }, (_, i) => [1, 0, 0, 0]).flat(),
@@ -89,44 +94,16 @@ import { clamp } from "./utils/math";
     generation: 0,
   });
 
-  const bindPose = [mat4.create(), mat4.create()];
-  mat4.fromTranslation(bindPose[0], [0, 0, 0]);
-  mat4.fromTranslation(bindPose[1], [-1, 0, 0]);
-
-  const secondPose = [mat4.create(), mat4.create()];
-  mat4.fromYRotation(secondPose[0], -Math.PI / 3);
-  mat4.fromTranslation(secondPose[1], [-0.98, 0, 0]);
-
-  const poses = [bindPose, secondPose];
-  const geometry = await loadGLTF(triceratop_model_uri, "triceratops").then(
-    ({ positions }) => {
-      for (let i = 0; i < positions.length; i += 3) {
-        positions[i + 0] /= 20;
-        positions[i + 1] /= 20;
-        positions[i + 1] += 0.4;
-        positions[i + 2] /= 20;
-      }
-
-      return {
-        positions,
-        ...computeWeights(bindPose, positions),
-        normals: getFlatShadingNormals(positions),
-        colors: new Float32Array(
-          Array.from({ length: positions.length / 3 }, () => [
-            0.1, 0.6, 0.7,
-          ]).flat(),
-        ),
-      };
-    },
-  );
   const triceratopsRenderer = Object.assign(
     createInstantiatedSkinnedPosedMeshMaterial(c, {
-      geometry,
-      boneCount: poses[0].length,
-      poseCount: poses.length,
+      geometry: await getTriceratopsGeometry(),
+      colorPalettes: triceratopsColorPalettes,
+      boneCount: triceratopsPoses[0].length,
+      poseCount: triceratopsPoses.length,
       poses: new Float32Array(
-        poses.flatMap((pose) =>
+        triceratopsPoses.flatMap((pose) =>
           pose.flatMap((mat, j) => {
+            const bindPose = triceratopsPoses[0];
             const m = mat4.create();
             mat4.invert(m, bindPose[j]);
             mat4.multiply(m, mat, m);
@@ -150,7 +127,7 @@ import { clamp } from "./utils/math";
 
     const t = Date.now();
 
-    for (let i = 0; i < state.triceratops.n; i += 3) {
+    for (let i = 0; i < state.triceratops.n; i += 1) {
       const k = Math.sin(t * 0.005 + i) * 0.5 + 0.5;
       state.triceratops.poseWeights[i * 4 + 1] = k;
       state.triceratops.poseWeights[i * 4 + 0] = 1 - k;
@@ -172,6 +149,7 @@ import { clamp } from "./utils/math";
         state.triceratops.directions,
         state.triceratops.poseIndexes,
         state.triceratops.poseWeights,
+        state.triceratops.paletteIndexes,
         state.triceratops.n,
       );
       triceratopsRenderer.generation = state.triceratops.generation;
@@ -188,6 +166,7 @@ import { clamp } from "./utils/math";
   };
   loop();
 
+  // camera controls
   {
     let phi = Math.PI / 8;
     let theta = Math.PI;

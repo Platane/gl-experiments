@@ -1,7 +1,7 @@
 import { mat4, vec3 } from "gl-matrix";
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
-import { createProgram } from "../../../utils/gl";
+import { createProgram, linkProgram } from "../../../utils/gl";
 
 /**
  * display a list of gizmos (= oriented pyramid )
@@ -9,6 +9,7 @@ import { createProgram } from "../../../utils/gl";
  */
 export const createGizmoMaterial = ({ gl }: { gl: WebGL2RenderingContext }) => {
   const program = createProgram(gl, codeVert, codeFrag);
+  linkProgram(gl, program);
 
   //
   // uniforms

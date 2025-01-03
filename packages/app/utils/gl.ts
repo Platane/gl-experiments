@@ -13,6 +13,13 @@ export const createProgram = (
   gl.attachShader(shaderProgram, vertShader);
   gl.attachShader(shaderProgram, fragShader);
 
+  return shaderProgram;
+};
+
+export const linkProgram = (
+  gl: WebGLRenderingContext,
+  shaderProgram: WebGLProgram,
+) => {
   gl.linkProgram(shaderProgram);
 
   if (
@@ -20,8 +27,6 @@ export const createProgram = (
     !gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)
   )
     throw "Unable to initialize the shader program.";
-
-  return shaderProgram;
 };
 
 const initShader = (

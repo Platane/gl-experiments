@@ -3,6 +3,7 @@ import {
   createProgram,
   getAttribLocation,
   getUniformLocation,
+  linkProgram,
 } from "../../../utils/gl";
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
@@ -21,14 +22,18 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     poses,
     poseCount,
     boneCount,
+    colorPalettes,
   }: {
     geometry: {
       normals: Float32Array;
       positions: Float32Array;
-      colors: Float32Array;
+      colorIndexes: Uint8Array;
       boneWeights: Float32Array;
       boneIndexes: Uint8Array;
     };
+
+    colorPalettes: [number, number, number][][];
+
     poses: Float32Array;
     poseCount: number;
     boneCount: number;
@@ -37,6 +42,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   const { gl } = c;
 
   const program = createProgram(gl, codeVert, codeFrag);
+  linkProgram(gl, program);
 
   //
   // uniforms
@@ -61,6 +67,33 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.RGBA, // format
     gl.FLOAT, // type
     poses,
+  );
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+  //
+  // color palettes
+  //
+  const COLOR_PALETTES_TEXTURE_INDEX = c.globalTextureIndex++;
+  const colorPalettesTexture = gl.createTexture();
+  const u_colorPalettesTexture = getUniformLocation(
+    gl,
+    program,
+    "u_colorPalettesTexture",
+  );
+  gl.activeTexture(gl.TEXTURE0 + COLOR_PALETTES_TEXTURE_INDEX);
+  gl.bindTexture(gl.TEXTURE_2D, colorPalettesTexture);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0, // level
+    gl.RGB32F, // internal format
+
+    colorPalettes[0].length, // one row contains a palette
+    colorPalettes.length,
+    0, // border
+    gl.RGB, // format
+    gl.FLOAT, // type
+    new Float32Array(colorPalettes.flat(2)),
   );
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -95,12 +128,13 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   //
   // color
   //
-  const colorBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, geometry.colors, gl.STATIC_DRAW);
-  const a_color = getAttribLocation(gl, program, "a_color");
-  gl.enableVertexAttribArray(a_color);
-  gl.vertexAttribPointer(a_color, 3, gl.FLOAT, false, 0, 0);
+  const colorIndexesBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorIndexesBuffer);
+  console.log(geometry.colorIndexes, geometry);
+  gl.bufferData(gl.ARRAY_BUFFER, geometry.colorIndexes, gl.STATIC_DRAW);
+  const a_colorIndex = getAttribLocation(gl, program, "a_colorIndex");
+  gl.enableVertexAttribArray(a_colorIndex);
+  gl.vertexAttribIPointer(a_colorIndex, 1, gl.UNSIGNED_BYTE, false, 0, 0);
 
   //
   // bone weight
@@ -151,6 +185,27 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   gl.vertexAttribDivisor(a_instanceDirection, 1);
 
   //
+  // instance color palette index
+  //
+  const instanceColorPaletteIndexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, instanceColorPaletteIndexBuffer);
+  const a_instanceColorPaletteIndex = getAttribLocation(
+    gl,
+    program,
+    "a_instanceColorPaletteIndex",
+  );
+  gl.enableVertexAttribArray(a_instanceColorPaletteIndex);
+  gl.vertexAttribIPointer(
+    a_instanceColorPaletteIndex,
+    1,
+    gl.UNSIGNED_BYTE,
+    false,
+    0,
+    0,
+  );
+  gl.vertexAttribDivisor(a_instanceColorPaletteIndex, 1);
+
+  //
   // instance pose indexes
   //
   const instancePoseIndexesBuffer = gl.createBuffer();
@@ -196,6 +251,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     directions: Float32Array,
     poseIndexes: Uint8Array,
     poseWeights: Float32Array,
+    colorPaletteIndexes: Uint8Array,
     n: number,
   ) => {
     nInstances = n;
@@ -211,6 +267,9 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
     gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseWeightsBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, poseWeights, gl.DYNAMIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceColorPaletteIndexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, colorPaletteIndexes, gl.DYNAMIC_DRAW);
   };
 
   const draw = (worldMatrix: mat4) => {
@@ -222,6 +281,9 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
     gl.bindTexture(gl.TEXTURE_2D, posesTexture);
     gl.uniform1i(u_posesTexture, POSES_TEXTURE_INDEX);
+
+    gl.bindTexture(gl.TEXTURE_2D, colorPalettesTexture);
+    gl.uniform1i(u_colorPalettesTexture, COLOR_PALETTES_TEXTURE_INDEX);
 
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);

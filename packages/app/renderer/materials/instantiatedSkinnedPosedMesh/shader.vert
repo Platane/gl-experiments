@@ -4,12 +4,13 @@ precision highp float;
 // attributes
 in vec4 a_position;
 in vec4 a_normal;
-in vec3 a_color;
+in uint a_colorIndex;
 
 in vec4 a_weights;
 in uvec4 a_boneIndexes;
 
 in vec2 a_instancePosition;
+in uint a_instanceColorPaletteIndex;
 in vec2 a_instanceDirection;
 in vec4 a_instancePoseWeights;
 in uvec4 a_instancePoseIndexes;
@@ -17,6 +18,7 @@ in uvec4 a_instancePoseIndexes;
 // uniforms
 uniform mat4 u_viewMatrix;
 uniform sampler2D u_posesTexture;
+uniform sampler2D u_colorPalettesTexture;
 
 out vec3 v_normal;
 out vec3 v_color;
@@ -110,7 +112,10 @@ void main() {
     // v_color = vec3(a_weights);
     // v_color = vec3(float(a_instancePoseIndexes[0]) / 10.0, a_instancePoseWeights[0], float(a_boneIndexes[0]));
     // v_color = vec3(a_instanceDirection, 0.0);
-    v_color = vec3(float(gl_InstanceID) / 100.0, 1.0, 0.0);
+    // v_color = vec3(float(gl_InstanceID) / 100.0, 1.0, 0.0);
 
-    v_color = a_color;
+    // float de = gl_Position.z / 25.0;
+    // v_color = vec3(de, de, de);
+
+    v_color = texelFetch(u_colorPalettesTexture, ivec2(a_colorIndex, a_instanceColorPaletteIndex), 0).xyz;
 }
