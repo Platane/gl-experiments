@@ -8,6 +8,7 @@ import {
   getGeometry as getTriceratopsGeometry,
   poses as triceratopsPoses,
 } from "./renderer/geometries/triceratops";
+import hash from "hash-int";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -65,15 +66,15 @@ import {
     );
     state.triceratops.directions = new Float32Array(
       Array.from({ length: n }, (_, i) => {
-        const a = i * 0.4;
+        const a = hash(i + 3);
         return [Math.sin(a), Math.cos(a)];
       }).flat(),
     );
     state.triceratops.poseIndexes = new Uint8Array(
-      Array.from({ length: n }, (_, i) => [0, 1 + (i % 2), 0, 0]).flat(),
+      Array.from({ length: n }, (_, i) => [0, hash(i * 2) % 3, 0, 0]).flat(),
     );
     state.triceratops.paletteIndexes = new Uint8Array(
-      Array.from({ length: n }, (_, i) => i % 6),
+      Array.from({ length: n }, (_, i) => hash(i) % 6),
     );
     state.triceratops.poseWeights = new Float32Array(
       Array.from({ length: n }, (_, i) => [1, 0, 0, 0]).flat(),
@@ -108,7 +109,9 @@ import {
   //
 
   const loop = () => {
+    //
     // logic
+    //
     state.gizmos[1][12] += 0.001;
     state.gizmos.generation++;
 
@@ -121,7 +124,9 @@ import {
     }
     state.triceratops.generation++;
 
+    //
     // update renderers
+    //
     if (state.gizmos.generation !== gizmoRenderer.generation) {
       gizmoRenderer.update(state.gizmos);
       gizmoRenderer.generation = state.gizmos.generation;
@@ -142,12 +147,16 @@ import {
       triceratopsRenderer.generation = state.triceratops.generation;
     }
 
+    //
     // draw
+    //
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gizmoRenderer.draw(camera.worldMatrix);
     triceratopsRenderer.draw(camera.worldMatrix);
 
+    //
+    // loop
     //
     requestAnimationFrame(loop);
   };

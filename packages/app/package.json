@@ -7,6 +7,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "hash-int": "1.0.0",
     "gl-matrix": "3.4.3",
     "@gl/gltf-parser": "0.0.1"
   },
