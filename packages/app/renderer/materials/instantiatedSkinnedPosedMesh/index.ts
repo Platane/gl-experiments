@@ -31,7 +31,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
       boneIndexes: Uint8Array;
     };
 
-    colorPalettes: vec3[][];
+    colorPalettes: [number, number, number][][];
     poses: mat4[][];
   },
 ) => {
