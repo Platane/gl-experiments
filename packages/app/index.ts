@@ -2,13 +2,14 @@ import { mat4, vec3 } from "gl-matrix";
 import { createGizmoMaterial } from "./renderer/materials/gizmos";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "./renderer/materials/instantiatedSkinnedPosedMesh";
 import { createCamera } from "./renderer/camera";
-import { clamp } from "./utils/math";
+import { clamp, invLerp } from "./utils/math";
 import {
   colorPalettes as triceratopsColorPalettes,
   getGeometry as getTriceratopsGeometry,
   poses as triceratopsPoses,
 } from "./renderer/geometries/triceratops";
 import hash from "hash-int";
+import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -41,6 +42,15 @@ import hash from "hash-int";
       poseIndexes: new Uint8Array([0, 1, 0, 0]),
       poseWeights: new Float32Array([0.5, 0.5, 0, 0]),
       paletteIndexes: new Uint8Array([0]),
+      n: 1,
+      generation: 1,
+    },
+    fox: {
+      positions: new Float32Array([0, 0]),
+      directions: new Float32Array([0, 1]),
+      poseIndexes: new Uint8Array([0, 1, 0, 0]),
+      poseWeights: new Float32Array([1, 0, 0, 0]),
+      paletteIndexes: new Uint8Array([1]),
       n: 1,
       generation: 1,
     },
@@ -104,6 +114,18 @@ import hash from "hash-int";
     { generation: 0 },
   );
 
+  const foxGeometry = await getFoxGeometry();
+  const foxRenderer = Object.assign(
+    createInstantiatedSkinnedPosedMeshMaterial(c, {
+      geometry: foxGeometry,
+      colorPalettes: triceratopsColorPalettes,
+      poses: Object.values(foxGeometry.animations).flatMap(({ keyFrames }) =>
+        keyFrames.map(({ pose }) => pose),
+      ),
+    }),
+    { generation: 0 },
+  );
+
   //
   // game loop
   //
@@ -123,6 +145,35 @@ import hash from "hash-int";
       state.triceratops.poseWeights[i * 4 + 0] = 1 - k;
     }
     state.triceratops.generation++;
+
+    {
+      state.fox.generation++;
+
+      const animations = Object.entries(foxGeometry.animations).map(
+        ([name, a], i, arr) => ({
+          name,
+          ...a,
+          poseOffset: arr
+            .slice(0, i)
+            .reduce((sum, [, { keyFrames }]) => sum + keyFrames.length, 0),
+        }),
+      );
+
+      const { duration, keyFrames, poseOffset } = animations[1];
+
+      // state.fox.poseIndexes =
+      const time = (Date.now() / 1000) % duration;
+
+      let i = 0;
+      while (keyFrames[i].time <= time) i++;
+
+      const k = invLerp(time, keyFrames[i - 1].time, keyFrames[i].time);
+
+      state.fox.poseIndexes[0] = poseOffset + i - 1;
+      state.fox.poseIndexes[1] = poseOffset + i;
+      state.fox.poseWeights[0] = 1 - k;
+      state.fox.poseWeights[1] = k;
+    }
 
     //
     // update renderers
@@ -146,6 +197,17 @@ import hash from "hash-int";
       );
       triceratopsRenderer.generation = state.triceratops.generation;
     }
+    if (state.fox.generation !== foxRenderer.generation) {
+      foxRenderer.update(
+        state.fox.positions,
+        state.fox.directions,
+        state.fox.poseIndexes,
+        state.fox.poseWeights,
+        state.fox.paletteIndexes,
+        state.fox.n,
+      );
+      foxRenderer.generation = state.fox.generation;
+    }
 
     //
     // draw
@@ -154,6 +216,7 @@ import hash from "hash-int";
 
     gizmoRenderer.draw(camera.worldMatrix);
     triceratopsRenderer.draw(camera.worldMatrix);
+    foxRenderer.draw(camera.worldMatrix);
 
     //
     // loop
@@ -166,7 +229,7 @@ import hash from "hash-int";
   {
     let phi = Math.PI / 8;
     let theta = Math.PI;
-    let radius = 6;
+    let radius = 200;
 
     const ROTATION_SPEED = 3.5;
 

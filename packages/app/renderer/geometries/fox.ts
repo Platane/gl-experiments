@@ -3,22 +3,6 @@ import { loadGLTF } from "../../../gltf-parser";
 import { getFlatShadingNormals } from "../../utils/geometry-normals";
 import { computeWeights } from "../../utils/bones";
 
-import triceratop_model_uri from "@gl/model-builder/model.glb?url";
-
-const bindPose = [mat4.create(), mat4.create()];
-mat4.fromTranslation(bindPose[0], [0, 0, 0]);
-mat4.fromTranslation(bindPose[1], [-1, 0, 0]);
-
-const secondPose = [mat4.create(), mat4.create()];
-mat4.fromYRotation(secondPose[0], -Math.PI / 3);
-mat4.fromTranslation(secondPose[1], [-0.98, 0, 0]);
-
-const thirdPose = [mat4.create(), mat4.create()];
-mat4.fromZRotation(thirdPose[0], 0.4);
-mat4.fromTranslation(thirdPose[1], [-1, 0, 0]);
-
-export const poses = [bindPose, secondPose, thirdPose];
-
 export const colorPalettes = [
   [
     [0.5, 0.5, 0.5],
@@ -53,13 +37,10 @@ export const colorPalettes = [
 ] as [number, number, number][][];
 
 export const getGeometry = async () => {
-  const { positions } = await loadGLTF(triceratop_model_uri, "triceratops");
-
-  for (let i = 0; i < positions.length; i += 3) {
-    positions[i + 0] /= 20;
-    positions[i + 1] /= 20;
-    positions[i + 2] /= 20;
-  }
+  const { positions, bindPose, animations } = await loadGLTF(
+    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb",
+    "fox",
+  );
 
   const normals = getFlatShadingNormals(positions);
 
@@ -69,10 +50,18 @@ export const getGeometry = async () => {
     Array.from({ length: positions.length / 3 }, (_, i) => {
       const y = positions[i * 3 + 1];
 
-      if (y < 0.08) return 0;
-      if (y < 0.25) return 1;
+      if (y < 20) return 0;
+      if (y < 50) return 1;
       return 2;
     }),
   );
-  return { positions, normals, boneWeights, boneIndexes, colorIndexes };
+  return {
+    positions,
+    normals,
+    boneWeights,
+    boneIndexes,
+    colorIndexes,
+
+    animations,
+  };
 };
