@@ -14,7 +14,7 @@ export const createCamera = ({
 
   const fovX = Math.PI / 3;
   const near = 0.005;
-  const far = 2000;
+  const far = 20000;
   const dpr = Math.min(window.devicePixelRatio ?? 1, 2);
 
   const update = (eye: vec3, lookAtPoint: vec3) => {

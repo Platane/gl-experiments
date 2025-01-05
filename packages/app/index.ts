@@ -93,6 +93,33 @@ import hash from "hash-int";
     state.triceratops.n = n;
   }
 
+  {
+    const n = 1 << 10;
+    const l = Math.floor(Math.sqrt(n));
+    state.fox.positions = new Float32Array(
+      Array.from({ length: n }, (_, i) => [
+        ((i % l) - l / 2) * 120,
+        Math.floor(i / l) * 120,
+      ]).flat(),
+    );
+    state.fox.directions = new Float32Array(
+      Array.from({ length: n }, (_, i) => {
+        const a = hash(i + 3);
+        return [Math.sin(a), Math.cos(a)];
+      }).flat(),
+    );
+    state.fox.poseIndexes = new Uint8Array(
+      Array.from({ length: n }, () => [0, 0, 0, 0]).flat(),
+    );
+    state.fox.paletteIndexes = new Uint8Array(
+      Array.from({ length: n }, (_, i) => hash(i + 17) % 6),
+    );
+    state.fox.poseWeights = new Float32Array(
+      Array.from({ length: n }, () => [1, 0, 0, 0]).flat(),
+    );
+    state.fox.n = n;
+  }
+
   //
   // renderer
   //
@@ -148,8 +175,6 @@ import hash from "hash-int";
     state.triceratops.generation++;
 
     {
-      state.fox.generation++;
-
       const animations = Object.entries(foxGeometry.animations).map(
         ([name, a], i, arr) => ({
           name,
@@ -160,20 +185,24 @@ import hash from "hash-int";
         }),
       );
 
-      const { duration, keyFrames, poseOffset } = animations[1];
+      for (let j = state.fox.n; j--; ) {
+        const { duration, keyFrames, poseOffset } =
+          animations[hash(j) % animations.length];
 
-      // state.fox.poseIndexes =
-      const time = (Date.now() / 1000) % duration;
+        const time = (Date.now() / 1000 + hash(j + 7) / 10) % duration;
 
-      let i = 0;
-      while (keyFrames[i].time <= time) i++;
+        let i = 0;
+        while (keyFrames[i].time <= time) i++;
 
-      const k = invLerp(time, keyFrames[i - 1].time, keyFrames[i].time);
+        const k = invLerp(time, keyFrames[i - 1].time, keyFrames[i].time);
 
-      state.fox.poseIndexes[0] = poseOffset + i - 1;
-      state.fox.poseIndexes[1] = poseOffset + i;
-      state.fox.poseWeights[0] = 1 - k;
-      state.fox.poseWeights[1] = k;
+        state.fox.poseIndexes[j * 4 + 0] = poseOffset + i - 1;
+        state.fox.poseIndexes[j * 4 + 1] = poseOffset + i;
+        state.fox.poseWeights[j * 4 + 0] = 1 - k;
+        state.fox.poseWeights[j * 4 + 1] = k;
+      }
+
+      state.fox.generation++;
     }
 
     //
@@ -230,7 +259,7 @@ import hash from "hash-int";
   {
     let phi = Math.PI / 8;
     let theta = Math.PI;
-    let radius = 200;
+    let radius = 500;
 
     const ROTATION_SPEED = 3.5;
 
