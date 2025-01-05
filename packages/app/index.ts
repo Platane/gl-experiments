@@ -8,8 +8,9 @@ import {
   getGeometry as getTriceratopsGeometry,
   poses as triceratopsPoses,
 } from "./renderer/geometries/triceratops";
-import hash from "hash-int";
 import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
+// @ts-ignore
+import hash from "hash-int";
 
 (async () => {
   const canvas = document.createElement("canvas");

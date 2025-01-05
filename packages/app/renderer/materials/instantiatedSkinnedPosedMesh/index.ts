@@ -140,7 +140,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   gl.bufferData(gl.ARRAY_BUFFER, geometry.colorIndexes, gl.STATIC_DRAW);
   const a_colorIndex = getAttribLocation(gl, program, "a_colorIndex");
   gl.enableVertexAttribArray(a_colorIndex);
-  gl.vertexAttribIPointer(a_colorIndex, 1, gl.UNSIGNED_BYTE, false, 0, 0);
+  gl.vertexAttribIPointer(a_colorIndex, 1, gl.UNSIGNED_BYTE, 0, 0);
 
   //
   // bone weight
@@ -205,7 +205,6 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     a_instanceColorPaletteIndex,
     1,
     gl.UNSIGNED_BYTE,
-    false,
     0,
     0,
   );
