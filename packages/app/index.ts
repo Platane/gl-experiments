@@ -24,7 +24,9 @@ import { createOrbitControl } from "./control/orbitCamera";
 
   document.body.appendChild(canvas);
 
-  const gl = canvas.getContext("webgl2")!;
+  const gl = canvas.getContext("webgl2", {
+    antialiasing: false,
+  }) as WebGL2RenderingContext;
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LESS);
 
@@ -68,7 +70,7 @@ import { createOrbitControl } from "./control/orbitCamera";
   mat4.fromTranslation(state.gizmos[3], [0, 0, 0.4]);
 
   {
-    const n = 256 * 16;
+    const n = 1 << 10;
     const l = Math.floor(Math.sqrt(n));
     state.triceratops.positions = new Float32Array(
       Array.from({ length: n }, (_, i) => [
