@@ -11,6 +11,7 @@ import {
 import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
 // @ts-ignore
 import hash from "hash-int";
+import { createOrbitControl } from "./control/orbitCamera";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -256,73 +257,5 @@ import hash from "hash-int";
   loop();
 
   // camera controls
-  {
-    let phi = Math.PI / 8;
-    let theta = Math.PI;
-    let radius = 500;
-
-    const ROTATION_SPEED = 3.5;
-
-    const update = () => {
-      state.camera.eye[0] =
-        state.camera.lookAt[0] + radius * Math.sin(theta) * Math.cos(phi);
-      state.camera.eye[2] =
-        state.camera.lookAt[2] + radius * Math.cos(theta) * Math.cos(phi);
-      state.camera.eye[1] = state.camera.lookAt[1] + radius * Math.sin(phi);
-
-      state.camera.generation++;
-    };
-    update();
-
-    type Handler = (
-      touches: { pageX: number; pageY: number; button?: number }[],
-    ) => void;
-
-    //
-
-    let rotate_px: number | null = null;
-    let rotate_py: number | null = null;
-
-    const rotateStart: Handler = ([{ pageX: x, pageY: y }]) => {
-      rotate_px = x;
-      rotate_py = y;
-    };
-    const rotateMove: Handler = ([{ pageX: x, pageY: y }]) => {
-      if (rotate_px !== null) {
-        const dx = x - rotate_px!;
-        const dy = y - rotate_py!;
-
-        theta -= (dx / window.innerHeight) * ROTATION_SPEED;
-        phi += (dy / window.innerHeight) * ROTATION_SPEED;
-
-        phi = clamp(phi, Math.PI * 0.0002, Math.PI * 0.42);
-
-        rotate_px = x;
-        rotate_py = y;
-
-        update();
-      }
-    };
-    const rotateEnd: Handler = () => {
-      rotate_px = null;
-    };
-
-    const touchStart: Handler = (touches) => {
-      if (touches[0].button === 0) rotateStart(touches);
-    };
-    const touchMove: Handler = (touches) => {
-      rotateMove(touches);
-    };
-    const touchEnd: Handler = (touches) => {
-      rotateEnd(touches);
-    };
-
-    canvas.ontouchstart = (event) => touchStart(Array.from(event.touches));
-    canvas.ontouchmove = (event) => touchMove(Array.from(event.touches));
-    canvas.ontouchend = (event) => touchEnd(Array.from(event.touches));
-
-    canvas.onmousedown = (event) => touchStart([event]);
-    canvas.onmousemove = (event) => touchMove([event]);
-    canvas.onmouseleave = canvas.onmouseup = (event) => touchEnd([]);
-  }
+  createOrbitControl(c, state.camera);
 })();

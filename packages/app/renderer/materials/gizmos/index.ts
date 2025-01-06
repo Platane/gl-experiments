@@ -117,6 +117,8 @@ export const createGizmoMaterial = ({ gl }: { gl: WebGL2RenderingContext }) => {
     // restore
     gl.bindVertexArray(null);
     gl.enable(gl.CULL_FACE);
+
+    gl.useProgram(null);
   };
 
   return { draw, update };

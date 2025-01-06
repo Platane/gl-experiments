@@ -296,6 +296,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
 
     gl.bindVertexArray(null);
+    gl.useProgram(null);
   };
 
   return { draw, update };
