@@ -48,7 +48,7 @@ export const createGizmoMaterial = ({ gl }: { gl: WebGL2RenderingContext }) => {
   //
   //
 
-  const lll = 0.1;
+  const lll = 10.1;
 
   const kernel = [
     [0.0, lll, 0.0],
@@ -110,6 +110,7 @@ export const createGizmoMaterial = ({ gl }: { gl: WebGL2RenderingContext }) => {
     gl.uniformMatrix4fv(u_matrix, false, worldMatrix);
 
     gl.disable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
 
     // draw
     gl.drawArrays(gl.TRIANGLES, 0, n);
