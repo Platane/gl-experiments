@@ -9,6 +9,9 @@ import {
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
 
+import codePostFrag from "./shader-post.frag?raw";
+import codeQuadVert from "./shader-quad.vert?raw";
+
 /**
  * render an instantiated geometry,
  * each instance have it's own position / direction / mix of poses
@@ -248,6 +251,120 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
   let nInstances = 0;
 
+  //
+  // post effect screen space program
+  //
+
+  const postEffectProgram = createProgram(gl, codeQuadVert, codePostFrag);
+  const postEffectVAO = gl.createVertexArray();
+
+  gl.bindVertexArray(postEffectVAO);
+  linkProgram(gl, postEffectProgram);
+  {
+    const quadBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+
+    // interleaved position and texCoord
+    const quadData = new Float32Array([
+      -1, 1, 0, 1,
+
+      -1, -1, 0, 0,
+
+      1, 1, 1, 1,
+
+      1, -1, 1, 0,
+    ]);
+    gl.bufferData(gl.ARRAY_BUFFER, quadData, gl.STATIC_DRAW);
+
+    const a_position = getAttribLocation(gl, postEffectProgram, "a_position");
+    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 16, 0); // read interleaved data, each vertice have 16 bytes ( (2+2) * 4 bytes for float32 ), position offset is 0
+
+    const a_texCoord = getAttribLocation(gl, postEffectProgram, "a_texCoord");
+    gl.enableVertexAttribArray(a_texCoord);
+    gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 16, 8);
+  }
+  const u_colorTexture = getUniformLocation(
+    gl,
+    postEffectProgram,
+    "u_colorTexture",
+  );
+  gl.bindVertexArray(null);
+
+  //
+  // frame buffer
+  //
+
+  const POSTEFFECT_TEXTURE_INDEX = c.globalTextureIndex++;
+
+  gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_TEXTURE_INDEX);
+
+  const [, , viewportWidth, viewportHeight] = gl.getParameter(gl.VIEWPORT);
+
+  const fragColorTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, fragColorTexture);
+  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, viewportWidth, viewportHeight);
+
+  const solidColorTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, solidColorTexture);
+  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, viewportWidth, viewportHeight);
+
+  const depthTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+  gl.texStorage2D(
+    gl.TEXTURE_2D,
+    1,
+    gl.DEPTH_COMPONENT32F,
+    viewportWidth,
+    viewportHeight,
+  );
+
+  gl.bindTexture(gl.TEXTURE_2D, null);
+
+  const renderbuffer = gl.createRenderbuffer();
+  gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+  gl.renderbufferStorage(
+    gl.RENDERBUFFER,
+    gl.DEPTH_COMPONENT24,
+    viewportWidth,
+    viewportHeight,
+  );
+  gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+
+  const fbo = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.COLOR_ATTACHMENT0,
+    gl.TEXTURE_2D,
+    fragColorTexture,
+    0,
+  );
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.COLOR_ATTACHMENT1,
+    gl.TEXTURE_2D,
+    solidColorTexture,
+    0,
+  );
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.DEPTH_ATTACHMENT,
+    gl.TEXTURE_2D,
+    depthTexture,
+    0,
+  );
+  // gl.framebufferRenderbuffer(
+  //   gl.FRAMEBUFFER,
+  //   gl.DEPTH_ATTACHMENT,
+  //   gl.RENDERBUFFER,
+  //   renderbuffer,
+  // );
+
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
   /**
    * update the instances
    */
@@ -280,23 +397,45 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   const draw = (worldMatrix: mat4) => {
     gl.useProgram(program);
 
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
 
     gl.bindVertexArray(vao);
 
-    gl.bindTexture(gl.TEXTURE_2D, posesTexture);
     gl.uniform1i(u_posesTexture, POSES_TEXTURE_INDEX);
-
-    gl.bindTexture(gl.TEXTURE_2D, colorPalettesTexture);
     gl.uniform1i(u_colorPalettesTexture, COLOR_PALETTES_TEXTURE_INDEX);
-
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
 
     gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
     gl.bindVertexArray(null);
     gl.useProgram(null);
+
+    {
+      gl.useProgram(postEffectProgram);
+      gl.disable(gl.DEPTH_TEST);
+      gl.bindVertexArray(postEffectVAO);
+
+      gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_TEXTURE_INDEX);
+      gl.bindTexture(gl.TEXTURE_2D, fragColorTexture);
+
+      gl.uniform1i(u_colorTexture, POSTEFFECT_TEXTURE_INDEX);
+
+      gl.enable(gl.BLEND);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.disable(gl.BLEND);
+
+      gl.bindTexture(gl.TEXTURE_2D, null);
+      gl.bindVertexArray(null);
+      gl.useProgram(null);
+    }
   };
 
   return { draw, update };

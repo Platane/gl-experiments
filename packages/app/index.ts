@@ -130,20 +130,21 @@ import { createOrbitControl } from "./control/orbitCamera";
   const c = { gl, canvas, globalTextureIndex: 0 };
 
   const camera = Object.assign(createCamera(c), { generation: 0 });
-  window.onresize = () => camera.update(state.camera.eye, state.camera.lookAt);
+  // window.onresize = () => camera.update(state.camera.eye, state.camera.lookAt); // avoid resizing as it will break the frame buffer textures atm
+  camera.update(state.camera.eye, state.camera.lookAt);
 
   const gizmoRenderer = Object.assign(createGizmoMaterial(c), {
     generation: 0,
   });
 
-  const triceratopsRenderer = Object.assign(
-    createInstantiatedSkinnedPosedMeshMaterial(c, {
-      geometry: await getTriceratopsGeometry(),
-      colorPalettes: triceratopsColorPalettes,
-      poses: triceratopsPoses,
-    }),
-    { generation: 0 },
-  );
+  // const triceratopsRenderer = Object.assign(
+  //   createInstantiatedSkinnedPosedMeshMaterial(c, {
+  //     geometry: await getTriceratopsGeometry(),
+  //     colorPalettes: triceratopsColorPalettes,
+  //     poses: triceratopsPoses,
+  //   }),
+  //   { generation: 0 },
+  // );
 
   const foxGeometry = await getFoxGeometry();
   const foxRenderer = Object.assign(
@@ -219,17 +220,17 @@ import { createOrbitControl } from "./control/orbitCamera";
       camera.update(state.camera.eye, state.camera.lookAt);
       camera.generation = state.camera.generation;
     }
-    if (state.triceratops.generation !== triceratopsRenderer.generation) {
-      triceratopsRenderer.update(
-        state.triceratops.positions,
-        state.triceratops.directions,
-        state.triceratops.poseIndexes,
-        state.triceratops.poseWeights,
-        state.triceratops.paletteIndexes,
-        state.triceratops.n,
-      );
-      triceratopsRenderer.generation = state.triceratops.generation;
-    }
+    // if (state.triceratops.generation !== triceratopsRenderer.generation) {
+    //   triceratopsRenderer.update(
+    //     state.triceratops.positions,
+    //     state.triceratops.directions,
+    //     state.triceratops.poseIndexes,
+    //     state.triceratops.poseWeights,
+    //     state.triceratops.paletteIndexes,
+    //     state.triceratops.n,
+    //   );
+    //   triceratopsRenderer.generation = state.triceratops.generation;
+    // }
     if (state.fox.generation !== foxRenderer.generation) {
       foxRenderer.update(
         state.fox.positions,
@@ -247,9 +248,9 @@ import { createOrbitControl } from "./control/orbitCamera";
     //
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gizmoRenderer.draw(camera.worldMatrix);
-    triceratopsRenderer.draw(camera.worldMatrix);
+    // triceratopsRenderer.draw(camera.worldMatrix);
     foxRenderer.draw(camera.worldMatrix);
+    gizmoRenderer.draw(camera.worldMatrix);
 
     //
     // loop
