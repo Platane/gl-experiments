@@ -18,6 +18,8 @@ export const createOrbitControl = (
   let radius = 500;
 
   const ROTATION_SPEED = 3.5;
+  const MIN_RADIUS = 2;
+  const MAX_RADIUS = 1400;
 
   const update = () => {
     state.eye[0] = state.lookAt[0] + radius * Math.sin(theta) * Math.cos(phi);
@@ -84,7 +86,7 @@ export const createOrbitControl = (
 
     const newZoom = zoom + event.deltaY * 0.02;
 
-    radius = clamp(newZoom ** 2, 2, 10000);
+    radius = clamp(newZoom ** 2, MIN_RADIUS, MAX_RADIUS);
 
     update();
   };

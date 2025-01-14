@@ -1,6 +1,9 @@
 import { mat4, vec3 } from "gl-matrix";
 import { UP } from "../utils/vec3";
 
+export const CAMERA_NEAR = 1;
+export const CAMERA_FAR = 8000;
+
 export const createCamera = ({
   gl,
   canvas,
@@ -13,8 +16,8 @@ export const createCamera = ({
   const lookAtMatrix = mat4.create();
 
   const fovX = Math.PI / 3;
-  const near = 0.005;
-  const far = 20000;
+  const near = CAMERA_NEAR;
+  const far = CAMERA_FAR;
   const dpr = Math.min(window.devicePixelRatio ?? 1, 2);
 
   const update = (eye: vec3, lookAtPoint: vec3) => {
