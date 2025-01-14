@@ -2,6 +2,7 @@ import { mat4 } from "gl-matrix";
 import { loadGLTF } from "../../../gltf-parser";
 import { getFlatShadingNormals } from "../../utils/geometry-normals";
 import { computeWeights } from "../../utils/bones";
+import { fetchCached } from "../../utils/fetch-cache";
 
 export const colorPalettes = [
   [
@@ -36,11 +37,13 @@ export const colorPalettes = [
   ],
 ] as [number, number, number][][];
 
+const glb_url =
+  "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb";
+
 export const getGeometry = async () => {
-  const { positions, bindPose, animations } = await loadGLTF(
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb",
-    "fox",
-  );
+  const uri = URL.createObjectURL(new Blob([await fetchCached(glb_url)]));
+
+  const { positions, bindPose, animations } = await loadGLTF(uri, "fox");
 
   const normals = getFlatShadingNormals(positions);
 
