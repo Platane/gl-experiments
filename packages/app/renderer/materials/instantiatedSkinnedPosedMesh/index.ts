@@ -339,13 +339,6 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
   );
-  gl.framebufferTexture2D(
-    gl.FRAMEBUFFER,
-    gl.DEPTH_ATTACHMENT,
-    gl.TEXTURE_2D,
-    depthTexture,
-    0,
-  );
 
   gl.bindTexture(gl.TEXTURE_2D, null);
 
