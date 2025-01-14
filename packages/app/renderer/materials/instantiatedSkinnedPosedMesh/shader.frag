@@ -3,9 +3,10 @@ precision highp float;
 
 in vec3 v_normal;
 in vec3 v_color;
+in float v_depth;
 
 layout(location = 0) out vec4 outColor;
-layout(location = 1) out vec4 solidColor;
+layout(location = 1) out vec4 outNormal;
 
 void main() {
     vec3 l = vec3(0.615457, 0.492365, 0.615457);
@@ -18,7 +19,9 @@ void main() {
 
     outColor.rgb *= 0.6 + clamp(p, -0.47, 10.0) * 0.45;
 
-    solidColor = vec4(0.0, 1.0, 0.5, 1.0);
+
+    outNormal = vec4(v_normal,1.0);
+
 
     // outColor.rgb = v_normal;
     // outColor.rgb = vec3(0.615457,0.492365 ,0.615457);

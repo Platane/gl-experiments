@@ -11,6 +11,7 @@ import codeVert from "./shader.vert?raw";
 
 import codePostFrag from "./shader-post.frag?raw";
 import codeQuadVert from "./shader-quad.vert?raw";
+import { CAMERA_FAR, CAMERA_NEAR } from "../../camera";
 
 /**
  * render an instantiated geometry,
@@ -289,6 +290,11 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     postEffectProgram,
     "u_colorTexture",
   );
+  const u_depthRange = getUniformLocation(
+    gl,
+    postEffectProgram,
+    "u_depthRange",
+  );
   gl.bindVertexArray(null);
 
   //
@@ -301,35 +307,47 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
   const [, , viewportWidth, viewportHeight] = gl.getParameter(gl.VIEWPORT);
 
-  const fragColorTexture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, fragColorTexture);
-  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, viewportWidth, viewportHeight);
-
-  const solidColorTexture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, solidColorTexture);
-  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, viewportWidth, viewportHeight);
-
-  const depthTexture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+  const colorTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, colorTexture);
   gl.texStorage2D(
     gl.TEXTURE_2D,
     1,
-    gl.DEPTH_COMPONENT32F,
-    viewportWidth,
-    viewportHeight,
+    gl.RGBA8,
+    gl.drawingBufferWidth,
+    gl.drawingBufferHeight,
+  );
+
+  const normalTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, normalTexture);
+  gl.texStorage2D(
+    gl.TEXTURE_2D,
+    1,
+    gl.RGBA8,
+    gl.drawingBufferWidth,
+    gl.drawingBufferHeight,
+  );
+
+  var depthTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texStorage2D(
+    gl.TEXTURE_2D,
+    1,
+    gl.DEPTH_COMPONENT16,
+    gl.drawingBufferWidth,
+    gl.drawingBufferHeight,
+  );
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.DEPTH_ATTACHMENT,
+    gl.TEXTURE_2D,
+    depthTexture,
+    0,
   );
 
   gl.bindTexture(gl.TEXTURE_2D, null);
-
-  const renderbuffer = gl.createRenderbuffer();
-  gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-  gl.renderbufferStorage(
-    gl.RENDERBUFFER,
-    gl.DEPTH_COMPONENT24,
-    viewportWidth,
-    viewportHeight,
-  );
-  gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
   const fbo = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
@@ -337,14 +355,14 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.FRAMEBUFFER,
     gl.COLOR_ATTACHMENT0,
     gl.TEXTURE_2D,
-    fragColorTexture,
+    colorTexture,
     0,
   );
   gl.framebufferTexture2D(
     gl.FRAMEBUFFER,
     gl.COLOR_ATTACHMENT1,
     gl.TEXTURE_2D,
-    solidColorTexture,
+    normalTexture,
     0,
   );
   gl.framebufferTexture2D(
@@ -354,12 +372,6 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     depthTexture,
     0,
   );
-  // gl.framebufferRenderbuffer(
-  //   gl.FRAMEBUFFER,
-  //   gl.DEPTH_ATTACHMENT,
-  //   gl.RENDERBUFFER,
-  //   renderbuffer,
-  // );
 
   gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
 
@@ -424,9 +436,12 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
       gl.bindVertexArray(postEffectVAO);
 
       gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_TEXTURE_INDEX);
-      gl.bindTexture(gl.TEXTURE_2D, fragColorTexture);
+      // gl.bindTexture(gl.TEXTURE_2D, colorTexture);
+      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+      // gl.bindTexture(gl.TEXTURE_2D, normalTexture);
 
       gl.uniform1i(u_colorTexture, POSTEFFECT_TEXTURE_INDEX);
+      gl.uniform2fv(u_depthRange, new Float32Array([CAMERA_NEAR, CAMERA_FAR]));
 
       gl.enable(gl.BLEND);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
