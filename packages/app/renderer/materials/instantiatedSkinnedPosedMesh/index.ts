@@ -285,10 +285,20 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.enableVertexAttribArray(a_texCoord);
     gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 16, 8);
   }
+  const u_depthTexture = getUniformLocation(
+    gl,
+    postEffectProgram,
+    "u_depthTexture",
+  );
   const u_colorTexture = getUniformLocation(
     gl,
     postEffectProgram,
     "u_colorTexture",
+  );
+  const u_normalTexture = getUniformLocation(
+    gl,
+    postEffectProgram,
+    "u_normalTexture",
   );
   const u_depthRange = getUniformLocation(
     gl,
@@ -301,11 +311,11 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   // frame buffer
   //
 
-  const POSTEFFECT_TEXTURE_INDEX = c.globalTextureIndex++;
+  const POSTEFFECT_DEPTH_TEXTURE_INDEX = c.globalTextureIndex++;
+  const POSTEFFECT_COLOR_TEXTURE_INDEX = c.globalTextureIndex++;
+  const POSTEFFECT_NORMAL_TEXTURE_INDEX = c.globalTextureIndex++;
 
-  gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_TEXTURE_INDEX);
-
-  const [, , viewportWidth, viewportHeight] = gl.getParameter(gl.VIEWPORT);
+  gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_DEPTH_TEXTURE_INDEX);
 
   const colorTexture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, colorTexture);
@@ -428,12 +438,18 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
       gl.disable(gl.DEPTH_TEST);
       gl.bindVertexArray(postEffectVAO);
 
-      gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_TEXTURE_INDEX);
-      // gl.bindTexture(gl.TEXTURE_2D, colorTexture);
+      gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_DEPTH_TEXTURE_INDEX);
       gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-      // gl.bindTexture(gl.TEXTURE_2D, normalTexture);
 
-      gl.uniform1i(u_colorTexture, POSTEFFECT_TEXTURE_INDEX);
+      gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_COLOR_TEXTURE_INDEX);
+      gl.bindTexture(gl.TEXTURE_2D, colorTexture);
+
+      gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_NORMAL_TEXTURE_INDEX);
+      gl.bindTexture(gl.TEXTURE_2D, normalTexture);
+
+      gl.uniform1i(u_depthTexture, POSTEFFECT_DEPTH_TEXTURE_INDEX);
+      gl.uniform1i(u_colorTexture, POSTEFFECT_COLOR_TEXTURE_INDEX);
+      gl.uniform1i(u_normalTexture, POSTEFFECT_NORMAL_TEXTURE_INDEX);
       gl.uniform2fv(u_depthRange, new Float32Array([CAMERA_NEAR, CAMERA_FAR]));
 
       gl.enable(gl.BLEND);
