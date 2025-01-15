@@ -245,12 +245,8 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
     if (state.sphere.generation !== sphereRenderer.generation) {
       const m = mat4.create();
       const s = 60;
-      mat4.fromRotationTranslationScale(
-        m,
-        quat.create(),
-        state.sphere.position,
-        [s, s, s],
-      );
+      const q = quat.create();
+      mat4.fromRotationTranslationScale(m, q, state.sphere.position, [s, s, s]);
       sphereRenderer.update(
         new Float32Array(m),
         new Float32Array([0.4, 0.4, 0.7]),
