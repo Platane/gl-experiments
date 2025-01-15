@@ -14,9 +14,14 @@ out vec3 v_normal;
 out vec3 v_color;
 
 void main() {
+
+
+
     gl_Position = u_viewMatrix * u_objectMatrix * a_position;
 
-    v_normal = a_normal.xyz;
+    v_normal = mat3( u_viewMatrix * u_objectMatrix ) * vec3(a_normal);
+
+    v_normal = normalize(v_normal);
 
     v_color = u_color.rgb;
 }

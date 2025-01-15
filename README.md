@@ -4,6 +4,7 @@
 
 - [ ] test animation pose VS uploading a texture with all instances skeleton (likely pretty cheap?) = less texture read in vertex shader
 - [ ] copy the depth buffer from the framebuffer to the main depth buffer
+- [ ] understand texture index and when it's save to reuse them
 
 # References
 
