@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import { createGizmoMaterial } from "./renderer/materials/gizmos";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "./renderer/materials/instantiatedSkinnedPosedMesh";
 import { createCamera } from "./renderer/camera";
@@ -8,10 +8,13 @@ import {
   getGeometry as getTriceratopsGeometry,
   poses as triceratopsPoses,
 } from "./renderer/geometries/triceratops";
+import { createOrbitControl } from "./control/orbitCamera";
+import { createBasicMeshMaterial } from "./renderer/materials/basicMesh";
+import { createRecursiveSphere } from "./renderer/geometries/recursiveSphere";
 import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
 // @ts-ignore
 import hash from "hash-int";
-import { createOrbitControl } from "./control/orbitCamera";
+import { getFlatShadingNormals } from "./utils/geometry-normals";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -38,6 +41,10 @@ import { createOrbitControl } from "./control/orbitCamera";
     camera: {
       eye: [0, 2, -4] as vec3,
       lookAt: [0, 0, 0] as vec3,
+      generation: 1,
+    },
+    sphere: {
+      position: [0, 0, 0] as vec3,
       generation: 1,
     },
     triceratops: {
@@ -158,6 +165,17 @@ import { createOrbitControl } from "./control/orbitCamera";
     { generation: 0 },
   );
 
+  const sphereGeometry = createRecursiveSphere();
+  const sphereRenderer = Object.assign(
+    createBasicMeshMaterial(c, {
+      geometry: {
+        positions: new Float32Array(sphereGeometry),
+        normals: getFlatShadingNormals(sphereGeometry),
+      },
+    }),
+    { generation: 0 },
+  );
+
   //
   // game loop
   //
@@ -177,6 +195,10 @@ import { createOrbitControl } from "./control/orbitCamera";
       state.triceratops.poseWeights[i * 4 + 0] = 1 - k;
     }
     state.triceratops.generation++;
+
+    state.sphere.position[0] = Math.sin(t * 0.001) * 200;
+    state.sphere.position[2] = 100;
+    state.sphere.generation++;
 
     {
       const animations = Object.entries(foxGeometry.animations).map(
@@ -212,13 +234,28 @@ import { createOrbitControl } from "./control/orbitCamera";
     //
     // update renderers
     //
+    if (state.camera.generation !== camera.generation) {
+      camera.update(state.camera.eye, state.camera.lookAt);
+      camera.generation = state.camera.generation;
+    }
     if (state.gizmos.generation !== gizmoRenderer.generation) {
       gizmoRenderer.update(state.gizmos);
       gizmoRenderer.generation = state.gizmos.generation;
     }
-    if (state.camera.generation !== camera.generation) {
-      camera.update(state.camera.eye, state.camera.lookAt);
-      camera.generation = state.camera.generation;
+    if (state.sphere.generation !== sphereRenderer.generation) {
+      const m = mat4.create();
+      const s = 60;
+      mat4.fromRotationTranslationScale(
+        m,
+        quat.create(),
+        state.sphere.position,
+        [s, s, s],
+      );
+      sphereRenderer.update(
+        new Float32Array(m),
+        new Float32Array([0.4, 0.4, 0.7]),
+      );
+      sphereRenderer.generation = state.sphere.generation;
     }
     // if (state.triceratops.generation !== triceratopsRenderer.generation) {
     //   triceratopsRenderer.update(
@@ -251,6 +288,7 @@ import { createOrbitControl } from "./control/orbitCamera";
     // triceratopsRenderer.draw(camera.worldMatrix);
     foxRenderer.draw(camera.worldMatrix);
     gizmoRenderer.draw(camera.worldMatrix);
+    sphereRenderer.draw(camera.worldMatrix);
 
     //
     // loop
