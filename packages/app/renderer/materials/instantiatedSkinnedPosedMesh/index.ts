@@ -345,7 +345,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   gl.texStorage2D(
     gl.TEXTURE_2D,
     1,
-    gl.DEPTH_COMPONENT16,
+    gl.DEPTH24_STENCIL8,
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
   );
@@ -416,7 +416,9 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.cullFace(gl.BACK);
 
     gl.enable(gl.DEPTH_TEST);
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
@@ -427,6 +429,22 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.uniform1i(u_colorPalettesTexture, COLOR_PALETTES_TEXTURE_INDEX);
 
     gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
+
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+
+    gl.blitFramebuffer(
+      0,
+      0,
+      gl.drawingBufferWidth,
+      gl.drawingBufferHeight,
+      0,
+      0,
+      gl.drawingBufferWidth,
+      gl.drawingBufferHeight,
+      gl.DEPTH_BUFFER_BIT,
+      gl.NEAREST,
+    );
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
