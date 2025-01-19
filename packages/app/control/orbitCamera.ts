@@ -81,13 +81,17 @@ export const createOrbitControl = (
 
   canvas.oncontextmenu = (e) => e.preventDefault();
 
-  canvas.onwheel = (event) => {
-    const zoom = Math.sqrt(radius);
+  canvas.addEventListener(
+    "wheel",
+    (event) => {
+      const zoom = Math.sqrt(radius);
 
-    const newZoom = zoom + event.deltaY * 0.02;
+      const newZoom = zoom + event.deltaY * 0.02;
 
-    radius = clamp(newZoom ** 2, MIN_RADIUS, MAX_RADIUS);
+      radius = clamp(newZoom ** 2, MIN_RADIUS, MAX_RADIUS);
 
-    update();
-  };
+      update();
+    },
+    { passive: true },
+  );
 };

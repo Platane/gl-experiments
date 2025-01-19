@@ -28,7 +28,7 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
   document.body.appendChild(canvas);
 
   const gl = canvas.getContext("webgl2", {
-    antialiasing: false,
+    antialias: false,
   }) as WebGL2RenderingContext;
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LESS);
@@ -197,7 +197,7 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
     state.triceratops.generation++;
 
     state.sphere.position[0] = Math.sin(t * 0.001) * 200;
-    state.sphere.position[2] = 100;
+    state.sphere.position[2] = 110;
     state.sphere.generation++;
 
     {
@@ -244,7 +244,7 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
     }
     if (state.sphere.generation !== sphereRenderer.generation) {
       const m = mat4.create();
-      const s = 60;
+      const s = 120;
       const q = quat.create();
       mat4.fromRotationTranslationScale(m, q, state.sphere.position, [s, s, s]);
       sphereRenderer.update(
