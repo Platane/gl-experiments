@@ -419,7 +419,9 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.clearBufferfv(gl.COLOR, 0, new Float32Array([0, 0, 0, 0]));
+    gl.clearBufferfv(gl.COLOR, 1, new Float32Array([0, 0, 0, 0]));
 
     gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
 
@@ -430,9 +432,9 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
     gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
 
+    // copy the fbo depth buffer to the default framebuffer depth buffer
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-
     gl.blitFramebuffer(
       0,
       0,
