@@ -22,7 +22,8 @@ uniform sampler2D u_colorPalettesTexture;
 
 out vec3 v_normal;
 out vec3 v_color;
-out float v_depth;
+flat out int v_instanceIndex;
+flat out int v_colorIndex;
 
 mat4 getBoneMatrix(sampler2D posesTexture, uint poseIndex, uint boneIndex) {
     return mat4(
@@ -73,7 +74,9 @@ void main() {
 
     v_normal = rot * vec3(a_normal);
 
-    v_depth = gl_Position.z;
+    v_instanceIndex = gl_InstanceID;
+
+    v_colorIndex = int(a_colorIndex);
 
     //
     // debugger weight

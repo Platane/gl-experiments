@@ -350,7 +350,19 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.drawingBufferHeight,
   );
 
+  const objectIdTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, objectIdTexture);
+  gl.texStorage2D(
+    gl.TEXTURE_2D,
+    1,
+    gl.RGBA8,
+    gl.drawingBufferWidth,
+    gl.drawingBufferHeight,
+  );
+
   gl.bindTexture(gl.TEXTURE_2D, null);
+
+  console.log("depth bits", gl.getParameter(gl.DEPTH_BITS));
 
   const fbo = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
@@ -370,13 +382,24 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   );
   gl.framebufferTexture2D(
     gl.FRAMEBUFFER,
+    gl.COLOR_ATTACHMENT2,
+    gl.TEXTURE_2D,
+    objectIdTexture,
+    0,
+  );
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
     gl.DEPTH_ATTACHMENT,
     gl.TEXTURE_2D,
     depthTexture,
     0,
   );
 
-  gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+  gl.drawBuffers([
+    gl.COLOR_ATTACHMENT0,
+    gl.COLOR_ATTACHMENT1,
+    gl.COLOR_ATTACHMENT2,
+  ]);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -422,6 +445,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.clearBufferfv(gl.COLOR, 0, new Float32Array([0, 0, 0, 0]));
     gl.clearBufferfv(gl.COLOR, 1, new Float32Array([0, 0, 0, 0]));
+    gl.clearBufferfv(gl.COLOR, 2, new Float32Array([0, 0, 0, 0]));
 
     gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
 
@@ -431,6 +455,21 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.uniform1i(u_colorPalettesTexture, COLOR_PALETTES_TEXTURE_INDEX);
 
     gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
+
+    {
+      const data = new Uint8Array(4);
+      gl.readBuffer(gl.COLOR_ATTACHMENT2); // This is the attachment we want to read
+      gl.readPixels(
+        Math.floor(gl.drawingBufferWidth / 2),
+        Math.floor(gl.drawingBufferHeight / 2),
+        1,
+        1,
+        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT),
+        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE),
+        data,
+      );
+      console.log("data", ...[...data]);
+    }
 
     // copy the fbo depth buffer to the default framebuffer depth buffer
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo);

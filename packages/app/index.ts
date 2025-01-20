@@ -291,6 +291,7 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
     //
     requestAnimationFrame(loop);
   };
+
   loop();
 
   // camera controls
