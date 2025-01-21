@@ -4,6 +4,7 @@ precision highp float;
 uniform sampler2D u_colorTexture;
 uniform sampler2D u_depthTexture;
 uniform sampler2D u_normalTexture;
+uniform sampler2D u_objectIdTexture;
 uniform vec2 u_depthRange;
 
 in vec2 v_texCoord;
@@ -29,5 +30,11 @@ void main() {
     vec4 color = texture(u_colorTexture, v_texCoord);
     vec4 normal = texture(u_normalTexture, v_texCoord);
 
+    vec4 objectId = texture(u_objectIdTexture, v_texCoord);
+    int uid = int(objectId.r * 256.0 * 256.0) + int(objectId.g * 256.0);
+
     fragColor = vec4((color * (1.0 - k)).rgb, color.a);
+
+    float u = float(uid) / 3500.0;
+    fragColor = vec4(u, u, u, color.a);
 }

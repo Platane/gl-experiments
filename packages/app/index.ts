@@ -104,13 +104,24 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
   }
 
   {
-    const n = 1 << 10;
+    const n = 1 << 12;
     const l = Math.floor(Math.sqrt(n));
+
+    const shuffleArray = <T>(array: T[]) => {
+      for (let i = array.length - 1; i >= 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    };
+
     state.fox.positions = new Float32Array(
-      Array.from({ length: n }, (_, i) => [
-        ((i % l) - l / 2) * 120,
-        Math.floor(i / l) * 120,
-      ]).flat(),
+      shuffleArray(
+        Array.from({ length: n }, (_, i) => [
+          ((i % l) - l / 2) * 120,
+          Math.floor(i / l) * 120,
+        ]),
+      ).flat(),
     );
     state.fox.directions = new Float32Array(
       Array.from({ length: n }, (_, i) => {

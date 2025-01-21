@@ -300,6 +300,11 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     postEffectProgram,
     "u_normalTexture",
   );
+  const u_objectIdTexture = getUniformLocation(
+    gl,
+    postEffectProgram,
+    "u_objectIdTexture",
+  );
   const u_depthRange = getUniformLocation(
     gl,
     postEffectProgram,
@@ -314,6 +319,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
   const POSTEFFECT_DEPTH_TEXTURE_INDEX = c.globalTextureIndex++;
   const POSTEFFECT_COLOR_TEXTURE_INDEX = c.globalTextureIndex++;
   const POSTEFFECT_NORMAL_TEXTURE_INDEX = c.globalTextureIndex++;
+  const POSTEFFECT_OBJECTID_TEXTURE_INDEX = c.globalTextureIndex++;
 
   gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_DEPTH_TEXTURE_INDEX);
 
@@ -362,7 +368,11 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
   gl.bindTexture(gl.TEXTURE_2D, null);
 
-  console.log("depth bits", gl.getParameter(gl.DEPTH_BITS));
+  console.log(
+    "depth bits",
+    gl.getParameter(gl.DEPTH_BITS),
+    gl.getParameter(gl.STENCIL_BITS),
+  );
 
   const fbo = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
@@ -432,6 +442,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     gl.bufferData(gl.ARRAY_BUFFER, colorPaletteIndexes, gl.DYNAMIC_DRAW);
   };
 
+  let k = 0;
+
   const draw = (worldMatrix: mat4) => {
     gl.useProgram(program);
 
@@ -456,20 +468,35 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
 
     gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
 
-    {
-      const data = new Uint8Array(4);
-      gl.readBuffer(gl.COLOR_ATTACHMENT2); // This is the attachment we want to read
-      gl.readPixels(
-        Math.floor(gl.drawingBufferWidth / 2),
-        Math.floor(gl.drawingBufferHeight / 2),
-        1,
-        1,
-        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT),
-        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE),
-        data,
-      );
-      console.log("data", ...[...data]);
-    }
+    // if (k++ % 200 === 0) {
+    //   const data = new Uint8Array(
+    //     4 * gl.drawingBufferWidth * gl.drawingBufferHeight,
+    //   );
+    //   gl.readBuffer(gl.COLOR_ATTACHMENT2); // This is the attachment we want to read
+    //   gl.readPixels(
+    //     0,
+    //     0,
+    //     gl.drawingBufferWidth,
+    //     gl.drawingBufferHeight,
+    //     gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT),
+    //     gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE),
+    //     data,
+    //   );
+    //   const a = new Map<string | number, number>();
+    //   for (let i = 0; i < data.length; i += 4) {
+    //     const key = data[i + 0];
+    //     if (key === 0) continue;
+    //     // const key= data.slice(i, i + 4).join(" ");
+    //     a.set(key, 1 + (a.get(key) ?? 0));
+    //   }
+    //   const total = [...a.values()].reduce((sum, x) => sum + x, 0);
+    //   console.log(
+    //     [...a.entries()].map(
+    //       ([key, count]) =>
+    //         `${key} (${Math.round((count / total) * 1000) / 10})`,
+    //     ),
+    //   );
+    // }
 
     // copy the fbo depth buffer to the default framebuffer depth buffer
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo);
@@ -506,9 +533,13 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
       gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_NORMAL_TEXTURE_INDEX);
       gl.bindTexture(gl.TEXTURE_2D, normalTexture);
 
+      gl.activeTexture(gl.TEXTURE0 + POSTEFFECT_OBJECTID_TEXTURE_INDEX);
+      gl.bindTexture(gl.TEXTURE_2D, objectIdTexture);
+
       gl.uniform1i(u_depthTexture, POSTEFFECT_DEPTH_TEXTURE_INDEX);
       gl.uniform1i(u_colorTexture, POSTEFFECT_COLOR_TEXTURE_INDEX);
       gl.uniform1i(u_normalTexture, POSTEFFECT_NORMAL_TEXTURE_INDEX);
+      gl.uniform1i(u_objectIdTexture, POSTEFFECT_OBJECTID_TEXTURE_INDEX);
       gl.uniform2fv(u_depthRange, new Float32Array([CAMERA_NEAR, CAMERA_FAR]));
 
       gl.enable(gl.BLEND);

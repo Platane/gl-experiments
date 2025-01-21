@@ -24,8 +24,8 @@ void main() {
     outNormal = vec4(v_normal, 1.0);
 
     outObjectId = vec4(
-            float(v_instanceIndex) / (256.0 * 256.0),
-            float(v_instanceIndex) / (256.0),
+            mod(float(v_instanceIndex) / 256.0, 256.0) / 256.0,
+            mod(float(v_instanceIndex), 256.0) / 256.0,
             float(v_colorIndex) / (256.0),
             0.0
         );
