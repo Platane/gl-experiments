@@ -24,6 +24,7 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
   canvas.style.left = "0";
   canvas.style.width = "100%";
   canvas.style.height = "100%";
+  canvas.style.imageRendering = "pixelated";
 
   document.body.appendChild(canvas);
 

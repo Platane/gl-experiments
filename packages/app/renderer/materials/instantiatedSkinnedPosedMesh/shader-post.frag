@@ -32,18 +32,26 @@ void main() {
 
     fragColor = color;
 
-    {
+    for (int i = 0; i < 4; i++) {
         float THRESHOLD = 20.0;
 
-        if (
-            depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord + vec2(0.0, u_textelSize.y), near, far) ||
-                depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord - vec2(0.0, u_textelSize.y), near, far) ||
-                depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord + vec2(u_textelSize.x, 0.0), near, far) ||
-                depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord - vec2(u_textelSize.x, 0.0), near, far)
+        float u = (floor(float(i) / 2.0));
+        float v = mod(float(i), 2.0);
 
-        ) {
+        vec2 offset = (u * 2.0 - 1.0) * vec2(v * u_textelSize.x, (1.0 - v) * u_textelSize.y);
+
+        vec4 adjacentObjectId = texture(u_objectIdTexture, v_texCoord + offset);
+        int adjacentUid = int(adjacentObjectId.r * 256.0 * 256.0) + int(adjacentObjectId.g * 256.0);
+
+        float adjacentDepeth = readDepth(u_depthTexture, v_texCoord + offset, near, far);
+
+        if (adjacentUid != uid && depth < adjacentDepeth) {
             fragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
+
+        // if (depth + THRESHOLD < adjacentDepeth) {
+        //     fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        // }
     }
 
     // float k = (depth - near) / (far - near);
