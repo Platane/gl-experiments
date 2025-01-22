@@ -12,7 +12,7 @@ in vec2 v_texCoord;
 out vec4 fragColor;
 
 float readDepth(sampler2D depthTexture, vec2 texCoord, float near, float far) {
-    float ndc = 2.0 * texture(depthTexture, v_texCoord).r - 1.0;
+    float ndc = 2.0 * texture(depthTexture, texCoord).r - 1.0;
     float depth = -(2.0 * far * near) / (ndc * (far - near) - far - near);
 
     return depth;
