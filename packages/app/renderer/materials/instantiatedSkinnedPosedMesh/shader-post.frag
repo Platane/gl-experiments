@@ -6,6 +6,7 @@ uniform sampler2D u_depthTexture;
 uniform sampler2D u_normalTexture;
 uniform sampler2D u_objectIdTexture;
 uniform vec2 u_depthRange;
+uniform vec2 u_textelSize;
 
 in vec2 v_texCoord;
 
@@ -23,18 +24,28 @@ void main() {
     float far = u_depthRange.y;
     float depth = readDepth(u_depthTexture, v_texCoord, near, far);
 
-    fragColor = vec4(depth / far, depth / far, depth / far, 1.0);
-
-    float k = (depth - near) / (far - near);
-
     vec4 color = texture(u_colorTexture, v_texCoord);
     vec4 normal = texture(u_normalTexture, v_texCoord);
 
     vec4 objectId = texture(u_objectIdTexture, v_texCoord);
     int uid = int(objectId.r * 256.0 * 256.0) + int(objectId.g * 256.0);
 
-    fragColor = vec4((color * (1.0 - k)).rgb, color.a);
+    fragColor = color;
 
-    float u = float(uid) / 3500.0;
-    fragColor = vec4(u, u, u, color.a);
+    {
+        float THRESHOLD = 20.0;
+
+        if (
+            depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord + vec2(0.0, u_textelSize.y), near, far) ||
+                depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord - vec2(0.0, u_textelSize.y), near, far) ||
+                depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord + vec2(u_textelSize.x, 0.0), near, far) ||
+                depth + THRESHOLD < readDepth(u_depthTexture, v_texCoord - vec2(u_textelSize.x, 0.0), near, far)
+
+        ) {
+            fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+    }
+
+    // float k = (depth - near) / (far - near);
+    // fragColor = vec4(k, k, k, 1.0);
 }

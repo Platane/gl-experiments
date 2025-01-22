@@ -1,17 +1,17 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 import {
   createProgram,
   getAttribLocation,
   getUniformLocation,
   linkProgram,
 } from "../../../utils/gl";
+import { CAMERA_FAR, CAMERA_NEAR } from "../../camera";
 
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
 
 import codePostFrag from "./shader-post.frag?raw";
 import codeQuadVert from "./shader-quad.vert?raw";
-import { CAMERA_FAR, CAMERA_NEAR } from "../../camera";
 
 /**
  * render an instantiated geometry,
@@ -310,6 +310,11 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
     postEffectProgram,
     "u_depthRange",
   );
+  const u_textelSize = getUniformLocation(
+    gl,
+    postEffectProgram,
+    "u_textelSize",
+  );
   gl.bindVertexArray(null);
 
   //
@@ -541,6 +546,13 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (
       gl.uniform1i(u_normalTexture, POSTEFFECT_NORMAL_TEXTURE_INDEX);
       gl.uniform1i(u_objectIdTexture, POSTEFFECT_OBJECTID_TEXTURE_INDEX);
       gl.uniform2fv(u_depthRange, new Float32Array([CAMERA_NEAR, CAMERA_FAR]));
+      gl.uniform2fv(
+        u_textelSize,
+        new Float32Array([
+          1 / gl.drawingBufferWidth,
+          1 / gl.drawingBufferHeight,
+        ]),
+      );
 
       gl.enable(gl.BLEND);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
