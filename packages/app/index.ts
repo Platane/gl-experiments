@@ -15,6 +15,7 @@ import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
 // @ts-ignore
 import hash from "hash-int";
 import { getFlatShadingNormals } from "./utils/geometry-normals";
+import { createOutlinePostEffect } from "./renderer/materials/outlinePostEffect";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -178,8 +179,9 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
   );
 
   const sphereGeometry = createRecursiveSphere();
+  const sphereMaterial = createBasicMeshMaterial(c);
   const sphereRenderer = Object.assign(
-    createBasicMeshMaterial(c, {
+    sphereMaterial.createRenderer({
       geometry: {
         positions: new Float32Array(sphereGeometry),
         normals: getFlatShadingNormals(sphereGeometry),
@@ -187,6 +189,7 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
     }),
     { generation: 0 },
   );
+  const outLinePostEffect = createOutlinePostEffect(c);
 
   //
   // game loop
@@ -294,9 +297,10 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // triceratopsRenderer.draw(camera.worldMatrix);
-    foxRenderer.draw(camera.worldMatrix);
+
+    outLinePostEffect.draw(() => foxRenderer.draw(camera.worldMatrix));
     gizmoRenderer.draw(camera.worldMatrix);
-    sphereRenderer.draw(camera.worldMatrix);
+    sphereMaterial.draw(camera.worldMatrix, [sphereRenderer]);
 
     //
     // loop

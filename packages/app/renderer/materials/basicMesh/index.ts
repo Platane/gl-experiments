@@ -9,20 +9,10 @@ import {
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
 
-export const createBasicMeshMaterial = (
-  c: {
-    gl: WebGL2RenderingContext;
-    globalTextureIndex: number;
-  },
-  {
-    geometry,
-  }: {
-    geometry: {
-      normals: Float32Array;
-      positions: Float32Array;
-    };
-  },
-) => {
+export const createBasicMeshMaterial = (c: {
+  gl: WebGL2RenderingContext;
+  globalTextureIndex: number;
+}) => {
   const { gl } = c;
 
   const program = createProgram(gl, codeVert, codeFrag);
@@ -45,9 +35,7 @@ export const createBasicMeshMaterial = (
   //
   // position
   //
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
+
   const a_position = getAttribLocation(gl, program, "a_position");
   gl.enableVertexAttribArray(a_position);
   gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
@@ -55,9 +43,7 @@ export const createBasicMeshMaterial = (
   //
   // normal
   //
-  const normalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, geometry.normals, gl.STATIC_DRAW);
+
   const a_normal = getAttribLocation(gl, program, "a_normal");
   gl.enableVertexAttribArray(a_normal);
   gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
@@ -68,20 +54,54 @@ export const createBasicMeshMaterial = (
   //
   //
 
-  const nVertices = geometry.positions.length / 3;
+  const createRenderer = ({
+    geometry,
+  }: {
+    geometry: {
+      normals: Float32Array;
+      positions: Float32Array;
+    };
+  }) => {
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
 
-  let objectMatrix: Float32Array;
-  let color: Float32Array;
+    const normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, geometry.normals, gl.STATIC_DRAW);
 
-  /**
-   * update the instances
-   */
-  const update = (objectMatrix_: Float32Array, color_: Float32Array) => {
-    objectMatrix = objectMatrix_;
-    color = color_;
+    const nVertices = geometry.positions.length / 3;
+
+    let objectMatrix: Float32Array;
+    let color: Float32Array;
+
+    const update = (objectMatrix_: Float32Array, color_: Float32Array) => {
+      objectMatrix = objectMatrix_;
+      color = color_;
+    };
+
+    const draw = () => {
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+      gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
+
+      gl.uniformMatrix4fv(u_objectMatrix, false, objectMatrix);
+      gl.uniform3fv(u_color, color);
+
+      gl.drawArrays(gl.TRIANGLES, 0, nVertices);
+    };
+
+    const dispose = () => {
+      gl.deleteBuffer(positionBuffer);
+      gl.deleteBuffer(normalBuffer);
+    };
+
+    return { draw, update, dispose };
   };
 
-  const draw = (worldMatrix: mat4) => {
+  const draw = (worldMatrix: mat4, renderers: { draw: () => void }[]) => {
     gl.useProgram(program);
 
     gl.enable(gl.CULL_FACE);
@@ -89,17 +109,15 @@ export const createBasicMeshMaterial = (
 
     gl.enable(gl.DEPTH_TEST);
 
-    gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
-    gl.uniformMatrix4fv(u_objectMatrix, false, objectMatrix);
-    gl.uniform3fv(u_color, color);
-
     gl.bindVertexArray(vao);
 
-    gl.drawArrays(gl.TRIANGLES, 0, nVertices);
+    gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
+
+    for (const { draw } of renderers) draw();
 
     gl.bindVertexArray(null);
     gl.useProgram(null);
   };
 
-  return { draw, update };
+  return { draw, createRenderer };
 };
