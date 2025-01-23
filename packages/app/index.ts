@@ -79,7 +79,7 @@ import { createOutlinePostEffect } from "./renderer/materials/outlinePostEffect"
   mat4.fromTranslation(state.gizmos[3], [0, 0, 0.4]);
 
   {
-    const n = 1 << 10;
+    const n = 1 << 5;
     const l = Math.floor(Math.sqrt(n));
     state.triceratops.positions = new Float32Array(
       Array.from({ length: n }, (_, i) => [
@@ -106,7 +106,7 @@ import { createOutlinePostEffect } from "./renderer/materials/outlinePostEffect"
   }
 
   {
-    const n = 1 << 12;
+    const n = 1 << 10;
     const l = Math.floor(Math.sqrt(n));
 
     const shuffleArray = <T>(array: T[]) => {
@@ -157,23 +157,25 @@ import { createOutlinePostEffect } from "./renderer/materials/outlinePostEffect"
     generation: 0,
   });
 
-  // const triceratopsRenderer = Object.assign(
-  //   createInstantiatedSkinnedPosedMeshMaterial(c, {
-  //     geometry: await getTriceratopsGeometry(),
-  //     colorPalettes: triceratopsColorPalettes,
-  //     poses: triceratopsPoses,
-  //   }),
-  //   { generation: 0 },
-  // );
+  const meshMaterial = createInstantiatedSkinnedPosedMeshMaterial(c);
 
   const foxGeometry = await getFoxGeometry();
   const foxRenderer = Object.assign(
-    createInstantiatedSkinnedPosedMeshMaterial(c, {
+    meshMaterial.createRenderer({
       geometry: foxGeometry,
       colorPalettes: triceratopsColorPalettes,
       poses: Object.values(foxGeometry.animations).flatMap(({ keyFrames }) =>
         keyFrames.map(({ pose }) => pose),
       ),
+    }),
+    { generation: 0 },
+  );
+
+  const triceratopsRenderer = Object.assign(
+    meshMaterial.createRenderer({
+      geometry: await getTriceratopsGeometry(),
+      colorPalettes: triceratopsColorPalettes,
+      poses: triceratopsPoses,
     }),
     { generation: 0 },
   );
@@ -268,17 +270,17 @@ import { createOutlinePostEffect } from "./renderer/materials/outlinePostEffect"
       );
       sphereRenderer.generation = state.sphere.generation;
     }
-    // if (state.triceratops.generation !== triceratopsRenderer.generation) {
-    //   triceratopsRenderer.update(
-    //     state.triceratops.positions,
-    //     state.triceratops.directions,
-    //     state.triceratops.poseIndexes,
-    //     state.triceratops.poseWeights,
-    //     state.triceratops.paletteIndexes,
-    //     state.triceratops.n,
-    //   );
-    //   triceratopsRenderer.generation = state.triceratops.generation;
-    // }
+    if (state.triceratops.generation !== triceratopsRenderer.generation) {
+      triceratopsRenderer.update(
+        state.triceratops.positions,
+        state.triceratops.directions,
+        state.triceratops.poseIndexes,
+        state.triceratops.poseWeights,
+        state.triceratops.paletteIndexes,
+        state.triceratops.n,
+      );
+      triceratopsRenderer.generation = state.triceratops.generation;
+    }
     if (state.fox.generation !== foxRenderer.generation) {
       foxRenderer.update(
         state.fox.positions,
@@ -296,9 +298,9 @@ import { createOutlinePostEffect } from "./renderer/materials/outlinePostEffect"
     //
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // triceratopsRenderer.draw(camera.worldMatrix);
-
-    outLinePostEffect.draw(() => foxRenderer.draw(camera.worldMatrix));
+    outLinePostEffect.draw(() =>
+      meshMaterial.draw(camera.worldMatrix, [foxRenderer, triceratopsRenderer]),
+    );
     gizmoRenderer.draw(camera.worldMatrix);
     sphereMaterial.draw(camera.worldMatrix, [sphereRenderer]);
 
