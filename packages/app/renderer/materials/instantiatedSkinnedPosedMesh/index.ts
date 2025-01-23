@@ -194,7 +194,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (c: {
     let nInstances = 0;
     const nVertices = geometry.positions.length / 3;
 
-    const draw = () => {
+    const _draw = () => {
       gl.activeTexture(gl.TEXTURE0 + POSES_TEXTURE_INDEX);
       gl.bindTexture(gl.TEXTURE_2D, posesTexture);
 
@@ -269,10 +269,13 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (c: {
       gl.bufferData(gl.ARRAY_BUFFER, colorPaletteIndexes, gl.DYNAMIC_DRAW);
     };
 
-    return { draw, update };
+    return { _draw, update };
   };
 
-  const draw = (worldMatrix: mat4, renderers: { draw: () => void }[]) => {
+  const draw = (
+    worldMatrix: mat4,
+    renderers: ReturnType<typeof createRenderer>[],
+  ) => {
     gl.useProgram(program);
 
     gl.enable(gl.CULL_FACE);
@@ -285,7 +288,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (c: {
     gl.uniform1i(u_posesTexture, POSES_TEXTURE_INDEX);
     gl.uniform1i(u_colorPalettesTexture, COLOR_PALETTES_TEXTURE_INDEX);
 
-    for (const { draw } of renderers) draw();
+    for (const r of renderers) r._draw();
 
     gl.bindVertexArray(null);
     gl.useProgram(null);

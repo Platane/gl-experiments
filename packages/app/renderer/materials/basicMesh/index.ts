@@ -80,7 +80,7 @@ export const createBasicMeshMaterial = (c: {
       color = color_;
     };
 
-    const draw = () => {
+    const _draw = () => {
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
       gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
 
@@ -98,10 +98,13 @@ export const createBasicMeshMaterial = (c: {
       gl.deleteBuffer(normalBuffer);
     };
 
-    return { draw, update, dispose };
+    return { _draw, update, dispose };
   };
 
-  const draw = (worldMatrix: mat4, renderers: { draw: () => void }[]) => {
+  const draw = (
+    worldMatrix: mat4,
+    renderers: ReturnType<typeof createRenderer>[],
+  ) => {
     gl.useProgram(program);
 
     gl.enable(gl.CULL_FACE);
@@ -113,7 +116,7 @@ export const createBasicMeshMaterial = (c: {
 
     gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
 
-    for (const { draw } of renderers) draw();
+    for (const r of renderers) r._draw();
 
     gl.bindVertexArray(null);
     gl.useProgram(null);
