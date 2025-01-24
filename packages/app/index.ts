@@ -15,7 +15,8 @@ import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
 // @ts-ignore
 import hash from "hash-int";
 import { getFlatShadingNormals } from "./utils/geometry-normals";
-import { createOutlinePostEffect } from "./renderer/materials/outlinePostEffect";
+import { createOutlinePostEffect } from "./renderer/materials/jumpFloodOutlinePostEffect";
+// import { createOutlinePostEffect } from "./renderer/materials/simpleOutlinePostEffect";
 import { createState } from "./logic/state";
 
 (async () => {
