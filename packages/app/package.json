@@ -12,6 +12,6 @@
     "@gl/gltf-parser": "0.0.1"
   },
   "devDependencies": {
-    "vite": "6.0.6"
+    "vite": "6.0.11"
   }
 }
