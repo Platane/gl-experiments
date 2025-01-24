@@ -4,6 +4,14 @@ import { getGeometry as getFoxGeometry } from "../renderer/geometries/fox";
 // @ts-ignore
 import hash from "hash-int";
 
+const shuffleArray = <T>(array: T[], random = Math.random) => {
+  for (let i = array.length - 1; i >= 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
 export const createState = (
   foxGeometry: Awaited<ReturnType<typeof getFoxGeometry>>,
 ) => {
@@ -74,16 +82,8 @@ export const createState = (
   }
 
   {
-    const n = 1 << 10;
+    const n = 1 << 5;
     const l = Math.floor(Math.sqrt(n));
-
-    const shuffleArray = <T>(array: T[]) => {
-      for (let i = array.length - 1; i >= 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    };
 
     state.fox.positions = new Float32Array(
       shuffleArray(
@@ -91,6 +91,14 @@ export const createState = (
           ((i % l) - l / 2) * 120,
           Math.floor(i / l) * 120,
         ]),
+        (() => {
+          let i = 1;
+          return () => {
+            const next = hash(i);
+            i = next;
+            return (i % 5123) / 5123;
+          };
+        })(),
       ).flat(),
     );
     state.fox.directions = new Float32Array(

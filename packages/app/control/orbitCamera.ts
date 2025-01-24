@@ -13,15 +13,19 @@ export const createOrbitControl = (
     generation: number;
   },
 ) => {
-  let phi = Math.PI / 8;
-  let theta = Math.PI;
-  let radius = 500;
+  let phi = +(localStorage.getItem("camera-phi") ?? Math.PI / 8);
+  let theta = +(localStorage.getItem("camera-theta") ?? Math.PI);
+  let radius = +(localStorage.getItem("camera-radius") ?? 500);
 
   const ROTATION_SPEED = 3.5;
   const MIN_RADIUS = 2;
   const MAX_RADIUS = 1400;
 
   const update = () => {
+    localStorage.setItem("camera-phi", phi + "");
+    localStorage.setItem("camera-theta", theta + "");
+    localStorage.setItem("camera-radius", radius + "");
+
     state.eye[0] = state.lookAt[0] + radius * Math.sin(theta) * Math.cos(phi);
     state.eye[1] = state.lookAt[1] + radius * Math.sin(phi);
     state.eye[2] = state.lookAt[2] + radius * Math.cos(theta) * Math.cos(phi);
