@@ -95,6 +95,7 @@ import { createState } from "./logic/state";
     camera.update(state.camera.eye, state.camera.lookAt);
 
     // recreate the post effect with correct texture size
+    outLinePostEffect.dispose();
     outLinePostEffect = createOutlinePostEffect(c);
   };
 
