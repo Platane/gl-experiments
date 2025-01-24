@@ -15,8 +15,7 @@ import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
 // @ts-ignore
 import hash from "hash-int";
 import { getFlatShadingNormals } from "./utils/geometry-normals";
-import { createOutlinePostEffect } from "./renderer/materials/jumpFloodOutlinePostEffect";
-// import { createOutlinePostEffect } from "./renderer/materials/simpleOutlinePostEffect";
+import { createOutlinePostEffect } from "./renderer/materials/simpleOutlinePostEffect";
 import { createState } from "./logic/state";
 
 (async () => {
@@ -51,7 +50,6 @@ import { createState } from "./logic/state";
   const c = { gl, canvas };
 
   const camera = Object.assign(createCamera(c), { generation: 0 });
-  // window.onresize = () => camera.update(state.camera.eye, state.camera.lookAt); // avoid resizing as it will break the frame buffer textures atm
   camera.update(state.camera.eye, state.camera.lookAt);
 
   const gizmoRenderer = Object.assign(createGizmoMaterial(c), {
@@ -91,7 +89,14 @@ import { createState } from "./logic/state";
     }),
     { generation: 0 },
   );
-  const outLinePostEffect = createOutlinePostEffect(c);
+  let outLinePostEffect = createOutlinePostEffect(c);
+
+  window.onresize = () => {
+    camera.update(state.camera.eye, state.camera.lookAt);
+
+    // recreate the post effect with correct texture size
+    outLinePostEffect = createOutlinePostEffect(c);
+  };
 
   //
   // game loop

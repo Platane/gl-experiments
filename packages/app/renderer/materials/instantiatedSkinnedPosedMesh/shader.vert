@@ -6,7 +6,7 @@ in vec4 a_position;
 in vec4 a_normal;
 in uint a_colorIndex;
 
-in vec4 a_weights;
+in vec4 a_boneWeights;
 in uvec4 a_boneIndexes;
 
 in vec2 a_instancePosition;
@@ -56,7 +56,7 @@ void main() {
             uvec2(a_instancePoseIndexes),
             vec2(a_instancePoseWeights),
             a_boneIndexes,
-            a_weights
+            a_boneWeights
         );
 
     mat3 rot = mat3(
@@ -84,38 +84,38 @@ void main() {
         uvec3 debugIndexes = uvec3(1, 2, 0);
         vec3 debugWeights = vec3(0.0, 0.0, 0.0);
         if (a_boneIndexes[0] == debugIndexes[0]) {
-            debugWeights[0] = a_weights[0];
+            debugWeights[0] = a_boneWeights[0];
         } else if (a_boneIndexes[1] == debugIndexes[0]) {
-            debugWeights[0] = a_weights[1];
+            debugWeights[0] = a_boneWeights[1];
         } else if (a_boneIndexes[2] == debugIndexes[0]) {
-            debugWeights[0] = a_weights[2];
+            debugWeights[0] = a_boneWeights[2];
         } else if (a_boneIndexes[3] == debugIndexes[0]) {
-            debugWeights[0] = a_weights[3];
+            debugWeights[0] = a_boneWeights[3];
         }
 
         if (a_boneIndexes[0] == debugIndexes[1]) {
-            debugWeights[1] = a_weights[0];
+            debugWeights[1] = a_boneWeights[0];
         } else if (a_boneIndexes[1] == debugIndexes[1]) {
-            debugWeights[1] = a_weights[1];
+            debugWeights[1] = a_boneWeights[1];
         } else if (a_boneIndexes[2] == debugIndexes[1]) {
-            debugWeights[1] = a_weights[2];
+            debugWeights[1] = a_boneWeights[2];
         } else if (a_boneIndexes[3] == debugIndexes[1]) {
-            debugWeights[1] = a_weights[3];
+            debugWeights[1] = a_boneWeights[3];
         }
 
         if (a_boneIndexes[0] == debugIndexes[2]) {
-            debugWeights[2] = a_weights[0];
+            debugWeights[2] = a_boneWeights[0];
         } else if (a_boneIndexes[1] == debugIndexes[2]) {
-            debugWeights[2] = a_weights[1];
+            debugWeights[2] = a_boneWeights[1];
         } else if (a_boneIndexes[2] == debugIndexes[2]) {
-            debugWeights[2] = a_weights[2];
+            debugWeights[2] = a_boneWeights[2];
         } else if (a_boneIndexes[3] == debugIndexes[2]) {
-            debugWeights[2] = a_weights[3];
+            debugWeights[2] = a_boneWeights[3];
         }
         v_color = debugWeights;
     }
 
-    // v_color = vec3(a_weights);
+    // v_color = vec3(a_boneWeights);
     // v_color = vec3(float(a_instancePoseIndexes[0]) / 10.0, a_instancePoseWeights[0], float(a_boneIndexes[0]));
     // v_color = vec3(a_instanceDirection, 0.0);
     // v_color = vec3(float(gl_InstanceID) / 100.0, 1.0, 0.0);

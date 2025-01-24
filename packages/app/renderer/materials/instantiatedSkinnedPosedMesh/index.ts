@@ -54,8 +54,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
   const a_colorIndex = getAttribLocation(gl, program, "a_colorIndex");
   gl.enableVertexAttribArray(a_colorIndex);
 
-  const a_weights = getAttribLocation(gl, program, "a_weights");
-  gl.enableVertexAttribArray(a_weights);
+  const a_boneWeights = getAttribLocation(gl, program, "a_boneWeights");
+  gl.enableVertexAttribArray(a_boneWeights);
 
   const a_boneIndexes = getAttribLocation(gl, program, "a_boneIndexes");
   gl.enableVertexAttribArray(a_boneIndexes);
@@ -118,6 +118,18 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     colorPalettes: [number, number, number][][];
     poses: mat4[][];
   }) => {
+    const poseDiff = new Float32Array(
+      poses.flatMap((pose) =>
+        pose.flatMap((mat, j) => {
+          const bindPose = poses[0];
+          const m = mat4.create();
+          mat4.invert(m, bindPose[j]);
+          mat4.multiply(m, mat, m);
+
+          return [...(m as any as number[])];
+        }),
+      ),
+    );
     const posesTexture = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0 + POSES_TEXTURE_INDEX);
     gl.bindTexture(gl.TEXTURE_2D, posesTexture);
@@ -130,18 +142,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
       0, // border
       gl.RGBA, // format
       gl.FLOAT, // type
-      new Float32Array(
-        poses.flatMap((pose) =>
-          pose.flatMap((mat, j) => {
-            const bindPose = poses[0];
-            const m = mat4.create();
-            mat4.invert(m, bindPose[j]);
-            mat4.multiply(m, mat, m);
-
-            return [...(m as any as number[])];
-          }),
-        ),
-      ),
+      poseDiff,
     );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -176,8 +177,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     gl.bindBuffer(gl.ARRAY_BUFFER, colorIndexesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.colorIndexes, gl.STATIC_DRAW);
 
-    const weightsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, weightsBuffer);
+    const boneWeightsBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, boneWeightsBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.boneWeights, gl.STATIC_DRAW);
 
     const boneIndexesBuffer = gl.createBuffer();
@@ -209,8 +210,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
       gl.bindBuffer(gl.ARRAY_BUFFER, colorIndexesBuffer);
       gl.vertexAttribIPointer(a_colorIndex, 1, gl.UNSIGNED_BYTE, 0, 0);
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, weightsBuffer);
-      gl.vertexAttribPointer(a_weights, 4, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, boneWeightsBuffer);
+      gl.vertexAttribPointer(a_boneWeights, 4, gl.FLOAT, false, 0, 0);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, boneIndexesBuffer);
       gl.vertexAttribIPointer(a_boneIndexes, 4, gl.UNSIGNED_BYTE, 0, 0);
@@ -268,7 +269,24 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
       gl.bufferData(gl.ARRAY_BUFFER, colorPaletteIndexes, gl.DYNAMIC_DRAW);
     };
 
-    return { _draw, update };
+    const dispose = () => {
+      gl.deleteTexture(posesTexture);
+      gl.deleteTexture(colorPalettesTexture);
+
+      gl.deleteBuffer(positionBuffer);
+      gl.deleteBuffer(normalBuffer);
+      gl.deleteBuffer(colorIndexesBuffer);
+      gl.deleteBuffer(boneWeightsBuffer);
+      gl.deleteBuffer(boneIndexesBuffer);
+
+      gl.deleteBuffer(instancePositionBuffer);
+      gl.deleteBuffer(instanceDirectionBuffer);
+      gl.deleteBuffer(instancePoseIndexesBuffer);
+      gl.deleteBuffer(instancePoseWeightsBuffer);
+      gl.deleteBuffer(instanceColorPaletteIndexBuffer);
+    };
+
+    return { _draw, update, dispose };
   };
 
   const draw = (
@@ -293,5 +311,10 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     gl.useProgram(null);
   };
 
-  return { draw, createRenderer };
+  const dispose = () => {
+    gl.deleteVertexArray(vao);
+    gl.deleteProgram(program);
+  };
+
+  return { draw, createRenderer, dispose };
 };

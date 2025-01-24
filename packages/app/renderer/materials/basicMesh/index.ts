@@ -119,5 +119,10 @@ export const createBasicMeshMaterial = ({
     gl.useProgram(null);
   };
 
-  return { draw, createRenderer };
+  const dispose = () => {
+    gl.deleteVertexArray(vao);
+    gl.deleteProgram(program);
+  };
+
+  return { draw, createRenderer, dispose };
 };

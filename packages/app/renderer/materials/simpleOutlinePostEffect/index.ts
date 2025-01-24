@@ -235,5 +235,17 @@ export const createOutlinePostEffect = ({
     gl.useProgram(null);
   };
 
-  return { draw };
+  const dispose = () => {
+    gl.deleteFramebuffer(fbo);
+
+    gl.deleteTexture(depthTexture);
+    gl.deleteTexture(colorTexture);
+    gl.deleteTexture(normalTexture);
+    gl.deleteTexture(objectIdTexture);
+
+    gl.deleteVertexArray(vao);
+    gl.deleteProgram(program);
+  };
+
+  return { draw, dispose };
 };
