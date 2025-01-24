@@ -13,12 +13,11 @@ import codeVert from "./shader.vert?raw";
  * render an instantiated geometry,
  * each instance have it's own position / direction / mix of poses
  */
-export const createInstantiatedSkinnedPosedMeshMaterial = (c: {
+export const createInstantiatedSkinnedPosedMeshMaterial = ({
+  gl,
+}: {
   gl: WebGL2RenderingContext;
-  globalTextureIndex: number;
 }) => {
-  const { gl } = c;
-
   const program = createProgram(gl, codeVert, codeFrag);
   linkProgram(gl, program);
 
@@ -36,8 +35,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = (c: {
   //
   // texture indexes
   //
-  const POSES_TEXTURE_INDEX = c.globalTextureIndex++;
-  const COLOR_PALETTES_TEXTURE_INDEX = c.globalTextureIndex++;
+  const POSES_TEXTURE_INDEX = 0;
+  const COLOR_PALETTES_TEXTURE_INDEX = 1;
 
   //
   // attributes

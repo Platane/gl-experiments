@@ -19,12 +19,11 @@ layout(location = 1) out vec4 outNormal;
 layout(location = 2) out vec4 outObjectId;
 * ```
  */
-export const createOutlinePostEffect = (c: {
+export const createOutlinePostEffect = ({
+  gl,
+}: {
   gl: WebGL2RenderingContext;
-  globalTextureIndex: number;
 }) => {
-  const { gl } = c;
-
   const program = createProgram(gl, codeVert, codeFrag);
   const vao = gl.createVertexArray();
 
@@ -76,10 +75,10 @@ export const createOutlinePostEffect = (c: {
   // frame buffer
   //
 
-  const DEPTH_TEXTURE_INDEX = c.globalTextureIndex++;
-  const COLOR_TEXTURE_INDEX = c.globalTextureIndex++;
-  const NORMAL_TEXTURE_INDEX = c.globalTextureIndex++;
-  const OBJECTID_TEXTURE_INDEX = c.globalTextureIndex++;
+  const DEPTH_TEXTURE_INDEX = 0;
+  const COLOR_TEXTURE_INDEX = 1;
+  const NORMAL_TEXTURE_INDEX = 2;
+  const OBJECTID_TEXTURE_INDEX = 3;
 
   gl.activeTexture(gl.TEXTURE0 + DEPTH_TEXTURE_INDEX);
 

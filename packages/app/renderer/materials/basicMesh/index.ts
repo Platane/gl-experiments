@@ -9,12 +9,9 @@ import {
 import codeFrag from "./shader.frag?raw";
 import codeVert from "./shader.vert?raw";
 
-export const createBasicMeshMaterial = (c: {
-  gl: WebGL2RenderingContext;
-  globalTextureIndex: number;
-}) => {
-  const { gl } = c;
-
+export const createBasicMeshMaterial = ({
+  gl,
+}: { gl: WebGL2RenderingContext }) => {
   const program = createProgram(gl, codeVert, codeFrag);
   linkProgram(gl, program);
 
