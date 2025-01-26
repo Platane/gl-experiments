@@ -76,7 +76,7 @@ export const getUniformLocation = (
 ) => {
   const position = gl.getUniformLocation(program, name);
 
-  if (process.env.NODE_ENV !== "production" && position === -1)
+  if (process.env.NODE_ENV !== "production" && position === null)
     // throw `Unable to localize ${name}.`;
     console.warn(`Unable to localize ${name}.`);
 
