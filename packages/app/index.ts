@@ -91,8 +91,12 @@ import { createState } from "./logic/state";
   );
   const sphereRenderer2 = sphereMaterial.createRenderer({
     geometry: {
-      positions: new Float32Array(sphereGeometry),
-      normals: new Float32Array(sphereGeometry),
+      positions: new Float32Array(
+        createRecursiveSphere({ tesselatationStep: 4 }),
+      ),
+      normals: new Float32Array(
+        createRecursiveSphere({ tesselatationStep: 4 }),
+      ),
     },
   });
   {

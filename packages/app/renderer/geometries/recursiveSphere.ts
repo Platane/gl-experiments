@@ -3,9 +3,13 @@ import { vec3 } from "gl-matrix";
 /**
  * return recursive sphere with a radius of 1 centered on origin
  */
-export const createRecursiveSphere = () =>
+export const createRecursiveSphere = ({
+  tesselatationStep = 2,
+}: { tesselatationStep?: number } = {}) =>
   createPyramidKernel(5).flatMap((face) =>
-    tesselateRec(face, 2).flatMap((face) => face.flatMap((p) => [...p])),
+    tesselateRec(face, tesselatationStep).flatMap((face) =>
+      face.flatMap((p) => [...p]),
+    ),
   );
 
 /**

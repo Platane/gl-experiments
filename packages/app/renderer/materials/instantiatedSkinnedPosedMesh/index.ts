@@ -42,65 +42,45 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
   // attributes
   //
 
-  const vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
-
   const a_position = getAttribLocation(gl, program, "a_position");
-  gl.enableVertexAttribArray(a_position);
 
   const a_normal = getAttribLocation(gl, program, "a_normal");
-  gl.enableVertexAttribArray(a_normal);
 
   const a_colorIndex = getAttribLocation(gl, program, "a_colorIndex");
-  gl.enableVertexAttribArray(a_colorIndex);
 
   const a_boneWeights = getAttribLocation(gl, program, "a_boneWeights");
-  gl.enableVertexAttribArray(a_boneWeights);
 
   const a_boneIndexes = getAttribLocation(gl, program, "a_boneIndexes");
-  gl.enableVertexAttribArray(a_boneIndexes);
 
   const a_instancePosition = getAttribLocation(
     gl,
     program,
     "a_instancePosition",
   );
-  gl.enableVertexAttribArray(a_instancePosition);
-  gl.vertexAttribDivisor(a_instancePosition, 1);
 
   const a_instanceDirection = getAttribLocation(
     gl,
     program,
     "a_instanceDirection",
   );
-  gl.enableVertexAttribArray(a_instanceDirection);
-  gl.vertexAttribDivisor(a_instanceDirection, 1);
 
   const a_instanceColorPaletteIndex = getAttribLocation(
     gl,
     program,
     "a_instanceColorPaletteIndex",
   );
-  gl.enableVertexAttribArray(a_instanceColorPaletteIndex);
-  gl.vertexAttribDivisor(a_instanceColorPaletteIndex, 1);
 
   const a_instancePoseIndexes = getAttribLocation(
     gl,
     program,
     "a_instancePoseIndexes",
   );
-  gl.enableVertexAttribArray(a_instancePoseIndexes);
-  gl.vertexAttribDivisor(a_instancePoseIndexes, 1);
 
   const a_instancePoseWeights = getAttribLocation(
     gl,
     program,
     "a_instancePoseWeights",
   );
-  gl.enableVertexAttribArray(a_instancePoseWeights);
-  gl.vertexAttribDivisor(a_instancePoseWeights, 1);
-
-  gl.bindVertexArray(null);
 
   const createRenderer = ({
     geometry,
@@ -118,6 +98,9 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     colorPalettes: [number, number, number][][];
     poses: mat4[][];
   }) => {
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+
     const poseDiff = new Float32Array(
       poses.flatMap((pose) =>
         pose.flatMap((mat, j) => {
@@ -168,33 +151,54 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(a_position);
 
     const normalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.normals, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(a_normal);
 
     const colorIndexesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorIndexesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.colorIndexes, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(a_colorIndex);
 
     const boneWeightsBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boneWeightsBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.boneWeights, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(a_boneWeights);
 
     const boneIndexesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boneIndexesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.boneIndexes, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(a_boneIndexes);
 
     const instancePositionBuffer = gl.createBuffer();
+    gl.enableVertexAttribArray(a_instancePosition);
+    gl.vertexAttribDivisor(a_instancePosition, 1);
+
     const instanceDirectionBuffer = gl.createBuffer();
+    gl.enableVertexAttribArray(a_instanceDirection);
+    gl.vertexAttribDivisor(a_instanceDirection, 1);
+
     const instanceColorPaletteIndexBuffer = gl.createBuffer();
+    gl.enableVertexAttribArray(a_instanceColorPaletteIndex);
+    gl.vertexAttribDivisor(a_instanceColorPaletteIndex, 1);
+
     const instancePoseIndexesBuffer = gl.createBuffer();
+    gl.enableVertexAttribArray(a_instancePoseIndexes);
+    gl.vertexAttribDivisor(a_instancePoseIndexes, 1);
+
     const instancePoseWeightsBuffer = gl.createBuffer();
+    gl.enableVertexAttribArray(a_instancePoseWeights);
+    gl.vertexAttribDivisor(a_instancePoseWeights, 1);
 
     let nInstances = 0;
     const nVertices = geometry.positions.length / 3;
 
     const _draw = () => {
+      gl.bindVertexArray(vao);
+
       gl.activeTexture(gl.TEXTURE0 + POSES_TEXTURE_INDEX);
       gl.bindTexture(gl.TEXTURE_2D, posesTexture);
 
@@ -238,6 +242,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
       gl.vertexAttribPointer(a_instancePoseWeights, 4, gl.FLOAT, false, 0, 0);
 
       gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
+
+      gl.bindVertexArray(null);
     };
 
     /**
@@ -270,6 +276,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     };
 
     const dispose = () => {
+      gl.deleteVertexArray(vao);
+
       gl.deleteTexture(posesTexture);
       gl.deleteTexture(colorPalettesTexture);
 
@@ -300,19 +308,15 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
 
     gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
 
-    gl.bindVertexArray(vao);
-
     gl.uniform1i(u_posesTexture, POSES_TEXTURE_INDEX);
     gl.uniform1i(u_colorPalettesTexture, COLOR_PALETTES_TEXTURE_INDEX);
 
     for (const r of renderers) r._draw();
 
-    gl.bindVertexArray(null);
     gl.useProgram(null);
   };
 
   const dispose = () => {
-    gl.deleteVertexArray(vao);
     gl.deleteProgram(program);
   };
 
