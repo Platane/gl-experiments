@@ -167,17 +167,31 @@ export const createOutlinePostEffect = ({
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
   const draw = (drawObjects: () => void) => {
-    //
-    // draw in the frame buffer
-    //
+    // copy the default depth buffer to the fbo depth buffer
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, fbo);
+    gl.blitFramebuffer(
+      0,
+      0,
+      gl.drawingBufferWidth,
+      gl.drawingBufferHeight,
+      0,
+      0,
+      gl.drawingBufferWidth,
+      gl.drawingBufferHeight,
+      gl.DEPTH_BUFFER_BIT,
+      gl.NEAREST,
+    );
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-
-    gl.clear(gl.DEPTH_BUFFER_BIT);
+    // clear the frame buffer
+    // gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.clearBufferfv(gl.COLOR, 0, new Float32Array([0, 0, 0, 0]));
     gl.clearBufferfv(gl.COLOR, 1, new Float32Array([0, 0, 0, 0]));
     gl.clearBufferfv(gl.COLOR, 2, new Float32Array([0, 0, 0, 0]));
 
+    //
+    // draw in the frame buffer
+    //
     drawObjects();
 
     // copy the fbo depth buffer to the default framebuffer depth buffer
@@ -195,8 +209,6 @@ export const createOutlinePostEffect = ({
       gl.DEPTH_BUFFER_BIT,
       gl.NEAREST,
     );
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     gl.useProgram(program);
     gl.disable(gl.DEPTH_TEST);

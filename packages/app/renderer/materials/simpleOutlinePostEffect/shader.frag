@@ -54,6 +54,8 @@ void main() {
         // }
     }
 
+    if (color.a < 0.1) discard;
+
     // float k = (depth - near) / (far - near);
     // fragColor = vec4(k, k, k, 1.0);
 }

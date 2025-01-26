@@ -89,6 +89,23 @@ import { createState } from "./logic/state";
     }),
     { generation: 0 },
   );
+  const sphereRenderer2 = sphereMaterial.createRenderer({
+    geometry: {
+      positions: new Float32Array(sphereGeometry),
+      normals: new Float32Array(sphereGeometry),
+    },
+  });
+  {
+    const m = mat4.create();
+    mat4.fromRotationTranslationScale(
+      m,
+      quat.create(),
+      [220, 0, 80],
+      [100, 100, 100],
+    );
+    sphereRenderer2.update(m as any, new Float32Array([0.1, 0.5, 0.8]));
+  }
+
   let outLinePostEffect = createOutlinePostEffect(c);
 
   window.onresize = () => {
@@ -159,6 +176,7 @@ import { createState } from "./logic/state";
     //
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    sphereMaterial.draw(camera.worldMatrix, [sphereRenderer2]);
     outLinePostEffect.draw(() =>
       meshMaterial.draw(camera.worldMatrix, [foxRenderer, triceratopsRenderer]),
     );
