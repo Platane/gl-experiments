@@ -41,41 +41,31 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
   //
   // attributes
   //
-
   const a_position = getAttribLocation(gl, program, "a_position");
-
   const a_normal = getAttribLocation(gl, program, "a_normal");
-
   const a_colorIndex = getAttribLocation(gl, program, "a_colorIndex");
-
   const a_boneWeights = getAttribLocation(gl, program, "a_boneWeights");
-
   const a_boneIndexes = getAttribLocation(gl, program, "a_boneIndexes");
-
   const a_instancePosition = getAttribLocation(
     gl,
     program,
     "a_instancePosition",
   );
-
   const a_instanceDirection = getAttribLocation(
     gl,
     program,
     "a_instanceDirection",
   );
-
   const a_instanceColorPaletteIndex = getAttribLocation(
     gl,
     program,
     "a_instanceColorPaletteIndex",
   );
-
   const a_instancePoseIndexes = getAttribLocation(
     gl,
     program,
     "a_instancePoseIndexes",
   );
-
   const a_instancePoseWeights = getAttribLocation(
     gl,
     program,
@@ -152,46 +142,69 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
 
     const normalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.normals, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(a_normal);
+    gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
 
     const colorIndexesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorIndexesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.colorIndexes, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(a_colorIndex);
+    gl.vertexAttribIPointer(a_colorIndex, 1, gl.UNSIGNED_BYTE, 0, 0);
 
     const boneWeightsBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boneWeightsBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.boneWeights, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(a_boneWeights);
+    gl.vertexAttribPointer(a_boneWeights, 4, gl.FLOAT, false, 0, 0);
 
     const boneIndexesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boneIndexesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.boneIndexes, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(a_boneIndexes);
+    gl.vertexAttribIPointer(a_boneIndexes, 4, gl.UNSIGNED_BYTE, 0, 0);
 
     const instancePositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instancePositionBuffer);
     gl.enableVertexAttribArray(a_instancePosition);
+    gl.vertexAttribPointer(a_instancePosition, 2, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(a_instancePosition, 1);
 
     const instanceDirectionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceDirectionBuffer);
     gl.enableVertexAttribArray(a_instanceDirection);
+    gl.vertexAttribPointer(a_instanceDirection, 2, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(a_instanceDirection, 1);
 
     const instanceColorPaletteIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceColorPaletteIndexBuffer);
     gl.enableVertexAttribArray(a_instanceColorPaletteIndex);
+    gl.vertexAttribIPointer(
+      a_instanceColorPaletteIndex,
+      1,
+      gl.UNSIGNED_BYTE,
+      0,
+      0,
+    );
     gl.vertexAttribDivisor(a_instanceColorPaletteIndex, 1);
 
     const instancePoseIndexesBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseIndexesBuffer);
     gl.enableVertexAttribArray(a_instancePoseIndexes);
+    gl.vertexAttribIPointer(a_instancePoseIndexes, 4, gl.UNSIGNED_BYTE, 0, 0);
     gl.vertexAttribDivisor(a_instancePoseIndexes, 1);
 
     const instancePoseWeightsBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseWeightsBuffer);
     gl.enableVertexAttribArray(a_instancePoseWeights);
+    gl.vertexAttribPointer(a_instancePoseWeights, 4, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(a_instancePoseWeights, 1);
+
+    gl.bindVertexArray(null);
 
     let nInstances = 0;
     const nVertices = geometry.positions.length / 3;
@@ -204,42 +217,6 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
 
       gl.activeTexture(gl.TEXTURE0 + COLOR_PALETTES_TEXTURE_INDEX);
       gl.bindTexture(gl.TEXTURE_2D, colorPalettesTexture);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-      gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, colorIndexesBuffer);
-      gl.vertexAttribIPointer(a_colorIndex, 1, gl.UNSIGNED_BYTE, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, boneWeightsBuffer);
-      gl.vertexAttribPointer(a_boneWeights, 4, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, boneIndexesBuffer);
-      gl.vertexAttribIPointer(a_boneIndexes, 4, gl.UNSIGNED_BYTE, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, instancePositionBuffer);
-      gl.vertexAttribPointer(a_instancePosition, 2, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, instanceDirectionBuffer);
-      gl.vertexAttribPointer(a_instanceDirection, 2, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, instanceColorPaletteIndexBuffer);
-      gl.vertexAttribIPointer(
-        a_instanceColorPaletteIndex,
-        1,
-        gl.UNSIGNED_BYTE,
-        0,
-        0,
-      );
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseIndexesBuffer);
-      gl.vertexAttribIPointer(a_instancePoseIndexes, 4, gl.UNSIGNED_BYTE, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseWeightsBuffer);
-      gl.vertexAttribPointer(a_instancePoseWeights, 4, gl.FLOAT, false, 0, 0);
 
       gl.drawArraysInstanced(gl.TRIANGLES, 0, nVertices, nInstances);
 
