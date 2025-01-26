@@ -174,7 +174,7 @@ import { createState } from "./logic/state";
     //
     // draw
     //
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
     sphereMaterial.draw(camera.worldMatrix, [sphereRenderer2]);
     outLinePostEffect.draw(() =>

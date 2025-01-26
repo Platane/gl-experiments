@@ -25,28 +25,8 @@ export const createBasicMeshMaterial = ({
   //
   // attributes
   //
-
-  const vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
-
-  //
-  // position
-  //
-
   const a_position = getAttribLocation(gl, program, "a_position");
-  gl.enableVertexAttribArray(a_position);
-  gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
-
-  //
-  // normal
-  //
-
   const a_normal = getAttribLocation(gl, program, "a_normal");
-  gl.enableVertexAttribArray(a_normal);
-  gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
-
-  //
-  gl.bindVertexArray(null);
 
   //
   //
@@ -59,13 +39,23 @@ export const createBasicMeshMaterial = ({
       positions: Float32Array;
     };
   }) => {
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
 
     const normalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.normals, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(a_normal);
+    gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
+
+    //
+    gl.bindVertexArray(null);
 
     const nVertices = geometry.positions.length / 3;
 
@@ -78,19 +68,19 @@ export const createBasicMeshMaterial = ({
     };
 
     const _draw = () => {
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-      gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
+      gl.bindVertexArray(vao);
 
       gl.uniformMatrix4fv(u_objectMatrix, false, objectMatrix);
       gl.uniform3fv(u_color, color);
 
       gl.drawArrays(gl.TRIANGLES, 0, nVertices);
+
+      gl.bindVertexArray(null);
     };
 
     const dispose = () => {
+      gl.deleteVertexArray(vao);
+
       gl.deleteBuffer(positionBuffer);
       gl.deleteBuffer(normalBuffer);
     };
@@ -109,18 +99,14 @@ export const createBasicMeshMaterial = ({
 
     gl.enable(gl.DEPTH_TEST);
 
-    gl.bindVertexArray(vao);
-
     gl.uniformMatrix4fv(u_viewMatrix, false, worldMatrix);
 
     for (const r of renderers) r._draw();
 
-    gl.bindVertexArray(null);
     gl.useProgram(null);
   };
 
   const dispose = () => {
-    gl.deleteVertexArray(vao);
     gl.deleteProgram(program);
   };
 
