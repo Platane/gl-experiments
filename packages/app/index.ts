@@ -2,7 +2,6 @@ import { mat4, quat, vec3 } from "gl-matrix";
 import { createGizmoMaterial } from "./renderer/materials/gizmos";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "./renderer/materials/instantiatedSkinnedPosedMesh";
 import { createCamera } from "./renderer/camera";
-import { clamp, invLerp } from "./utils/math";
 import {
   colorPalettes as triceratopsColorPalettes,
   getGeometry as getTriceratopsGeometry,
@@ -12,11 +11,13 @@ import { createOrbitControl } from "./control/orbitCamera";
 import { createBasicMeshMaterial } from "./renderer/materials/basicMesh";
 import { createRecursiveSphere } from "./renderer/geometries/recursiveSphere";
 import { getGeometry as getFoxGeometry } from "./renderer/geometries/fox";
+import { getFlatShadingNormals } from "./utils/geometry-normals";
+import { createOutlinePostEffect } from "./renderer/materials/floodJumpOutlinePostEffect";
+// import { createOutlinePostEffect } from "./renderer/materials/simpleOutlinePostEffect";
+import { createState } from "./logic/state";
+
 // @ts-ignore
 import hash from "hash-int";
-import { getFlatShadingNormals } from "./utils/geometry-normals";
-import { createOutlinePostEffect } from "./renderer/materials/simpleOutlinePostEffect";
-import { createState } from "./logic/state";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -180,11 +181,11 @@ import { createState } from "./logic/state";
     //
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
+    gizmoRenderer.draw(camera.worldMatrix);
     sphereMaterial.draw(camera.worldMatrix, [sphereRenderer2]);
     outLinePostEffect.draw(() =>
       meshMaterial.draw(camera.worldMatrix, [foxRenderer, triceratopsRenderer]),
     );
-    gizmoRenderer.draw(camera.worldMatrix);
     sphereMaterial.draw(camera.worldMatrix, [sphereRenderer]);
 
     //
