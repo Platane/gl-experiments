@@ -7,8 +7,10 @@ import {
 } from "../../../utils/gl";
 import { CAMERA_FAR, CAMERA_NEAR } from "../../camera";
 
-import codeFrag from "./shader.frag?raw";
-import codeVert from "../../../utils/gl-screenSpaceProgram/shader-quad.vert?raw";
+import codeJumpFloodInitFrag from "./shader-jumpFloodInit.frag?raw";
+import codejumpFloodMarchFrag from "./shader-jumpFloodMarch.frag?raw";
+import codejumpFloodLevelFrag from "./shader-jumpFloodLevel.frag?raw";
+import codeDisplayTextureFrag from "./shader-displayTexture.frag?raw";
 import { createScreenSpaceProgram } from "../../../utils/gl-screenSpaceProgram";
 
 export const createOutlinePostEffect = ({
@@ -16,8 +18,6 @@ export const createOutlinePostEffect = ({
 }: {
   gl: WebGL2RenderingContext;
 }) => {
-  // return createScreenSpaceProgram(gl, codeFrag);
-
   const DEPTH_TEXTURE_INDEX = 0;
   const COLOR_TEXTURE_INDEX = 1;
   const NORMAL_TEXTURE_INDEX = 2;
@@ -113,16 +113,71 @@ export const createOutlinePostEffect = ({
   ///
   ///
 
-  const initPass = createScreenSpaceProgram(gl, codeFrag);
+  const initPass = Object.assign(
+    createScreenSpaceProgram(gl, codeJumpFloodInitFrag),
+    { uniform: { u_objectIdTexture: 0 } },
+  );
 
-  //
-  // uniforms
-  //
-  const u_objectIdTexture = getUniformLocation(
+  initPass.uniform.u_objectIdTexture = getUniformLocation(
     gl,
     initPass.program,
     "u_objectIdTexture",
+  ) as any;
+
+  ///
+  ///
+  ///
+
+  const marchPass = Object.assign(
+    createScreenSpaceProgram(gl, codejumpFloodMarchFrag),
+    { uniform: { u_texture: 0, u_offsetSize: 0 } },
   );
+
+  marchPass.uniform.u_texture = getUniformLocation(
+    gl,
+    marchPass.program,
+    "u_texture",
+  ) as number;
+  // marchPass.uniform.u_textelSize = getUniformLocation(
+  //   gl,
+  //   marchPass.program,
+  //   "u_textelSize",
+  // ) as number;
+  marchPass.uniform.u_offsetSize = getUniformLocation(
+    gl,
+    marchPass.program,
+    "u_offsetSize",
+  ) as number;
+
+  ///
+  ///
+  ///
+
+  const levelPass = Object.assign(
+    createScreenSpaceProgram(gl, codejumpFloodLevelFrag),
+    { uniform: { u_texture: 0 } },
+  );
+
+  levelPass.uniform.u_texture = getUniformLocation(
+    gl,
+    levelPass.program,
+    "u_texture",
+  ) as number;
+
+  ///
+  ///
+  ///
+
+  const debugPass = Object.assign(
+    createScreenSpaceProgram(gl, codeDisplayTextureFrag),
+    { uniform: { u_texture: 0 } },
+  );
+
+  debugPass.uniform.u_texture = getUniformLocation(
+    gl,
+    debugPass.program,
+    "u_texture",
+  ) as any;
 
   //
   // frame buffer
@@ -227,14 +282,58 @@ export const createOutlinePostEffect = ({
     //
     //
 
-    gl.activeTexture(gl.TEXTURE0 + 0);
-    gl.bindTexture(gl.TEXTURE_2D, objectIdTexture);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.useProgram(initPass.program);
 
-    gl.uniform1i(u_objectIdTexture, 0);
+    gl.uniform1i(initPass.uniform.u_objectIdTexture, 0);
+    gl.activeTexture(gl.TEXTURE0 + 0);
+    gl.bindTexture(gl.TEXTURE_2D, objectIdTexture);
 
     initPass.draw();
+
+    //
+
+    gl.useProgram(marchPass.program);
+
+    gl.uniform1i(marchPass.uniform.u_texture, 0);
+    gl.activeTexture(gl.TEXTURE0 + 0);
+
+    const step = 1;
+    gl.uniform2fv(
+      marchPass.uniform.u_offsetSize,
+      new Float32Array([
+        step / gl.drawingBufferWidth,
+        step / gl.drawingBufferHeight,
+      ]),
+    );
+
+    for (let k = 0; k < 50; k++) {
+      if (k % 2 === 1) {
+        gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
+      } else {
+        gl.bindTexture(gl.TEXTURE_2D, pass1Texture);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, pass2FrameBuffer);
+      }
+
+      marchPass.draw();
+    }
+
+    //
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    gl.useProgram(levelPass.program);
+
+    gl.activeTexture(gl.TEXTURE0 + 0);
+    gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
+
+    gl.uniform1i(levelPass.uniform.u_texture, 0);
+
+    levelPass.draw();
+    //
 
     gl.useProgram(null);
   };
