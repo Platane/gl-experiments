@@ -35,6 +35,15 @@ export const createScreenSpaceProgram = (
   gl.enableVertexAttribArray(a_texCoord);
   gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 16, 8);
 
+  const a_viewportSize = getAttribLocation(gl, program, "a_viewportSize");
+  gl.vertexAttribI4ui(
+    a_viewportSize,
+    gl.drawingBufferWidth,
+    gl.drawingBufferHeight,
+    0,
+    0,
+  );
+
   gl.bindVertexArray(null);
 
   const draw = () => {
