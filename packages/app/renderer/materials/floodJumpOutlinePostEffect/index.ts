@@ -1,11 +1,5 @@
 import { mat4 } from "gl-matrix";
-import {
-  createProgram,
-  getAttribLocation,
-  getUniformLocation,
-  linkProgram,
-} from "../../../utils/gl";
-import { CAMERA_FAR, CAMERA_NEAR } from "../../camera";
+import { getUniformLocation } from "../../../utils/gl";
 
 import codeJumpFloodInitFrag from "./shader-jumpFloodInit.frag?raw";
 import codejumpFloodMarchFrag from "./shader-jumpFloodMarch.frag?raw";
@@ -192,7 +186,7 @@ export const createOutlinePostEffect = ({
   gl.texStorage2D(
     gl.TEXTURE_2D,
     1,
-    gl.RGBA8,
+    gl.RGB10_A2, // need to be color renderable : https://registry.khronos.org/OpenGL/specs/es/3.0/es_spec_3.0.pdf#page=143&zoom=100,168,666
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
   );
@@ -201,7 +195,7 @@ export const createOutlinePostEffect = ({
   gl.texStorage2D(
     gl.TEXTURE_2D,
     1,
-    gl.RGBA8,
+    gl.RGB10_A2,
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
   );
@@ -283,7 +277,10 @@ export const createOutlinePostEffect = ({
     //
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0]);
+    // gl.clearBufferiv(gl.COLOR, 0, [0, 0, 0, 0]);
+
+    //
 
     gl.useProgram(initPass.program);
 
@@ -309,7 +306,7 @@ export const createOutlinePostEffect = ({
       ]),
     );
 
-    for (let k = 0; k < 50; k++) {
+    for (let k = 0; k < 26; k++) {
       if (k % 2 === 1) {
         gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
         gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
@@ -334,6 +331,18 @@ export const createOutlinePostEffect = ({
 
     levelPass.draw();
     //
+
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // gl.useProgram(debugPass.program);
+
+    // gl.activeTexture(gl.TEXTURE0 + 0);
+    // gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
+
+    // gl.uniform1i(debugPass.uniform.u_texture, 0);
+
+    // debugPass.draw();
+    // //
 
     gl.useProgram(null);
   };
