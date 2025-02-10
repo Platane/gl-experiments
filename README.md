@@ -11,3 +11,4 @@
 - [The Quest for Very Wide Outlines - Ben Golus](https://bgolus.medium.com/the-quest-for-very-wide-outlines-ba82ed442cd9)
 - [webgl 2 examples](https://github.com/tsherif/webgl2examples)
 - [framebuffer object technique](https://www.youtube.com/@osakaandrew/videos)
+- [isampler2d usage](https://github.com/aadebdeb/Sample_WebGL2_IntegerTexture)
