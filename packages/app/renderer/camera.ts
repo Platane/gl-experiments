@@ -18,7 +18,7 @@ export const createCamera = ({
   const fovX = Math.PI / 3;
   const near = CAMERA_NEAR;
   const far = CAMERA_FAR;
-  const dpr = Math.min(window.devicePixelRatio ?? 1, 2);
+  const dpr = Math.min(window.devicePixelRatio ?? 1, 0.2);
 
   const update = (eye: vec3, lookAtPoint: vec3) => {
     const aspect = canvas.clientWidth / canvas.clientHeight;

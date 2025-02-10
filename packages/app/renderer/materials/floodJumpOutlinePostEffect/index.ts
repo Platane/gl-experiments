@@ -186,19 +186,22 @@ export const createOutlinePostEffect = ({
   gl.texStorage2D(
     gl.TEXTURE_2D,
     1,
-    gl.RGB10_A2, // need to be color renderable : https://registry.khronos.org/OpenGL/specs/es/3.0/es_spec_3.0.pdf#page=143&zoom=100,168,666
+    gl.RGBA16I, // need to be color renderable : https://registry.khronos.org/OpenGL/specs/es/3.0/es_spec_3.0.pdf#page=143&zoom=100,168,666
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
   );
-  const pass2Texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
-  gl.texStorage2D(
-    gl.TEXTURE_2D,
-    1,
-    gl.RGB10_A2,
-    gl.drawingBufferWidth,
-    gl.drawingBufferHeight,
-  );
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+
+  // const pass2Texture = gl.createTexture();
+  // gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
+  // gl.texStorage2D(
+  //   gl.TEXTURE_2D,
+  //   1,
+  //   gl.RGBA16I,
+  //   gl.drawingBufferWidth,
+  //   gl.drawingBufferHeight,
+  // );
+  // gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   const pass1FrameBuffer = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
@@ -211,16 +214,16 @@ export const createOutlinePostEffect = ({
   );
   gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 
-  const pass2FrameBuffer = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, pass2FrameBuffer);
-  gl.framebufferTexture2D(
-    gl.FRAMEBUFFER,
-    gl.COLOR_ATTACHMENT0,
-    gl.TEXTURE_2D,
-    pass2Texture,
-    0,
-  );
-  gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+  // const pass2FrameBuffer = gl.createFramebuffer();
+  // gl.bindFramebuffer(gl.FRAMEBUFFER, pass2FrameBuffer);
+  // gl.framebufferTexture2D(
+  //   gl.FRAMEBUFFER,
+  //   gl.COLOR_ATTACHMENT0,
+  //   gl.TEXTURE_2D,
+  //   pass2Texture,
+  //   0,
+  // );
+  // gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -277,8 +280,7 @@ export const createOutlinePostEffect = ({
     //
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
-    gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0]);
-    // gl.clearBufferiv(gl.COLOR, 0, [0, 0, 0, 0]);
+    gl.clearBufferiv(gl.COLOR, 0, [0, 0, 0, 0]);
 
     //
 
@@ -290,59 +292,88 @@ export const createOutlinePostEffect = ({
 
     initPass.draw();
 
-    //
+    if (!0) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
 
-    gl.useProgram(marchPass.program);
-
-    gl.uniform1i(marchPass.uniform.u_texture, 0);
-    gl.activeTexture(gl.TEXTURE0 + 0);
-
-    const step = 1;
-    gl.uniform2fv(
-      marchPass.uniform.u_offsetSize,
-      new Float32Array([
-        step / gl.drawingBufferWidth,
-        step / gl.drawingBufferHeight,
-      ]),
-    );
-
-    for (let k = 0; k < 26; k++) {
-      if (k % 2 === 1) {
-        gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
-      } else {
-        gl.bindTexture(gl.TEXTURE_2D, pass1Texture);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, pass2FrameBuffer);
+      const data = new Int16Array(
+        gl.drawingBufferWidth * gl.drawingBufferHeight * 4,
+      );
+      gl.readBuffer(gl.COLOR_ATTACHMENT0);
+      gl.readPixels(
+        0,
+        0,
+        gl.drawingBufferWidth,
+        gl.drawingBufferHeight,
+        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT),
+        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE),
+        data,
+      );
+      const pix = new Map();
+      for (let i = 0; i < data.length; i += 4) {
+        const key = data.slice(i, i + 4).join(",");
+        pix.set(key, (pix.get(key) ?? 0) + 1);
       }
-
-      marchPass.draw();
+      // console.log(
+      //   [...pix.entries()]
+      //     .map(([key, count]) => `${key} (${count})`)
+      //     .slice(500, 510)
+      //     .join("\n"),
+      // );
     }
 
     //
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // gl.useProgram(marchPass.program);
 
-    gl.useProgram(levelPass.program);
+    // gl.uniform1i(marchPass.uniform.u_texture, 0);
+    // gl.activeTexture(gl.TEXTURE0 + 0);
 
-    gl.activeTexture(gl.TEXTURE0 + 0);
-    gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
+    // const step = 1;
+    // gl.uniform2fv(
+    //   marchPass.uniform.u_offsetSize,
+    //   new Float32Array([
+    //     step / gl.drawingBufferWidth,
+    //     step / gl.drawingBufferHeight,
+    //   ]),
+    // );
 
-    gl.uniform1i(levelPass.uniform.u_texture, 0);
+    // for (let k = 0; k < 26; k++) {
+    //   if (k % 2 === 1) {
+    //     gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
+    //     gl.bindFramebuffer(gl.FRAMEBUFFER, pass1FrameBuffer);
+    //   } else {
+    //     gl.bindTexture(gl.TEXTURE_2D, pass1Texture);
+    //     gl.bindFramebuffer(gl.FRAMEBUFFER, pass2FrameBuffer);
+    //   }
 
-    levelPass.draw();
-    //
+    //   marchPass.draw();
+    // }
+
+    // //
 
     // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    // gl.useProgram(debugPass.program);
+    // gl.useProgram(levelPass.program);
 
     // gl.activeTexture(gl.TEXTURE0 + 0);
     // gl.bindTexture(gl.TEXTURE_2D, pass2Texture);
 
-    // gl.uniform1i(debugPass.uniform.u_texture, 0);
+    // gl.uniform1i(levelPass.uniform.u_texture, 0);
 
-    // debugPass.draw();
+    // levelPass.draw();
     // //
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    gl.useProgram(debugPass.program);
+
+    gl.activeTexture(gl.TEXTURE0 + 0);
+    gl.bindTexture(gl.TEXTURE_2D, pass1Texture);
+
+    gl.uniform1i(debugPass.uniform.u_texture, 0);
+
+    debugPass.draw();
+    //
 
     gl.useProgram(null);
   };
