@@ -7,6 +7,30 @@
   </head>
   <body>
     <div id="root"></div>
+    <canvas
+        id="canvas"
+        style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        "
+    ></canvas>
+    <p
+        style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            margin: 6px;
+            white-space: pre-line;
+        "
+    >Write on a RGBA16I texture on a first pass, read the RGBA16I texture and convert to color on a second pass.
+
+        Also console.log the content of the texture js side.
+        </p>
     <script type="module" src="index.ts"></script>
   </body>
 </html>
