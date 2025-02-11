@@ -97,25 +97,25 @@ export const createIntSamplerTest = ({
     }
   };
 
-  return { draw };
+  const dispose = () => {
+    gl.deleteTexture(texture);
+    gl.deleteFramebuffer(fbo);
+
+    programFill.dispose();
+    programRead.dispose();
+  };
+
+  return { draw, dispose };
 };
 
 {
-  const canvas = document.createElement("canvas");
-
-  canvas.style.position = "fixed";
-  canvas.style.top = "0";
-  canvas.style.left = "0";
-  canvas.style.width = "100%";
-  canvas.style.height = "100%";
-  canvas.style.imageRendering = "pixelated";
-
-  document.body.appendChild(canvas);
+  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
   const gl = canvas.getContext("webgl2", {
     antialias: false,
   }) as WebGL2RenderingContext;
 
+  let renderer = createIntSamplerTest({ gl });
   window.onresize = () => {
     const dpr = Math.min(window.devicePixelRatio ?? 1, 0.2);
 
@@ -124,7 +124,8 @@ export const createIntSamplerTest = ({
 
     gl.viewport(0, 0, canvas.width, canvas.height);
 
-    const renderer = createIntSamplerTest({ gl });
+    renderer.dispose();
+    renderer = createIntSamplerTest({ gl });
     renderer.draw();
   };
   (window.onresize as any)();
