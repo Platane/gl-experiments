@@ -13,5 +13,5 @@ void main() {
 
     ivec2 size = textureSize(u_texture, 0);
 
-    fragColor = vec4(float(color.r) / 300.0, float(color.g) / 300.0, 0.17, 1.0);
+    fragColor = vec4(float(color.r) / 300.0, float(color.g) / 300.0, 0.0, 1.0);
 }

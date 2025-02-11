@@ -1,10 +1,10 @@
-import { createScreenSpaceProgram } from "../../../../utils/gl-screenSpaceProgram";
-import { getUniformLocation } from "../../../../utils/gl";
+import { getUniformLocation } from "../../app/utils/gl";
+import { createScreenSpaceProgram } from "../../app/utils/gl-screenSpaceProgram";
 
 import codeFragFill from "./shader-fill.frag?raw";
 import codeFragRead from "./shader-read.frag?raw";
 
-export const createintSamplerTest = ({
+export const createIntSamplerTest = ({
   gl,
 }: { gl: WebGL2RenderingContext }) => {
   const programFill = createScreenSpaceProgram(gl, codeFragFill);
@@ -22,28 +22,23 @@ export const createintSamplerTest = ({
 
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
-  // gl.texStorage2D(
-  //   gl.TEXTURE_2D,
-  //   1,
-  //   gl.RGBA8, // need to be color renderable : https://registry.khronos.org/OpenGL/specs/es/3.0/es_spec_3.0.pdf#page=143&zoom=100,168,666
-  //   gl.drawingBufferWidth,
-  //   gl.drawingBufferHeight,
-  // );
+
+  // the color neer to be renderable, internalformat must be one of https://registry.khronos.org/OpenGL/specs/es/3.0/es_spec_3.0.pdf#page=143&zoom=100,168,666
+  // internalformat and type should be coherent ( gl.INT for 32I , gl.SHORT for 16I, gl.BYTE for 8I )
   gl.texImage2D(
     gl.TEXTURE_2D,
     0,
-    gl.RGBA32I,
+    gl.RGBA16I,
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
     0,
     gl.RGBA_INTEGER,
-    gl.INT,
+    gl.SHORT,
     null,
   );
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.bindTexture(gl.TEXTURE_2D, null);
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   const fbo = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
@@ -72,7 +67,7 @@ export const createintSamplerTest = ({
     {
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
-      const data = new Int32Array(
+      const data = new Int16Array(
         gl.drawingBufferWidth * gl.drawingBufferHeight * 4,
       );
       gl.readBuffer(gl.COLOR_ATTACHMENT0);
@@ -104,3 +99,33 @@ export const createintSamplerTest = ({
 
   return { draw };
 };
+
+{
+  const canvas = document.createElement("canvas");
+
+  canvas.style.position = "fixed";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  canvas.style.imageRendering = "pixelated";
+
+  document.body.appendChild(canvas);
+
+  const gl = canvas.getContext("webgl2", {
+    antialias: false,
+  }) as WebGL2RenderingContext;
+
+  window.onresize = () => {
+    const dpr = Math.min(window.devicePixelRatio ?? 1, 0.2);
+
+    canvas.width = canvas.clientWidth * dpr;
+    canvas.height = canvas.clientHeight * dpr;
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+    const renderer = createIntSamplerTest({ gl });
+    renderer.draw();
+  };
+  (window.onresize as any)();
+}

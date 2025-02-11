@@ -18,7 +18,6 @@ import { createState } from "./logic/state";
 
 // @ts-ignore
 import hash from "hash-int";
-import { createintSamplerTest } from "./renderer/materials/__tests__/intSampler";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -37,18 +36,6 @@ import { createintSamplerTest } from "./renderer/materials/__tests__/intSampler"
   }) as WebGL2RenderingContext;
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LESS);
-
-  {
-    window.onresize = () => {
-      createCamera({ gl, canvas }).update([0, 1, 0], [0, 0, 0]);
-
-      const renderer = createintSamplerTest({ gl });
-      renderer.draw();
-    };
-    window.onresize();
-
-    return;
-  }
 
   //
   // state
