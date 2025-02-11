@@ -1,16 +1,11 @@
 {
-  "name": "@gl/app",
+  "name": "@gl/demo",
   "author": {
     "name": "platane"
   },
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "hash-int": "1.0.0",
-    "gl-matrix": "3.4.3",
-    "@gl/gltf-parser": "0.0.1"
-  },
   "devDependencies": {
     "vite": "6.0.11"
   }
