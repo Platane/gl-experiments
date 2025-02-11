@@ -22,6 +22,8 @@ jobs:
 
       - run: bunx vite build packages/demo/intSampler --base $BASE_URL/demo-int-sampler --minify false --outDir ../../../dist/demo-int-sampler
 
+      - run: bunx vite build packages/demo/basicMesh --base $BASE_URL/demo-basic-mesh --minify false --outDir ../../../dist/demo-basic-mesh
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
