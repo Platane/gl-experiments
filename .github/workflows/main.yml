@@ -20,9 +20,9 @@ jobs:
 
       - run: bunx vite build packages/app --base $BASE_URL --minify false --outDir ../../dist
 
-      - run: bunx vite build packages/demo/intSampler --base $BASE_URL/demo-intSampler --minify false --outDir ../../../dist/demo-intSampler
-      - run: bunx vite build packages/demo/basicMesh --base $BASE_URL/demo-basicMesh --minify false --outDir ../../../dist/demo-basicMesh
-      - run: bunx vite build packages/demo/jumpFloodOutline --base $BASE_URL/demo-jumpFloodOutline --minify false --outDir ../../../dist/demo-jumpFloodOutline
+      - run: bunx vite build packages/demo/intSampler --base $BASE_URL/demo/intSampler --minify false --outDir ../../../dist/demo/intSampler
+      - run: bunx vite build packages/demo/basicMesh --base $BASE_URL/demo/basicMesh --minify false --outDir ../../../dist/demo/basicMesh
+      - run: bunx vite build packages/demo/jumpFloodOutline --base $BASE_URL/demo/jumpFloodOutline --minify false --outDir ../../../dist/demo/jumpFloodOutline
 
       - uses: actions/upload-pages-artifact@v3
         with:

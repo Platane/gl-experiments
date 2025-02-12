@@ -1,5 +1,10 @@
 # GL
 
+demo
+- [jump flood outline](http://platane.me/gl-experiments/demo/jumpFloodOutline)
+- [basic mesh](http://platane.me/gl-experiments/demo/basicMesh)
+- [int sampler](http://platane.me/gl-experiments/demo/intSampler)
+
 # TODO
 
 - [ ] test animation pose VS uploading a texture with all instances skeleton (likely pretty cheap?) = less texture read in vertex shader
