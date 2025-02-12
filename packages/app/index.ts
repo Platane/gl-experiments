@@ -1,7 +1,7 @@
 import { mat4, quat, vec3 } from "gl-matrix";
 import { createGizmoMaterial } from "./renderer/materials/gizmos";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "./renderer/materials/instantiatedSkinnedPosedMesh";
-import { createCamera } from "./renderer/camera";
+import { createLookAtCamera, resizeViewport } from "./renderer/camera";
 import {
   colorPalettes as triceratopsColorPalettes,
   getGeometry as getTriceratopsGeometry,
@@ -15,9 +15,6 @@ import { getFlatShadingNormals } from "./utils/geometry-normals";
 import { createOutlinePostEffect } from "./renderer/materials/floodJumpOutlinePostEffect";
 // import { createOutlinePostEffect } from "./renderer/materials/simpleOutlinePostEffect";
 import { createState } from "./logic/state";
-
-// @ts-ignore
-import hash from "hash-int";
 
 (async () => {
   const canvas = document.createElement("canvas");
@@ -50,7 +47,7 @@ import hash from "hash-int";
 
   const c = { gl, canvas };
 
-  const camera = Object.assign(createCamera(c), { generation: 0 });
+  const camera = Object.assign(createLookAtCamera(c), { generation: 0 });
   camera.update(state.camera.eye, state.camera.lookAt);
 
   const gizmoRenderer = Object.assign(createGizmoMaterial(c), {
@@ -114,6 +111,7 @@ import hash from "hash-int";
   let outLinePostEffect = createOutlinePostEffect(c);
 
   window.onresize = () => {
+    resizeViewport(c);
     camera.update(state.camera.eye, state.camera.lookAt);
 
     // recreate the post effect with correct texture size
