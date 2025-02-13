@@ -142,11 +142,11 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   gl.texImage2D(
     gl.TEXTURE_2D,
     0,
-    gl.RGBA16I,
+    gl.RG16I,
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
     0,
-    gl.RGBA_INTEGER,
+    gl.RG_INTEGER,
     gl.SHORT,
     null,
   );
@@ -170,11 +170,11 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   gl.texImage2D(
     gl.TEXTURE_2D,
     0,
-    gl.RGBA16I,
+    gl.RG16I,
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
     0,
-    gl.RGBA_INTEGER,
+    gl.RG_INTEGER,
     gl.SHORT,
     null,
   );
@@ -195,9 +195,14 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-  const draw = (drawOutlinedObject: () => void, drawScene: () => void) => {
-    const LINE_WIDTH = 18;
-
+  const draw = (
+    drawOutlinedObject: () => void,
+    drawScene: () => void,
+    {
+      lineWidth = 18,
+      lineColor = new Float32Array([0.7, 0.5, 0.22, 1]),
+    }: { lineWidth?: number; lineColor?: Float32Array } = {},
+  ) => {
     // draw the object to outline
     gl.bindFramebuffer(gl.FRAMEBUFFER, baseFramebuffer);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -232,7 +237,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.uniform1i(programStep.uniform.u_texture, 0);
 
-      for (let k = 0; k <= LINE_WIDTH; k++) {
+      for (let k = 0; k <= lineWidth + 1; k++) {
         if (k % 2 === 0) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer2);
           gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
@@ -280,8 +285,8 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
         CAMERA_NEAR,
         CAMERA_FAR,
       );
-      gl.uniform1f(programComposition.uniform.u_lineWidth, LINE_WIDTH);
-      gl.uniform4f(programComposition.uniform.u_lineColor, 1, 0, 0.5, 1);
+      gl.uniform1f(programComposition.uniform.u_lineWidth, lineWidth);
+      gl.uniform4fv(programComposition.uniform.u_lineColor, lineColor);
 
       programComposition.draw();
     }
@@ -393,6 +398,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       () => {
         basicMaterial.draw(camera.worldMatrix, [sphereRenderer]);
       },
+      { lineWidth: 20 },
     );
 
     //
