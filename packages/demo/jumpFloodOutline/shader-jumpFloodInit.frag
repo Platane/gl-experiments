@@ -12,6 +12,6 @@ void main() {
     if (color.a > 0.0) {
         fragColor = ivec2(gl_FragCoord.xy);
     } else {
-        discard;
+        fragColor = ivec2(-999, -999);
     }
 }

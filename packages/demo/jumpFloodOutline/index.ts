@@ -249,19 +249,6 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       }
     }
 
-    // debug pass
-    {
-      gl.useProgram(programDebug.program);
-
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-      gl.activeTexture(gl.TEXTURE0 + 0);
-      gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
-      gl.uniform1i(programDebug.uniform.u_texture, 0);
-
-      programDebug.draw();
-    }
-
     // composition
     {
       gl.useProgram(programComposition.program);
@@ -289,6 +276,19 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.uniform4fv(programComposition.uniform.u_lineColor, lineColor);
 
       programComposition.draw();
+    }
+
+    // debug pass
+    {
+      gl.useProgram(programDebug.program);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+      gl.activeTexture(gl.TEXTURE0 + 0);
+      gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
+      gl.uniform1i(programDebug.uniform.u_texture, 0);
+
+      programDebug.draw();
     }
   };
 
@@ -344,7 +344,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   });
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dprMax: 1 });
+    resizeViewport({ gl, canvas }, { dprMax: 0.3 });
     camera.update(camera.eye, camera.lookAt);
 
     // reset outline pass
