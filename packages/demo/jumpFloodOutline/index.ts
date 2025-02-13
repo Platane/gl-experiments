@@ -286,7 +286,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       );
       gl.uniform1f(programComposition.uniform.u_lineWidth, LINE_WIDTH);
 
-      programDebug.draw();
+      programComposition.draw();
     }
   };
 

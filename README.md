@@ -1,9 +1,10 @@
 # GL
 
 demo
-- [jump flood outline](http://platane.me/gl-experiments/demo/jumpFloodOutline)
 - [basic mesh](http://platane.me/gl-experiments/demo/basicMesh)
+- [depth texture](http://platane.me/gl-experiments/demo/depthTexture)
 - [int sampler](http://platane.me/gl-experiments/demo/intSampler)
+- [jump flood outline](http://platane.me/gl-experiments/demo/jumpFloodOutline)
 
 # Usage
 
