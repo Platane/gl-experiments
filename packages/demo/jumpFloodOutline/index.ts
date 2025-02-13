@@ -10,6 +10,7 @@ import { getUniformLocation } from "../../app/utils/gl";
 
 import codeFragInit from "./shader-jumpFloodInit.frag?raw";
 import codeFragDebug from "./shader-debug.frag?raw";
+import codeFragStep from "./shader-jumpFloodStep.frag?raw";
 
 const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   //
@@ -33,6 +34,16 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   programDebug.uniform.u_texture = getUniformLocation(
     gl,
     programDebug.program,
+    "u_texture",
+  );
+
+  const programStep = Object.assign(
+    createScreenSpaceProgram(gl, codeFragStep),
+    { uniform: { u_texture: 0 as WebGLUniformLocation | null } },
+  );
+  programStep.uniform.u_texture = getUniformLocation(
+    gl,
+    programStep.program,
     "u_texture",
   );
 
@@ -166,6 +177,26 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.uniform1i(programInit.uniform.u_texture, TEXTURE_INDEX);
 
       programInit.draw();
+    }
+
+    // jump flood pass
+    {
+      gl.useProgram(programStep.program);
+
+      const TEXTURE_INDEX = 0;
+      gl.activeTexture(gl.TEXTURE0 + TEXTURE_INDEX);
+      gl.uniform1i(programStep.uniform.u_texture, TEXTURE_INDEX);
+
+      for (let k = 0; k < 20; k++) {
+        if (k % 2 === 0) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer2);
+          gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
+        } else {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer1);
+          gl.bindTexture(gl.TEXTURE_2D, jfaTexture2);
+        }
+        programStep.draw();
+      }
     }
 
     // debug pass
