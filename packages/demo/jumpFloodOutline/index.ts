@@ -258,18 +258,9 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.uniform1i(programComposition.uniform.u_colorTexture, 0);
 
       gl.activeTexture(gl.TEXTURE0 + 1);
-      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-      gl.uniform1i(programComposition.uniform.u_depthTexture, 1);
-
-      gl.activeTexture(gl.TEXTURE0 + 2);
       gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
-      gl.uniform1i(programComposition.uniform.u_closestSeedTexture, 2);
+      gl.uniform1i(programComposition.uniform.u_closestSeedTexture, 1);
 
-      gl.uniform2f(
-        programComposition.uniform.u_depthRange,
-        CAMERA_NEAR,
-        CAMERA_FAR,
-      );
       gl.uniform1f(programComposition.uniform.u_lineWidth, lineWidth);
       gl.uniform4fv(programComposition.uniform.u_lineColor, lineColor);
 
