@@ -3,7 +3,12 @@ import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSp
 import { createBasicMeshMaterial } from "../../app/renderer/materials/basicMesh";
 import { getFlatShadingNormals } from "../../app/utils/geometry-normals";
 import { getGeometry as getFoxGeometry } from "../../app/renderer/geometries/fox";
-import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
+import {
+  CAMERA_FAR,
+  CAMERA_NEAR,
+  createLookAtCamera,
+  resizeViewport,
+} from "../../app/renderer/camera";
 import { createOrbitControl } from "../../app/control/orbitCamera";
 import { createScreenSpaceProgram } from "../../app/utils/gl-screenSpaceProgram";
 import { getUniformLocation } from "../../app/utils/gl";
@@ -11,6 +16,7 @@ import { getUniformLocation } from "../../app/utils/gl";
 import codeFragInit from "./shader-jumpFloodInit.frag?raw";
 import codeFragDebug from "./shader-debug.frag?raw";
 import codeFragStep from "./shader-jumpFloodStep.frag?raw";
+import codeFragComposition from "./shader-composition.frag?raw";
 
 const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   //
@@ -19,7 +25,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
   const programInit = Object.assign(
     createScreenSpaceProgram(gl, codeFragInit),
-    { uniform: { u_texture: 0 as WebGLUniformLocation | null } },
+    { uniform: { u_texture: null as WebGLUniformLocation | null } },
   );
   programInit.uniform.u_texture = getUniformLocation(
     gl,
@@ -29,7 +35,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
   const programDebug = Object.assign(
     createScreenSpaceProgram(gl, codeFragDebug),
-    { uniform: { u_texture: 0 as WebGLUniformLocation | null } },
+    { uniform: { u_texture: null as WebGLUniformLocation | null } },
   );
   programDebug.uniform.u_texture = getUniformLocation(
     gl,
@@ -39,12 +45,50 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
   const programStep = Object.assign(
     createScreenSpaceProgram(gl, codeFragStep),
-    { uniform: { u_texture: 0 as WebGLUniformLocation | null } },
+    { uniform: { u_texture: null as WebGLUniformLocation | null } },
   );
   programStep.uniform.u_texture = getUniformLocation(
     gl,
     programStep.program,
     "u_texture",
+  );
+
+  const programComposition = Object.assign(
+    createScreenSpaceProgram(gl, codeFragComposition),
+    {
+      uniform: {
+        u_colorTexture: null as WebGLUniformLocation | null,
+        u_depthTexture: null as WebGLUniformLocation | null,
+        u_closestSeedTexture: null as WebGLUniformLocation | null,
+        u_depthRange: null as WebGLUniformLocation | null,
+        u_lineWidth: null as WebGLUniformLocation | null,
+      },
+    },
+  );
+  programComposition.uniform.u_colorTexture = getUniformLocation(
+    gl,
+    programComposition.program,
+    "u_colorTexture",
+  );
+  programComposition.uniform.u_depthTexture = getUniformLocation(
+    gl,
+    programComposition.program,
+    "u_depthTexture",
+  );
+  programComposition.uniform.u_closestSeedTexture = getUniformLocation(
+    gl,
+    programComposition.program,
+    "u_closestSeedTexture",
+  );
+  programComposition.uniform.u_depthRange = getUniformLocation(
+    gl,
+    programComposition.program,
+    "u_depthRange",
+  );
+  programComposition.uniform.u_lineWidth = getUniformLocation(
+    gl,
+    programComposition.program,
+    "u_lineWidth",
   );
 
   //
@@ -156,6 +200,8 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
   const draw = (drawOutlinedObject: () => void, drawScene: () => void) => {
+    const LINE_WIDTH = 18;
+
     // draw the object to outline
     gl.bindFramebuffer(gl.FRAMEBUFFER, baseFramebuffer);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -171,23 +217,26 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
       gl.clearBufferiv(gl.COLOR, 0, [0, 0, 0, 0]);
 
-      const TEXTURE_INDEX = 0;
-      gl.activeTexture(gl.TEXTURE0 + TEXTURE_INDEX);
+      gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, colorTexture);
-      gl.uniform1i(programInit.uniform.u_texture, TEXTURE_INDEX);
+      gl.uniform1i(programInit.uniform.u_texture, 0);
 
       programInit.draw();
+    }
+
+    {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, baseFramebuffer);
+      drawScene();
     }
 
     // jump flood pass
     {
       gl.useProgram(programStep.program);
 
-      const TEXTURE_INDEX = 0;
-      gl.activeTexture(gl.TEXTURE0 + TEXTURE_INDEX);
-      gl.uniform1i(programStep.uniform.u_texture, TEXTURE_INDEX);
+      gl.activeTexture(gl.TEXTURE0 + 0);
+      gl.uniform1i(programStep.uniform.u_texture, 0);
 
-      for (let k = 0; k < 20; k++) {
+      for (let k = 0; k <= LINE_WIDTH; k++) {
         if (k % 2 === 0) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer2);
           gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
@@ -205,10 +254,37 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-      const TEXTURE_INDEX = 0;
-      gl.activeTexture(gl.TEXTURE0 + TEXTURE_INDEX);
+      gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
-      gl.uniform1i(programDebug.uniform.u_texture, TEXTURE_INDEX);
+      gl.uniform1i(programDebug.uniform.u_texture, 0);
+
+      programDebug.draw();
+    }
+
+    // composition
+    {
+      gl.useProgram(programComposition.program);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+      gl.activeTexture(gl.TEXTURE0 + 0);
+      gl.bindTexture(gl.TEXTURE_2D, colorTexture);
+      gl.uniform1i(programComposition.uniform.u_colorTexture, 0);
+
+      gl.activeTexture(gl.TEXTURE0 + 1);
+      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+      gl.uniform1i(programComposition.uniform.u_depthTexture, 1);
+
+      gl.activeTexture(gl.TEXTURE0 + 2);
+      gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
+      gl.uniform1i(programComposition.uniform.u_closestSeedTexture, 2);
+
+      gl.uniform2f(
+        programComposition.uniform.u_depthRange,
+        CAMERA_NEAR,
+        CAMERA_FAR,
+      );
+      gl.uniform1f(programComposition.uniform.u_lineWidth, LINE_WIDTH);
 
       programDebug.draw();
     }
@@ -266,7 +342,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   });
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dprMax: 0.5 });
+    resizeViewport({ gl, canvas }, { dprMax: 2 });
     camera.update(camera.eye, camera.lookAt);
 
     // reset outline pass
@@ -286,15 +362,16 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     {
       const s = 0.15;
       const q = quat.create();
-      quat.fromEuler(q, 0, -Date.now() * 0.15, 0);
+      // quat.fromEuler(q, 0, -Date.now() * 0.15, 0);
       mat4.fromRotationTranslationScale(
         sphereTransform,
         q,
-        [
-          Math.sin(Date.now() * 0.002) * 0.5,
-          0.4,
-          -0.1 + Math.cos(Date.now() * 0.002) * 0.8,
-        ],
+        [0.5, 0.4, 0.2],
+        // [
+        //   Math.sin(Date.now() * 0.002) * 0.5,
+        //   0.4,
+        //   -0.1 + Math.cos(Date.now() * 0.002) * 0.8,
+        // ],
         [s, s, s],
       );
       sphereRenderer.update(sphereTransform, sphereColor);

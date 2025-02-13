@@ -5,6 +5,15 @@ demo
 - [basic mesh](http://platane.me/gl-experiments/demo/basicMesh)
 - [int sampler](http://platane.me/gl-experiments/demo/intSampler)
 
+# Usage
+
+```sh
+
+# dev server for demos
+bun vite packages/demo/basicMesh
+
+```
+
 # TODO
 
 - [ ] test animation pose VS uploading a texture with all instances skeleton (likely pretty cheap?) = less texture read in vertex shader
