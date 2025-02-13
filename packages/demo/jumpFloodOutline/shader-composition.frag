@@ -5,9 +5,7 @@ precision highp isampler2D;
 
 uniform isampler2D u_closestSeedTexture;
 uniform sampler2D u_colorTexture;
-uniform sampler2D u_depthTexture;
 
-uniform vec2 u_depthRange;
 uniform float u_lineWidth;
 uniform vec4 u_lineColor;
 
@@ -20,21 +18,26 @@ float readDepth(sampler2D depthTexture, ivec2 texCoord, float near, float far) {
     return depth;
 }
 
+float invLerp(float from, float to, float value) {
+    return (value - from) / (to - from);
+}
+
 void main() {
     ivec2 pixel = ivec2(gl_FragCoord.xy);
     vec4 color = texelFetch(u_colorTexture, pixel, 0);
 
     ivec4 closestSeed = texelFetch(u_closestSeedTexture, pixel, 0);
 
-    float pixelDepth = readDepth(u_depthTexture, pixel.xy, u_depthRange.x, u_depthRange.y);
-
     if (closestSeed.x > 0) {
         int distanceSq = (closestSeed.x - pixel.x) * (closestSeed.x - pixel.x) + (closestSeed.y - pixel.y) * (closestSeed.y - pixel.y);
+        float distance = sqrt(float(distanceSq));
 
-        float closestSeedDepth = readDepth(u_depthTexture, closestSeed.xy, u_depthRange.x, u_depthRange.y);
-
-        if (float(distanceSq) <= u_lineWidth * u_lineWidth) {
+        if (distance < u_lineWidth + 1.0) {
             fragColor = u_lineColor;
+
+            float coverage = 1.0 - clamp(invLerp(u_lineWidth, u_lineWidth + 1.0, distance), 0.0, 1.0);
+
+            fragColor.a *= coverage;
         }
     }
 

@@ -71,20 +71,10 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     programComposition.program,
     "u_colorTexture",
   );
-  programComposition.uniform.u_depthTexture = getUniformLocation(
-    gl,
-    programComposition.program,
-    "u_depthTexture",
-  );
   programComposition.uniform.u_closestSeedTexture = getUniformLocation(
     gl,
     programComposition.program,
     "u_closestSeedTexture",
-  );
-  programComposition.uniform.u_depthRange = getUniformLocation(
-    gl,
-    programComposition.program,
-    "u_depthRange",
   );
   programComposition.uniform.u_lineWidth = getUniformLocation(
     gl,
@@ -349,7 +339,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   });
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dprMax: 0.2 });
+    resizeViewport({ gl, canvas }, { dprMax: 1 });
     camera.update(camera.eye, camera.lookAt);
 
     // reset outline pass
@@ -373,12 +363,12 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       mat4.fromRotationTranslationScale(
         sphereTransform,
         q,
-        [0.5, 0.4, 0.2],
-        // [
-        //   Math.sin(Date.now() * 0.002) * 0.5,
-        //   0.4,
-        //   -0.1 + Math.cos(Date.now() * 0.002) * 0.8,
-        // ],
+        // [0.5, 0.4, 0.2],
+        [
+          Math.sin(Date.now() * 0.002) * 0.5,
+          0.4,
+          -0.1 + Math.cos(Date.now() * 0.002) * 0.8,
+        ],
         [s, s, s],
       );
       sphereRenderer.update(sphereTransform, sphereColor);
