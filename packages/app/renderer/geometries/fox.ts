@@ -50,13 +50,17 @@ export const getGeometry = async () => {
   const { boneWeights, boneIndexes } = computeWeights(bindPose, positions);
 
   const colorIndexes = new Uint8Array(
-    Array.from({ length: positions.length / 3 }, (_, i) => {
-      const y = positions[i * 3 + 1];
+    Array.from({ length: positions.length / 9 }, (_, i) => {
+      const ya = positions[i * 9 + 0 + 1];
+      const yb = positions[i * 9 + 3 + 1];
+      const yc = positions[i * 9 + 6 + 1];
 
-      if (y < 20) return 0;
-      if (y < 50) return 1;
-      return 2;
-    }),
+      const ym = (ya + yb + yc) / 3;
+
+      if (ym < 20) return [0, 0, 0];
+      if (ym < 50) return [1, 1, 1];
+      return [2, 2, 2];
+    }).flat(),
   );
   return {
     positions,
