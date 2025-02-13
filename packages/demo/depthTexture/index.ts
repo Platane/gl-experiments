@@ -166,13 +166,18 @@ const createDepthPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       JSON.parse(localStorage.getItem("camera." + location.pathname) ?? ""),
     );
   } catch (e) {}
-  createOrbitControl({ canvas }, camera, () => {
-    camera.update(camera.eye, camera.lookAt);
-    localStorage.setItem(
-      "camera." + location.pathname,
-      JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
-    );
-  });
+  createOrbitControl(
+    { canvas },
+    camera,
+    () => {
+      camera.update(camera.eye, camera.lookAt);
+      localStorage.setItem(
+        "camera." + location.pathname,
+        JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
+      );
+    },
+    { maxRadius: 4, minRadius: 2.5 },
+  );
 
   window.onresize = () => {
     resizeViewport({ gl, canvas }, { dprMax: 2 });
