@@ -216,8 +216,6 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer1);
 
-      gl.clearBufferiv(gl.COLOR, 0, [0, 0, 0, 0]);
-
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, colorTexture);
       gl.uniform1i(programInit.uniform.u_texture, 0);

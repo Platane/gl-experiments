@@ -39,14 +39,16 @@ void main() {
 
     fragColor = color;
 
-    if (closestSeed.x > 0) {
-        int distanceSq = (closestSeed.x - pixel.x) * (closestSeed.x - pixel.x) + (closestSeed.y - pixel.y) * (closestSeed.y - pixel.y);
-        float distance = sqrt(float(distanceSq));
+    int distanceSq = (closestSeed.x - pixel.x) * (closestSeed.x - pixel.x) + (closestSeed.y - pixel.y) * (closestSeed.y - pixel.y);
+    float distance = sqrt(float(distanceSq));
 
-        if (closestSeed != pixel) {
-            float coverage = 1.0 - clamp(invLerp(u_lineWidth - 1.0, u_lineWidth, distance), 0.0, 1.0);
+    float coverage = 1.0 - clamp(invLerp(u_lineWidth - 1.0, u_lineWidth, distance), 0.0, 1.0);
+    vec4 lineColor = vec4(u_lineColor.rgb, u_lineColor.a * coverage);
 
-            fragColor = paintOver(vec4(u_lineColor.rgb, u_lineColor.a * coverage), color);
-        }
-    }
+    fragColor = paintOver(color, lineColor);
+
+    //
+    // if (closestSeed != pixel) {
+    //     fragColor = paintOver(lineColor, color);
+    // }
 }
