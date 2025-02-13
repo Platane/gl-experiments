@@ -1,4 +1,5 @@
 #version 300 es
+
 precision highp float;
 precision highp isampler2D;
 
@@ -13,4 +14,6 @@ void main() {
     ivec2 size = textureSize(u_texture, 0);
 
     fragColor = vec4(float(color.r) / 300.0, float(color.g) / 300.0, 0.0, 1.0);
+
+    // fragColor = vec4(0.0, 1.0, 0.4, 1.0);
 }

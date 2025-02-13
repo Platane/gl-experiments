@@ -27,11 +27,11 @@ export const createLookAtCamera = ({
   return { update, worldMatrix };
 };
 
-export const resizeViewport = ({
-  gl,
-  canvas,
-}: { canvas: HTMLCanvasElement; gl: WebGL2RenderingContext }) => {
-  const dpr = Math.min(window.devicePixelRatio ?? 1, 2);
+export const resizeViewport = (
+  { gl, canvas }: { canvas: HTMLCanvasElement; gl: WebGL2RenderingContext },
+  { dprMax = 2 }: { dprMax?: number } = {},
+) => {
+  const dpr = Math.min(window.devicePixelRatio ?? 1, dprMax);
 
   canvas.width = canvas.clientWidth * dpr;
   canvas.height = canvas.clientHeight * dpr;
