@@ -195,5 +195,5 @@ import { createState } from "./logic/state";
   loop();
 
   // camera controls
-  createOrbitControl(c, state.camera);
+  createOrbitControl(c, state.camera, () => state.camera.generation++);
 })();

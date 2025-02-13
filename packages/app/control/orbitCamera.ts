@@ -10,29 +10,36 @@ export const createOrbitControl = (
   state: {
     eye: vec3;
     lookAt: vec3;
-    generation: number;
   },
+  onChange?: () => void,
+  {
+    rotationSpeed = 3.5,
+    minRadius = 1,
+    maxRadius = 1400,
+    minPhi = Math.PI * 0.0002,
+    maxPhi = Math.PI * 0.45,
+  }: {
+    rotationSpeed?: number;
+    minRadius?: number;
+    maxRadius?: number;
+    minPhi?: number;
+    maxPhi?: number;
+  } = {},
 ) => {
-  let phi = +(localStorage.getItem("camera-phi") ?? Math.PI / 8);
-  let theta = +(localStorage.getItem("camera-theta") ?? Math.PI);
-  let radius = +(localStorage.getItem("camera-radius") ?? 500);
+  const v = vec3.create();
+  vec3.sub(v, state.eye, state.lookAt);
 
-  const ROTATION_SPEED = 3.5;
-  const MIN_RADIUS = 2;
-  const MAX_RADIUS = 1400;
+  let radius = vec3.length(v);
+  let phi = Math.asin(v[1] / radius);
+  let theta = Math.asin(v[0] / radius / Math.cos(phi));
 
   const update = () => {
-    localStorage.setItem("camera-phi", phi + "");
-    localStorage.setItem("camera-theta", theta + "");
-    localStorage.setItem("camera-radius", radius + "");
-
     state.eye[0] = state.lookAt[0] + radius * Math.sin(theta) * Math.cos(phi);
     state.eye[1] = state.lookAt[1] + radius * Math.sin(phi);
     state.eye[2] = state.lookAt[2] + radius * Math.cos(theta) * Math.cos(phi);
 
-    state.generation++;
+    onChange?.();
   };
-  update();
 
   let rotate_px: number | null = null;
   let rotate_py: number | null = null;
@@ -46,10 +53,10 @@ export const createOrbitControl = (
       const dx = x - rotate_px!;
       const dy = y - rotate_py!;
 
-      theta -= (dx / window.innerHeight) * ROTATION_SPEED;
-      phi += (dy / window.innerHeight) * ROTATION_SPEED;
+      theta -= (dx / window.innerHeight) * rotationSpeed;
+      phi += (dy / window.innerHeight) * rotationSpeed;
 
-      phi = clamp(phi, Math.PI * 0.0002, Math.PI * 0.42);
+      phi = clamp(phi, minPhi, maxPhi);
 
       rotate_px = x;
       rotate_py = y;
@@ -92,7 +99,7 @@ export const createOrbitControl = (
 
       const newZoom = zoom + event.deltaY * 0.02;
 
-      radius = clamp(newZoom ** 2, MIN_RADIUS, MAX_RADIUS);
+      radius = clamp(newZoom ** 2, minRadius, maxRadius);
 
       update();
     },

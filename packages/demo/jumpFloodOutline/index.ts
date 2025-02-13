@@ -4,6 +4,7 @@ import { createBasicMeshMaterial } from "../../app/renderer/materials/basicMesh"
 import { getFlatShadingNormals } from "../../app/utils/geometry-normals";
 import { getGeometry as getFoxGeometry } from "../../app/renderer/geometries/fox";
 import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
+import { createOrbitControl } from "../../app/control/orbitCamera";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -31,8 +32,26 @@ import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
   // camera
   //
 
-  const camera = createLookAtCamera({ canvas });
-  resizeViewport({ gl, canvas });
+  const camera = Object.assign(createLookAtCamera({ canvas }), {
+    eye: [1, 2, 1] as vec3,
+    lookAt: [0, 0, 0] as vec3,
+  });
+  try {
+    Object.assign(camera, JSON.parse(localStorage.getItem("camera") ?? ""));
+  } catch (e) {}
+  createOrbitControl({ canvas }, camera, () => {
+    camera.update(camera.eye, camera.lookAt);
+    localStorage.setItem(
+      "camera",
+      JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
+    );
+  });
+
+  window.onresize = () => {
+    resizeViewport({ gl, canvas });
+    camera.update(camera.eye, camera.lookAt);
+  };
+  (window.onresize as any)();
 
   //
   // loop
@@ -45,10 +64,15 @@ import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
     {
       const s = 0.15;
       const q = quat.create();
+      quat.fromEuler(q, 0, -Date.now() * 0.15, 0);
       mat4.fromRotationTranslationScale(
         sphereTransform,
         q,
-        [0.2, 0.4, 0.4],
+        [
+          Math.sin(Date.now() * 0.002) * 0.5,
+          0.4,
+          -0.1 + Math.cos(Date.now() * 0.002) * 0.8,
+        ],
         [s, s, s],
       );
       sphereRenderer.update(sphereTransform, sphereColor);
@@ -60,8 +84,6 @@ import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
       mat4.fromRotationTranslationScale(foxTransform, q, [0, 0, 0], [s, s, s]);
       foxRenderer.update(foxTransform, foxColor);
     }
-
-    camera.update([1, 1, 2], [0, 0, 0]);
 
     //
     // draw
