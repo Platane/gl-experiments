@@ -62,6 +62,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
         u_closestSeedTexture: null as WebGLUniformLocation | null,
         u_depthRange: null as WebGLUniformLocation | null,
         u_lineWidth: null as WebGLUniformLocation | null,
+        u_lineColor: null as WebGLUniformLocation | null,
       },
     },
   );
@@ -89,6 +90,11 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     gl,
     programComposition.program,
     "u_lineWidth",
+  );
+  programComposition.uniform.u_lineColor = getUniformLocation(
+    gl,
+    programComposition.program,
+    "u_lineColor",
   );
 
   //
@@ -285,6 +291,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
         CAMERA_FAR,
       );
       gl.uniform1f(programComposition.uniform.u_lineWidth, LINE_WIDTH);
+      gl.uniform4f(programComposition.uniform.u_lineColor, 1, 0, 0.5, 1);
 
       programComposition.draw();
     }
@@ -342,7 +349,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   });
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dprMax: 2 });
+    resizeViewport({ gl, canvas }, { dprMax: 0.2 });
     camera.update(camera.eye, camera.lookAt);
 
     // reset outline pass

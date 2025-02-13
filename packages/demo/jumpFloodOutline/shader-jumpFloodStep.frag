@@ -5,7 +5,7 @@ precision highp isampler2D;
 
 uniform isampler2D u_texture;
 
-out ivec4 fragColor;
+out ivec2 fragColor;
 
 void main() {
     ivec2 origin = ivec2(gl_FragCoord.xy);
@@ -18,7 +18,7 @@ void main() {
     for (int y = -1; y <= 1; y++) {
         for (int x = -1; x <= 1; x++) {
             ivec2 offset = ivec2(x * offsetDistance, y * offsetDistance);
-            ivec4 c = texelFetch(u_texture, origin + offset, 0);
+            ivec2 c = texelFetch(u_texture, origin + offset, 0).xy;
 
             int distanceSq = (c.x - origin.x) * (c.x - origin.x) + (c.y - origin.y) * (c.y - origin.y);
 
@@ -29,5 +29,5 @@ void main() {
         }
     }
 
-    fragColor = ivec4(closestSeed.xy, 0, 0);
+    fragColor = ivec2(closestSeed.xy);
 }

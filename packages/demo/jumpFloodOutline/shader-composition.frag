@@ -9,6 +9,7 @@ uniform sampler2D u_depthTexture;
 
 uniform vec2 u_depthRange;
 uniform float u_lineWidth;
+uniform vec4 u_lineColor;
 
 out vec4 fragColor;
 
@@ -33,7 +34,7 @@ void main() {
         float closestSeedDepth = readDepth(u_depthTexture, closestSeed.xy, u_depthRange.x, u_depthRange.y);
 
         if (float(distanceSq) <= u_lineWidth * u_lineWidth) {
-            fragColor = vec4(1.0, 0.2, 0.4, 1.0);
+            fragColor = u_lineColor;
         }
     }
 
