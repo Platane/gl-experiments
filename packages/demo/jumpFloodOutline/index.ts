@@ -237,7 +237,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.uniform1i(programStep.uniform.u_texture, 0);
 
-      for (let k = 0; k <= lineWidth + 1; k++) {
+      for (let k = 0; k <= lineWidth; k++) {
         if (k % 2 === 0) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer2);
           gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
@@ -368,12 +368,12 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       mat4.fromRotationTranslationScale(
         sphereTransform,
         q,
-        // [0.5, 0.4, 0.2],
-        [
-          Math.sin(Date.now() * 0.002) * 0.5,
-          0.4,
-          -0.1 + Math.cos(Date.now() * 0.002) * 0.8,
-        ],
+        [0.5, 0.4, 0.2],
+        // [
+        //   Math.sin(Date.now() * 0.002) * 0.5,
+        //   0.4,
+        //   -0.1 + Math.cos(Date.now() * 0.002) * 0.8,
+        // ],
         [s, s, s],
       );
       sphereRenderer.update(sphereTransform, sphereColor);
