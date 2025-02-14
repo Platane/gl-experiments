@@ -13,6 +13,9 @@ void main() {
 
     fragColor = vec4(float(color.r) / 300.0, float(color.g) / 300.0, 0.0, 1.0);
 
+    if (color.x == -999 && color.y == -999)
+        fragColor = vec4(1.0, 0.6, 0.0, 1.0);
+
     int distanceSq = (pixel.x - color.x) * (pixel.x - color.x) + (pixel.y - color.y) * (pixel.y - color.y);
     float distance = sqrt(float(distanceSq));
 

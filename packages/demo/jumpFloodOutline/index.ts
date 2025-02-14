@@ -45,12 +45,22 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
   const programStep = Object.assign(
     createScreenSpaceProgram(gl, codeFragStep),
-    { uniform: { u_texture: null as WebGLUniformLocation | null } },
+    {
+      uniform: {
+        u_texture: null as WebGLUniformLocation | null,
+        u_offsetDistance: null as WebGLUniformLocation | null,
+      },
+    },
   );
   programStep.uniform.u_texture = getUniformLocation(
     gl,
     programStep.program,
     "u_texture",
+  );
+  programStep.uniform.u_offsetDistance = getUniformLocation(
+    gl,
+    programStep.program,
+    "u_offsetDistance",
   );
 
   const programComposition = Object.assign(
@@ -58,9 +68,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     {
       uniform: {
         u_colorTexture: null as WebGLUniformLocation | null,
-        u_depthTexture: null as WebGLUniformLocation | null,
         u_closestSeedTexture: null as WebGLUniformLocation | null,
-        u_depthRange: null as WebGLUniformLocation | null,
         u_lineWidth: null as WebGLUniformLocation | null,
         u_lineColor: null as WebGLUniformLocation | null,
       },
@@ -195,6 +203,8 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+  let lastTexture = jfaTexture1;
+
   const draw = (
     drawOutlinedObject: () => void,
     drawScene: () => void,
@@ -235,13 +245,26 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.uniform1i(programStep.uniform.u_texture, 0);
 
+      lastTexture = jfaTexture1;
+
+      // const n = Math.log2(lineWidth);
+      // for (let k = 0; k < n; k++) {
+      //   const offset = 1 << (n - k);
+      //   gl.uniform1i(programStep.uniform.u_offsetDistance, offset);
+
       for (let k = 0; k <= lineWidth; k++) {
+        gl.uniform1i(programStep.uniform.u_offsetDistance, 1);
+
         if (k % 2 === 0) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer2);
           gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
+
+          lastTexture = jfaTexture2;
         } else {
           gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer1);
           gl.bindTexture(gl.TEXTURE_2D, jfaTexture2);
+
+          lastTexture = jfaTexture1;
         }
         programStep.draw();
       }
@@ -258,7 +281,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.uniform1i(programComposition.uniform.u_colorTexture, 0);
 
       gl.activeTexture(gl.TEXTURE0 + 1);
-      gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
+      gl.bindTexture(gl.TEXTURE_2D, lastTexture);
       gl.uniform1i(programComposition.uniform.u_closestSeedTexture, 1);
 
       gl.uniform1f(programComposition.uniform.u_lineWidth, lineWidth);

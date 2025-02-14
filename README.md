@@ -1,10 +1,10 @@
 # GL
 
 demo
-- [basic mesh](http://platane.me/gl-experiments/demo/basicMesh)
-- [depth texture](http://platane.me/gl-experiments/demo/depthTexture)
-- [int sampler](http://platane.me/gl-experiments/demo/intSampler)
-- [jump flood outline](http://platane.me/gl-experiments/demo/jumpFloodOutline)
+- [basic mesh](http://platane.github.io/gl-experiments/demo/basicMesh)
+- [depth texture](http://platane.github.io/gl-experiments/demo/depthTexture)
+- [int sampler](http://platane.github.io/gl-experiments/demo/intSampler)
+- [jump flood outline](http://platane.github.io/gl-experiments/demo/jumpFloodOutline)
 
 # Usage
 
@@ -18,8 +18,6 @@ bun vite packages/demo/basicMesh
 # TODO
 
 - [ ] test animation pose VS uploading a texture with all instances skeleton (likely pretty cheap?) = less texture read in vertex shader
-- [ ] copy the depth buffer from the framebuffer to the main depth buffer
-- [ ] understand texture index and when it's save to reuse them
 
 # References
 

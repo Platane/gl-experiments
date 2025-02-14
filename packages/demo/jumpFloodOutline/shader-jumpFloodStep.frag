@@ -5,6 +5,8 @@ precision highp isampler2D;
 
 uniform isampler2D u_texture;
 
+uniform int u_offsetDistance;
+
 out ivec2 fragColor;
 
 void main() {
@@ -13,7 +15,7 @@ void main() {
     int minDistanceSq = 9999999;
     ivec2 closestSeed = ivec2(0, 0);
 
-    int offsetDistance = 1;
+    int offsetDistance = u_offsetDistance;
 
     for (int y = -1; y <= 1; y++) {
         for (int x = -1; x <= 1; x++) {
@@ -22,7 +24,7 @@ void main() {
 
             int distanceSq = (c.x - origin.x) * (c.x - origin.x) + (c.y - origin.y) * (c.y - origin.y);
 
-            if (distanceSq < minDistanceSq && (c.x != 0 || c.y != 0)) {
+            if (distanceSq < minDistanceSq) {
                 minDistanceSq = distanceSq;
                 closestSeed = c.xy;
             }
