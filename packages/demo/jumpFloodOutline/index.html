@@ -4,30 +4,33 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
     <title>jump flood outline</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <canvas
-        id="canvas"
-        style="
+    <style>
+        html, body {
+            overscroll-behavior: none;
+        }
+        #canvas{
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             image-rendering: pixelated;
-        "
-    ></canvas>
-    <p
-        style="
+
+        }
+        #log {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             margin: 6px;
             white-space: pre-line;
-        "
-    >outline object with screen space alg
+        }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <canvas id="canvas"></canvas>
+    <p id="log">outline object with screen space alg
 
         I tried to be clever with the depth buffer so object pass over the outline. ie reading the depth of the closest pixel of the object, but it's not continuous and produce ugly artefact.
         </p>

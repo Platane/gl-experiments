@@ -251,16 +251,19 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
         gl.uniform1i(programStep.uniform.u_offsetDistance, 1);
 
         if (k % 2 === 0) {
+          gl.activeTexture(gl.TEXTURE0 + 0);
           gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer2);
           gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
 
           lastTexture = jfaTexture2;
         } else {
+          gl.activeTexture(gl.TEXTURE0 + 0);
           gl.bindFramebuffer(gl.FRAMEBUFFER, jfaFramebuffer1);
           gl.bindTexture(gl.TEXTURE_2D, jfaTexture2);
 
           lastTexture = jfaTexture1;
         }
+
         programStep.draw();
       }
     }
@@ -292,7 +295,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
       gl.activeTexture(gl.TEXTURE0 + 0);
-      gl.bindTexture(gl.TEXTURE_2D, jfaTexture1);
+      gl.bindTexture(gl.TEXTURE_2D, lastTexture);
       gl.uniform1i(programDebug.uniform.u_texture, 0);
 
       programDebug.draw();
@@ -351,7 +354,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   });
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dprMax: 0.3 });
+    resizeViewport({ gl, canvas }, { dprMax: 0.1 });
     camera.update(camera.eye, camera.lookAt);
 
     // reset outline pass
@@ -405,7 +408,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       () => {
         basicMaterial.draw(camera.worldMatrix, [sphereRenderer]);
       },
-      { lineWidth: 20 },
+      { lineWidth: 16 },
     );
 
     //

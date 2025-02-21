@@ -2,25 +2,32 @@
 
 precision highp float;
 precision highp isampler2D;
+precision highp int;
 
 uniform isampler2D u_texture;
 
 out vec4 fragColor;
 
 void main() {
-    ivec2 pixel = ivec2(gl_FragCoord.xy);
-    ivec4 color = texelFetch(u_texture, pixel, 0);
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    ivec2 closestSeed = texelFetch(u_texture, coord, 0).xy;
 
-    fragColor = vec4(float(color.r) / 300.0, float(color.g) / 300.0, 0.0, 1.0);
+    fragColor = vec4(float(closestSeed.x) / 50.0, float(closestSeed.y) / 100.0, 0.0, 1.0);
 
-    if (color.x == -999 && color.y == -999)
+    if (closestSeed.x == -999 && closestSeed.y == -999) {
         fragColor = vec4(1.0, 0.6, 0.0, 1.0);
 
-    int distanceSq = (pixel.x - color.x) * (pixel.x - color.x) + (pixel.y - color.y) * (pixel.y - color.y);
+        discard;
+    }
+
+    if (closestSeed.x == coord.x && closestSeed.y == coord.y)
+        fragColor.b = 1.0;
+
+    int distanceSq = (coord.x - closestSeed.x) * (coord.x - closestSeed.x) + (coord.y - closestSeed.y) * (coord.y - closestSeed.y);
     float distance = sqrt(float(distanceSq));
 
-    float o = distance / 50.0;
-    fragColor = vec4(o, o, o, 1.0);
+    // float o = distance / 50.0;
+    // fragColor = vec4(o, o, o, 1.0);
 
     if (
         // distance == 0.0 ||
@@ -33,5 +40,5 @@ void main() {
             abs(distance - 56.0) < 0.5
     )
         fragColor = vec4(0.5, 0.1, 0.8, 1.0);
-    else discard;
+    // else discard;
 }
