@@ -242,13 +242,13 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
       lastTexture = jfaTexture1;
 
-      // const n = Math.log2(lineWidth);
-      // for (let k = 0; k < n; k++) {
-      //   const offset = 1 << (n - k);
-      //   gl.uniform1i(programStep.uniform.u_offsetDistance, offset);
+      const n = Math.log2(lineWidth);
+      for (let k = 0; k < n; k++) {
+        const offset = 1 << (n - k);
+        gl.uniform1i(programStep.uniform.u_offsetDistance, offset);
 
-      for (let k = 0; k <= lineWidth; k++) {
-        gl.uniform1i(programStep.uniform.u_offsetDistance, 1);
+        // for (let k = 0; k <= lineWidth; k++) {
+        //   gl.uniform1i(programStep.uniform.u_offsetDistance, 1);
 
         if (k % 2 === 0) {
           gl.activeTexture(gl.TEXTURE0 + 0);
@@ -289,7 +289,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     }
 
     // debug pass
-    {
+    if (false) {
       gl.useProgram(programDebug.program);
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -354,7 +354,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   });
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dprMax: 0.1 });
+    resizeViewport({ gl, canvas }, { dprMax: 1 });
     camera.update(camera.eye, camera.lookAt);
 
     // reset outline pass
@@ -408,7 +408,7 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       () => {
         basicMaterial.draw(camera.worldMatrix, [sphereRenderer]);
       },
-      { lineWidth: 16 },
+      { lineWidth: 34 },
     );
 
     //
