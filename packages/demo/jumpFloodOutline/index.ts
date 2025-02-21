@@ -3,12 +3,7 @@ import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSp
 import { createBasicMeshMaterial } from "../../app/renderer/materials/basicMesh";
 import { getFlatShadingNormals } from "../../app/utils/geometry-normals";
 import { getGeometry as getFoxGeometry } from "../../app/renderer/geometries/fox";
-import {
-  CAMERA_FAR,
-  CAMERA_NEAR,
-  createLookAtCamera,
-  resizeViewport,
-} from "../../app/renderer/camera";
+import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
 import { createOrbitControl } from "../../app/control/orbitCamera";
 import { createScreenSpaceProgram } from "../../app/utils/gl-screenSpaceProgram";
 import { getUniformLocation } from "../../app/utils/gl";

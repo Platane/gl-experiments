@@ -4,8 +4,6 @@ precision highp float;
 uniform highp isampler2D u_texture;
 
 in vec2 v_texCoord;
-flat in uvec2 v_viewportSize;
-
 out vec4 fragColor;
 
 void main() {
