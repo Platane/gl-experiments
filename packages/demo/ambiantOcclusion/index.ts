@@ -1,5 +1,10 @@
 import { mat4, quat, vec3 } from "gl-matrix";
-import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
+import {
+  CAMERA_NEAR,
+  CAMERA_FAR,
+  createLookAtCamera,
+  resizeViewport,
+} from "../../app/renderer/camera";
 import { createOrbitControl } from "../../app/control/orbitCamera";
 import { createScreenSpaceProgramWithUniforms } from "../../app/utils/gl-screenSpaceProgram";
 import { loadGLTFwithCache } from "../../gltf-parser";
@@ -16,6 +21,8 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     "u_colorTexture",
     "u_depthTexture",
     "u_normalTexture",
+    "u_far",
+    "u_near",
   ]);
 
   //
@@ -113,6 +120,9 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.useProgram(programDebug.program);
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+      gl.uniform1f(programDebug.uniform.u_near, CAMERA_NEAR);
+      gl.uniform1f(programDebug.uniform.u_far, CAMERA_FAR);
 
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, colorTexture);
