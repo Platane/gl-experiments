@@ -1,5 +1,6 @@
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as THREE from "three";
+import * as indexedDBCache from "./indexedDB-cache";
 
 export const loadGLTF = async (uri: string, name: string) => {
   const loader = new GLTFLoader();
@@ -12,12 +13,12 @@ export const loadGLTF = async (uri: string, name: string) => {
     : mesh.geometry;
   geo.computeBoundingBox();
 
-  const bindPose = mesh.skeleton.bones.map((b) => b.matrixWorld.toArray());
-  const bindPoseInverses = mesh.skeleton.bones.map((b) =>
-    b.matrixWorld.clone().invert(),
-  );
+  const bones = mesh.skeleton?.bones ?? [];
+  const bindPose = bones.map((b) => b.matrixWorld.toArray());
+  const bindPoseInverses = bones.map((b) => b.matrixWorld.clone().invert());
 
   const positions = geo.getAttribute("position").array as Float32Array;
+  const normals = geo.getAttribute("normal")?.array as Float32Array | undefined;
 
   const animations = Object.fromEntries(
     res.animations.map((animationClip) => {
@@ -58,5 +59,26 @@ export const loadGLTF = async (uri: string, name: string) => {
     }),
   );
 
-  return { positions, bindPose, animations };
+  return { positions, normals, bindPose, animations };
+};
+
+export const loadGLTFwithCache = async (uri: string, name: string) => {
+  let content = await indexedDBCache.get(uri);
+
+  if (!content) {
+    const res = await fetch(uri);
+    if (!res.ok)
+      throw new Error(await res.text().catch((err) => res.statusText));
+    content = await res.arrayBuffer();
+
+    await indexedDBCache.put(uri, content);
+  }
+
+  const blobUri = URL.createObjectURL(new Blob([content]));
+
+  const res = await loadGLTF(blobUri, name);
+
+  URL.revokeObjectURL(blobUri);
+
+  return res;
 };

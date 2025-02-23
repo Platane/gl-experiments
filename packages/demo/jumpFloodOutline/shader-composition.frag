@@ -12,13 +12,6 @@ uniform vec4 u_lineColor;
 
 out vec4 fragColor;
 
-float readDepth(sampler2D depthTexture, ivec2 texCoord, float near, float far) {
-    float ndc = 2.0 * texelFetch(depthTexture, texCoord, 0).r - 1.0;
-    float depth = -(2.0 * far * near) / (ndc * (far - near) - far - near);
-
-    return depth;
-}
-
 float invLerp(float from, float to, float value) {
     return (value - from) / (to - from);
 }
@@ -33,23 +26,16 @@ vec4 paintOver(vec4 colorOver, vec4 colorBehind) {
 }
 
 void main() {
-    ivec2 pixel = ivec2(gl_FragCoord.xy);
-    vec4 color = texelFetch(u_colorTexture, pixel, 0);
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    vec4 color = texelFetch(u_colorTexture, coord, 0);
 
-    ivec2 closestSeed = texelFetch(u_closestSeedTexture, pixel, 0).xy;
+    ivec2 closestSeed = texelFetch(u_closestSeedTexture, coord, 0).xy;
 
-    fragColor = color;
-
-    int distanceSq = (closestSeed.x - pixel.x) * (closestSeed.x - pixel.x) + (closestSeed.y - pixel.y) * (closestSeed.y - pixel.y);
+    int distanceSq = (closestSeed.x - coord.x) * (closestSeed.x - coord.x) + (closestSeed.y - coord.y) * (closestSeed.y - coord.y);
     float distance = sqrt(float(distanceSq));
 
     float coverage = 1.0 - clamp(invLerp(u_lineWidth - 1.0, u_lineWidth, distance), 0.0, 1.0);
     vec4 lineColor = vec4(u_lineColor.rgb, u_lineColor.a * coverage);
 
     fragColor = paintOver(color, lineColor);
-
-    //
-    // if (closestSeed != pixel) {
-    //     fragColor = paintOver(lineColor, color);
-    // }
 }
