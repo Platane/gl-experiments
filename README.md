@@ -5,6 +5,7 @@ demo
 - [depth texture](http://platane.github.io/gl-experiments/demo/depthTexture)
 - [int sampler](http://platane.github.io/gl-experiments/demo/intSampler)
 - [jump flood outline](http://platane.github.io/gl-experiments/demo/jumpFloodOutline)
+- [ambiant occlusion](http://platane.github.io/gl-experiments/demo/ambiantOcclusion)
 
 # Usage
 
