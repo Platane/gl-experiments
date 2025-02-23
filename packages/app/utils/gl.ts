@@ -69,6 +69,15 @@ export const getAttribLocation = (
   return position;
 };
 
+export const getAttribLocations = <T extends string>(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  names: T[],
+) =>
+  Object.fromEntries(
+    names.map((name) => [name, getAttribLocation(gl, program, name)]),
+  ) as Record<T, ReturnType<typeof getAttribLocation>>;
+
 export const getUniformLocation = (
   gl: WebGL2RenderingContext,
   program: WebGLProgram,
@@ -82,3 +91,12 @@ export const getUniformLocation = (
 
   return position;
 };
+
+export const getUniformLocations = <T extends string>(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  names: T[],
+) =>
+  Object.fromEntries(
+    names.map((name) => [name, getUniformLocation(gl, program, name)]),
+  ) as Record<T, ReturnType<typeof getUniformLocation>>;

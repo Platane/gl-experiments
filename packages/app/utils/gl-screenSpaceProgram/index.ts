@@ -1,4 +1,10 @@
-import { createProgram, getAttribLocation, linkProgram } from "../gl";
+import {
+  createProgram,
+  getAttribLocation,
+  getUniformLocation,
+  getUniformLocations,
+  linkProgram,
+} from "../gl";
 import codeQuadVert from "./shader-quad.vert?raw";
 
 export const createScreenSpaceProgram = (
@@ -66,4 +72,16 @@ export const createScreenSpaceProgram = (
   };
 
   return { program, draw, dispose };
+};
+
+export const createScreenSpaceProgramWithUniforms = <T extends string>(
+  gl: WebGL2RenderingContext,
+  codeFrag: string,
+  uniformNames: T[],
+) => {
+  const ssp = createScreenSpaceProgram(gl, codeFrag);
+
+  return Object.assign(ssp, {
+    uniform: getUniformLocations(gl, ssp.program, uniformNames),
+  });
 };
