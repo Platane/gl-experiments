@@ -1,29 +1,45 @@
 import { mat4, quat, vec3 } from "gl-matrix";
-import {
-  CAMERA_NEAR,
-  CAMERA_FAR,
-  createLookAtCamera,
-  resizeViewport,
-} from "../../app/renderer/camera";
+import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
 import { createOrbitControl } from "../../app/control/orbitCamera";
 import { createScreenSpaceProgramWithUniforms } from "../../app/utils/gl-screenSpaceProgram";
 import { loadGLTFwithCache } from "../../gltf-parser";
 
 import codeFragDebug from "./shader-debug.frag?raw";
 import { createBasicMeshMaterial } from "./basicMesh";
+import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSphere";
 
-const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
+const CAMERA_NEAR = 2;
+const CAMERA_FAR = 4;
+
+/**
+ * based on https://medium.com/better-programming/depth-only-ssao-for-forward-renderers-1a3dcfa1873a
+ */
+const createAOPass = (
+  { gl }: { gl: WebGL2RenderingContext },
+  {
+    sampleCount = 64,
+    sampleRadius = 0.1,
+  }: { sampleCount?: number; sampleRadius?: number } = {},
+) => {
   //
   // programs
   //
 
-  const programDebug = createScreenSpaceProgramWithUniforms(gl, codeFragDebug, [
-    "u_colorTexture",
-    "u_depthTexture",
-    "u_normalTexture",
-    "u_far",
-    "u_near",
-  ]);
+  const programDebug = createScreenSpaceProgramWithUniforms(
+    gl,
+    codeFragDebug.replace("SAMPLE_COUNT", sampleCount),
+    [
+      "u_colorTexture",
+      "u_depthTexture",
+      "u_normalTexture",
+      "u_far",
+      "u_near",
+      "u_sampleRad",
+      "u_kernel",
+      "u_viewMatrix",
+      "u_viewMatrixInv",
+    ],
+  );
 
   //
   // framebuffer to store depth and color
@@ -57,7 +73,7 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   gl.texStorage2D(
     gl.TEXTURE_2D,
     1,
-    gl.DEPTH24_STENCIL8,
+    gl.DEPTH_COMPONENT32F,
     gl.drawingBufferWidth,
     gl.drawingBufferHeight,
   );
@@ -90,30 +106,37 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-  const draw = (drawScene: () => void, {}: {} = {}) => {
+  //
+  // init kernel
+  //
+  const kernel = new Float32Array(
+    Array.from({ length: sampleCount }, () => {
+      let x = 1;
+      let y = 1;
+      let z = 1;
+      let l = 0;
+      while (((l = Math.hypot(x, y, z)), l > 1 || l <= 0)) {
+        x = Math.random() * 2 - 1;
+        y = Math.random();
+        z = Math.random() * 2 - 1;
+      }
+      return [x, y, z];
+    }).flat(),
+  );
+
+  const worldMatrixInv = mat4.create();
+
+  const draw = (
+    worldMatrix: Float32Array,
+    drawScene: () => void,
+    {}: {} = {},
+  ) => {
     gl.bindFramebuffer(gl.FRAMEBUFFER, baseFramebuffer);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     drawScene();
 
-    // read int texture
-    {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, baseFramebuffer);
-
-      const data = new Uint8Array(
-        gl.drawingBufferWidth * gl.drawingBufferHeight * 4,
-      );
-      gl.readBuffer(gl.COLOR_ATTACHMENT0);
-      gl.readPixels(
-        0,
-        0,
-        gl.drawingBufferWidth,
-        gl.drawingBufferHeight,
-        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT),
-        gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE),
-        data,
-      );
-    }
+    mat4.invert(worldMatrixInv, worldMatrix);
 
     // debug pass
     {
@@ -123,6 +146,18 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
       gl.uniform1f(programDebug.uniform.u_near, CAMERA_NEAR);
       gl.uniform1f(programDebug.uniform.u_far, CAMERA_FAR);
+      gl.uniform1f(programDebug.uniform.u_sampleRad, sampleRadius);
+      gl.uniform3fv(programDebug.uniform.u_kernel, kernel);
+      gl.uniformMatrix4fv(
+        programDebug.uniform.u_viewMatrix,
+        false,
+        worldMatrix,
+      );
+      gl.uniformMatrix4fv(
+        programDebug.uniform.u_viewMatrixInv,
+        false,
+        worldMatrixInv,
+      );
 
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, colorTexture);
@@ -137,8 +172,36 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
       gl.uniform1i(programDebug.uniform.u_depthTexture, 2);
 
       programDebug.draw();
+
+      {
+        const cx = Math.floor(x * gl.drawingBufferWidth);
+        const cy = Math.floor((1 - y) * gl.drawingBufferHeight);
+        const data = new Uint8Array(
+          gl.drawingBufferWidth * gl.drawingBufferHeight * 4,
+        );
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.readBuffer(gl.COLOR_ATTACHMENT0);
+        gl.readPixels(
+          cx,
+          cy,
+          1,
+          1,
+          gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT),
+          gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE),
+          data,
+        );
+
+        console.log(...[...data.slice(0, 3)].map((x) => x));
+      }
     }
   };
+
+  let x = 0;
+  let y = 0;
+  document.body.addEventListener("mousemove", ({ pageX, pageY }) => {
+    x = pageX / window.innerWidth;
+    y = pageY / window.innerHeight;
+  });
 
   const dispose = () => {};
 
@@ -153,11 +216,17 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   const geometry = await loadGLTFwithCache(
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
     "node_damagedHelmet_-6514",
+    // "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
+    // "Dragon",
   );
 
+  const sphereGeometry = new Float32Array(
+    createRecursiveSphere({ tesselatationStep: 6 }),
+  );
   const renderer = createBasicMeshMaterial(
     { gl },
-    { geometry: { positions: geometry.positions, normals: geometry.normals! } },
+    // { geometry: { positions: geometry.positions, normals: geometry.normals! } },
+    { geometry: { positions: sphereGeometry, normals: sphereGeometry } },
   );
 
   let aoPass: ReturnType<typeof createAOPass>;
@@ -166,10 +235,13 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   // camera
   //
 
-  const camera = Object.assign(createLookAtCamera({ canvas }), {
-    eye: [0, 0, 2.5] as vec3,
-    lookAt: [0, 0, 0] as vec3,
-  });
+  const camera = Object.assign(
+    createLookAtCamera({ canvas }, { near: CAMERA_NEAR, far: CAMERA_FAR }),
+    {
+      eye: [0, 0, 3] as vec3,
+      lookAt: [0, 0, 0] as vec3,
+    },
+  );
   try {
     Object.assign(
       camera,
@@ -181,16 +253,16 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     camera,
     () => {
       camera.update(camera.eye, camera.lookAt);
-      localStorage.setItem(
-        "camera." + location.pathname,
-        JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
-      );
+      // localStorage.setItem(
+      //   "camera." + location.pathname,
+      //   JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
+      // );
     },
-    { maxRadius: 8, minRadius: 1.2 },
+    { maxRadius: 4, minRadius: 1.2 },
   );
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dpr: 1 });
+    resizeViewport({ gl, canvas }, { dpr: 0.5 });
     camera.update(camera.eye, camera.lookAt);
 
     aoPass?.dispose();
@@ -208,7 +280,7 @@ const createAOPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     //
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    aoPass.draw(() => renderer.draw(camera.worldMatrix));
+    aoPass.draw(camera.worldMatrix, () => renderer.draw(camera.worldMatrix));
 
     //
     // loop
