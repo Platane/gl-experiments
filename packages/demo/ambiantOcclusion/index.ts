@@ -64,6 +64,7 @@ const createAOPass = (
       "u_colorTexture",
       "u_depthTexture",
       "u_normalTexture",
+      "u_noiseTexture",
       "u_far",
       "u_near",
       "u_sampleRadius",
@@ -152,11 +153,38 @@ const createAOPass = (
       let l = 0;
       while (((l = Math.hypot(x, y, z)), l > 1 || l <= 0)) {
         x = Math.random() * 2 - 1;
-        y = Math.random() * 2 - 1;
+        // y = Math.random() * 2 - 1;
+        y = Math.random();
         z = Math.random() * 2 - 1;
       }
       return [x, y, z];
     }).flat(),
+  );
+
+  const noiseTexture = gl.createTexture();
+  const noiseTextureSize = 8;
+  const noise = new Float32Array(
+    Array.from({ length: noiseTextureSize * noiseTextureSize * 3 }, () => [
+      Math.random() * 2 - 1,
+      Math.random() * 2 - 1,
+      0,
+    ]).flat(),
+  );
+  gl.bindTexture(gl.TEXTURE_2D, noiseTexture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0, // level
+    gl.RGB32F, // internal format
+    noiseTextureSize,
+    noiseTextureSize,
+    0, // border
+    gl.RGB, // format
+    gl.FLOAT, // type
+    noise,
   );
 
   const worldMatrixInv = mat4.create();
@@ -208,6 +236,10 @@ const createAOPass = (
       gl.activeTexture(gl.TEXTURE0 + 2);
       gl.bindTexture(gl.TEXTURE_2D, depthTexture);
       gl.uniform1i(programDebug.uniform.u_depthTexture, 2);
+
+      gl.activeTexture(gl.TEXTURE0 + 4);
+      gl.bindTexture(gl.TEXTURE_2D, noiseTexture);
+      gl.uniform1i(programDebug.uniform.u_noiseTexture, 4);
 
       programDebug.draw();
 
@@ -291,8 +323,8 @@ const createAOPass = (
     {
       // geometry: modelGeometry,
       geometry: {
-        positions: modelGeometry.positions.map((u) => u * 0.24),
-        normals: modelGeometry.normals,
+        positions: boxGeometry.positions.map((u) => u * 1.24),
+        normals: boxGeometry.normals,
       },
     },
   );

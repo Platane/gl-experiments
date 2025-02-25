@@ -10,6 +10,7 @@ uniform mat4 u_viewMatrixInv;
 uniform sampler2D u_colorTexture;
 uniform sampler2D u_depthTexture;
 uniform sampler2D u_normalTexture;
+uniform sampler2D u_noiseTexture;
 uniform float u_near;
 uniform float u_far;
 
@@ -42,6 +43,8 @@ float readDepthUnit(sampler2D depthTexture, ivec2 texCoord) {
 }
 
 void main() {
+
+    // get the point in screen space, then project in world space
     vec4 originScreenSpace = vec4((v_texCoord.xy * 2.0 - 1.0), (2.0 * texture(u_depthTexture, v_texCoord).r) - 1.0, 1.0);
 
     vec4 originWorldSpace = u_viewMatrixInv * originScreenSpace;
@@ -50,14 +53,28 @@ void main() {
     // show the re-constructed position
     // fragColor = vec4((originWorldSpace.xyz + u_size) / (u_size * 2.0), 1.0);
 
-    vec3 normal = texture(u_normalTexture, v_texCoord).xyz * 2.0 - 1.0;
+    // get the normal
+    vec3 normal = normalize(texture(u_normalTexture, v_texCoord).xyz * 2.0 - 1.0);
+
+    // get a random vector (from the noise texture)
+    ivec2 noiseTextureSize = textureSize(u_noiseTexture, 0);
+    ivec2 noiseCoord = ivec2(mod(gl_FragCoord.x, float(noiseTextureSize.x)), mod(gl_FragCoord.y, float(noiseTextureSize.y)));
+    // vec3 randomVector = texelFetch(u_noiseTexture, noiseCoord, 0).xyz;
+    vec3 randomVector = vec3(1.0, 0.0, 0.0);
+
+    // use the Gram-Schmidt process to compute an orthogonal basis
+    // * the random vector is supposed to have z=0, and supposedly the normal never have z=0, so they are never collinear
+    vec3 u = normalize(randomVector - normal * dot(randomVector, normal));
+    vec3 v = cross(normal, u);
+
+    mat3 basis = mat3(u, v, normal);
 
     float occlusion = 0.0;
 
     for (int i = 0; i < sampleCount; i++) {
         vec3 offset = u_kernel[i] * u_sampleRadius;
 
-        vec4 samplePositionWorldSpace = vec4(originWorldSpace.xyz + offset, 1.0);
+        vec4 samplePositionWorldSpace = vec4(originWorldSpace.xyz + basis * offset, 1.0);
 
         vec4 samplePositionScreenSpace = u_viewMatrix * samplePositionWorldSpace;
         samplePositionScreenSpace.xyz /= samplePositionScreenSpace.w;
