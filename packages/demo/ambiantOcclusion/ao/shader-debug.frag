@@ -54,7 +54,7 @@ void main() {
     // fragColor = vec4((originWorldSpace.xyz + u_size) / (u_size * 2.0), 1.0);
 
     // get the normal
-    vec3 normal = normalize(texture(u_normalTexture, v_texCoord).xyz * 2.0 - 1.0);
+    vec3 normal = texture(u_normalTexture, v_texCoord).xyz * 2.0 - 1.0;
 
     // get a random vector (from the noise texture)
     ivec2 noiseTextureSize = textureSize(u_noiseTexture, 0);
@@ -65,9 +65,12 @@ void main() {
     // use the Gram-Schmidt process to compute an orthogonal basis
     // * the random vector is supposed to have z=0, and supposedly the normal never have z=0, so they are never collinear
     vec3 u = normalize(randomVector - normal * dot(randomVector, normal));
-    vec3 v = cross(normal, u);
+    vec3 v = cross(u, normal);
 
-    mat3 basis = mat3(u, v, normal);
+    mat3 basis = mat3(u, normal, v);
+
+    //
+    //
 
     float occlusion = 0.0;
 
@@ -84,7 +87,9 @@ void main() {
         vec2 samplePositionCoord = (samplePositionScreenSpace.xy + 1.0) / 2.0;
         float depthAtSamplePosition = (2.0 * texture(u_depthTexture, samplePositionCoord).r - 1.0);
 
-        occlusion += (sampleDepth < depthAtSamplePosition ? 1.0 : 0.0);
+        bool inRange = abs(sampleDepth - depthAtSamplePosition) < u_sampleRadius;
+
+        occlusion += float(sampleDepth < depthAtSamplePosition);
     }
 
     float o = occlusion / float(sampleCount);
