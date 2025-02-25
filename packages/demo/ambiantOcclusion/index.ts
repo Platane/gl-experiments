@@ -241,17 +241,16 @@ const createAOPass = (
     const positions = new Float32Array(
       createRecursiveSphere({ tesselatationStep: 6 }),
     );
-    return { positions: positions.map((u) => u * 2), normals: positions };
+    return { positions: positions, normals: positions };
   })();
 
   const renderer = createBasicMeshMaterial(
     { gl },
     {
-      geometry:
-        //
-        // sphereGeometry
-        boxGeometry,
-      // modelGeometry
+      geometry: {
+        positions: boxGeometry.positions.map((u) => u * 1.5),
+        normals: boxGeometry.positions,
+      },
     },
   );
 
