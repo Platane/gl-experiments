@@ -13,6 +13,12 @@ export const createProgram = (
   gl.attachShader(shaderProgram, vertShader);
   gl.attachShader(shaderProgram, fragShader);
 
+  // console.log(
+  //   gl
+  //     .getExtension("WEBGL_debug_shaders")!
+  //     .getTranslatedShaderSource(fragShader),
+  // );
+
   return shaderProgram;
 };
 

@@ -13,7 +13,7 @@ uniform sampler2D u_normalTexture;
 uniform float u_near;
 uniform float u_far;
 
-uniform float u_sampleRad;
+uniform float u_sampleRadius;
 uniform vec3 u_kernel[sampleCount];
 
 in vec2 v_texCoord;
@@ -47,10 +47,20 @@ void main() {
     vec4 originWorldSpace = u_viewMatrixInv * originScreenSpace;
     originWorldSpace.xyz /= originWorldSpace.w;
 
-    // float o = invLerp(-1.0, 1.0, origin.z);
-    fragColor = vec4((originWorldSpace.xyz), 1.0);
+    float l = 3.0;
+    fragColor = vec4((originWorldSpace.xyz + l) / (l * 2.0), 1.0);
 
-    // fragColor = vec4(texture(u_depthTexture, v_texCoord).rrr, 1.0);
+    // vec3 offset = vec3(0.2, 0.0, 0.0);
+
+    // vec4 samplePositionWorldSpace = vec4(originWorldSpace.xyz + offset, 1.0);
+    // vec4 samplePositionScreenPosition = u_viewMatrix * samplePositionWorldSpace;
+    // samplePositionScreenPosition.xyz /= samplePositionScreenPosition.w;
+
+    // vec2 samplePositionCoord = (samplePositionScreenPosition.xy + 1.0) / 2.0;
+    // float depthAtSamplePosition = texture(u_depthTexture, samplePositionCoord).r;
+
+    // fragColor = vec4((samplePositionWorldSpace.xyz + 1.0) / 2.0, 1.0);
+    // fragColor = vec4(samplePositionCoord.xy, 0.0, 1.0);
 
     vec3 normal = texture(u_normalTexture, v_texCoord).xyz * 2.0 - 1.0;
     // fragColor = vec4(normal, 1.0);
@@ -66,11 +76,6 @@ void main() {
     // vec4 position = u_viewMatrixInv * screenPosition;
 
     // float occlucion = 0.0;
-
-    // vec3 offset = vec3(0.2, 0.0, 0.0);
-
-    // vec4 samplePosition = vec4(position.xyz + offset, 1.0);
-    // vec4 sampleScreenPosition = u_viewMatrix * samplePosition;
 
     // fragColor = vec4(position.www, 1.0);
 

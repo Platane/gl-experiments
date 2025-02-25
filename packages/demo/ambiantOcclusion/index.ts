@@ -7,12 +7,15 @@ import { loadGLTFwithCache } from "../../gltf-parser";
 import codeFragDebug from "./shader-debug.frag?raw";
 import { createBasicMeshMaterial } from "./basicMesh";
 import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSphere";
+import { createBoxGeometry } from "../../app/renderer/geometries/box";
 
-const CAMERA_NEAR = 2;
-const CAMERA_FAR = 4;
+const CAMERA_NEAR = 0.001;
+const CAMERA_FAR = 10;
 
 /**
- * based on https://medium.com/better-programming/depth-only-ssao-for-forward-renderers-1a3dcfa1873a
+ * references:
+ * - https://medium.com/better-programming/depth-only-ssao-for-forward-renderers-1a3dcfa1873a
+ * - http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
  */
 const createAOPass = (
   { gl }: { gl: WebGL2RenderingContext },
@@ -34,7 +37,7 @@ const createAOPass = (
       "u_normalTexture",
       "u_far",
       "u_near",
-      "u_sampleRad",
+      "u_sampleRadius",
       "u_kernel",
       "u_viewMatrix",
       "u_viewMatrixInv",
@@ -117,7 +120,7 @@ const createAOPass = (
       let l = 0;
       while (((l = Math.hypot(x, y, z)), l > 1 || l <= 0)) {
         x = Math.random() * 2 - 1;
-        y = Math.random();
+        y = Math.random() * 2 - 1;
         z = Math.random() * 2 - 1;
       }
       return [x, y, z];
@@ -146,7 +149,7 @@ const createAOPass = (
 
       gl.uniform1f(programDebug.uniform.u_near, CAMERA_NEAR);
       gl.uniform1f(programDebug.uniform.u_far, CAMERA_FAR);
-      gl.uniform1f(programDebug.uniform.u_sampleRad, sampleRadius);
+      gl.uniform1f(programDebug.uniform.u_sampleRadius, sampleRadius);
       gl.uniform3fv(programDebug.uniform.u_kernel, kernel);
       gl.uniformMatrix4fv(
         programDebug.uniform.u_viewMatrix,
@@ -180,7 +183,6 @@ const createAOPass = (
           gl.drawingBufferWidth * gl.drawingBufferHeight * 4,
         );
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.readBuffer(gl.COLOR_ATTACHMENT0);
         gl.readPixels(
           cx,
           cy,
@@ -191,7 +193,20 @@ const createAOPass = (
           data,
         );
 
-        console.log(...[...data.slice(0, 3)].map((x) => x));
+        const fl = (x: number) => {
+          const l = (Math.round(x * 100) / 100).toFixed(2);
+          return " ".repeat(5 - l.length) + l;
+        };
+        document.getElementById("log")!.innerText =
+          "pointer position:" +
+          "\n" +
+          "x:" +
+          fl(x) +
+          "\n" +
+          "y:" +
+          fl(y) +
+          "\n" +
+          [...data.slice(0, 3)].map((x) => (x / 256) * 6 - 3).map(fl);
       }
     }
   };
@@ -213,20 +228,31 @@ const createAOPass = (
 
   const gl = canvas.getContext("webgl2")!;
 
-  const geometry = await loadGLTFwithCache(
+  const modelGeometry = (await loadGLTFwithCache(
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
     "node_damagedHelmet_-6514",
     // "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
     // "Dragon",
-  );
+  )) as { normals: Float32Array; positions: Float32Array };
 
-  const sphereGeometry = new Float32Array(
-    createRecursiveSphere({ tesselatationStep: 6 }),
-  );
+  const boxGeometry = createBoxGeometry();
+
+  const sphereGeometry = (() => {
+    const positions = new Float32Array(
+      createRecursiveSphere({ tesselatationStep: 6 }),
+    );
+    return { positions: positions.map((u) => u * 2), normals: positions };
+  })();
+
   const renderer = createBasicMeshMaterial(
     { gl },
-    // { geometry: { positions: geometry.positions, normals: geometry.normals! } },
-    { geometry: { positions: sphereGeometry, normals: sphereGeometry } },
+    {
+      geometry:
+        //
+        // sphereGeometry
+        boxGeometry,
+      // modelGeometry
+    },
   );
 
   let aoPass: ReturnType<typeof createAOPass>;
@@ -238,7 +264,7 @@ const createAOPass = (
   const camera = Object.assign(
     createLookAtCamera({ canvas }, { near: CAMERA_NEAR, far: CAMERA_FAR }),
     {
-      eye: [0, 0, 3] as vec3,
+      eye: [0, 0, 5] as vec3,
       lookAt: [0, 0, 0] as vec3,
     },
   );
@@ -258,11 +284,11 @@ const createAOPass = (
       //   JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
       // );
     },
-    { maxRadius: 4, minRadius: 1.2 },
+    { maxRadius: 8, minRadius: 5 },
   );
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dpr: 0.5 });
+    resizeViewport({ gl, canvas }, { dpr: 1.5 });
     camera.update(camera.eye, camera.lookAt);
 
     aoPass?.dispose();

@@ -17,11 +17,21 @@
             image-rendering: pixelated;
 
         }
+        #log {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            margin: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <canvas id="canvas"></canvas>
+    <p id="log"></p>
     <script type="module" src="index.ts"></script>
   </body>
 </html>
