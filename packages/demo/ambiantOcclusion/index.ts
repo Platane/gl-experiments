@@ -305,7 +305,9 @@ const createAOPass = (
     //
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    aoPass.draw(camera.worldMatrix, () => renderer.draw(camera.worldMatrix));
+    aoPass.draw(camera.worldMatrix as Float32Array, () =>
+      renderer.draw(camera.worldMatrix),
+    );
 
     //
     // loop
