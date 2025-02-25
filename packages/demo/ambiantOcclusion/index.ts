@@ -9,8 +9,8 @@ import { createBasicMeshMaterial } from "./basicMesh";
 import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSphere";
 import { createBoxGeometry } from "../../app/renderer/geometries/box";
 
-const CAMERA_NEAR = 0.001;
-const CAMERA_FAR = 10;
+const CAMERA_NEAR = 0.5;
+const CAMERA_FAR = 6;
 
 /**
  * references:
@@ -142,7 +142,7 @@ const createAOPass = (
 
     mat4.invert(worldMatrixInv, worldMatrix);
 
-    const size = 4;
+    const size = 3;
 
     // debug pass
     {
@@ -214,7 +214,8 @@ const createAOPass = (
             .map((x) => (x / 256) * (size * 2) - size)
             .map(fl) +
           "\n" +
-          [...data.slice(0, 3)].map((x) => x / 256).map(fl);
+          // [...data.slice(0, 3)].map((x) => x / 256).map(fl) +
+          "";
       }
     }
   };
@@ -255,10 +256,11 @@ const createAOPass = (
   const renderer = createBasicMeshMaterial(
     { gl },
     {
-      geometry: {
-        positions: boxGeometry.positions.map((u) => u * 1.5),
-        normals: boxGeometry.positions,
-      },
+      geometry: modelGeometry,
+      // {
+      //   positions: boxGeometry.positions.map((u) => u * 0.5),
+      //   normals: boxGeometry.positions,
+      // },
     },
   );
 
@@ -271,7 +273,7 @@ const createAOPass = (
   const camera = Object.assign(
     createLookAtCamera({ canvas }, { near: CAMERA_NEAR, far: CAMERA_FAR }),
     {
-      eye: [0, 0, 5] as vec3,
+      eye: [0, 0, 2] as vec3,
       lookAt: [0, 0, 0] as vec3,
     },
   );
@@ -295,7 +297,7 @@ const createAOPass = (
   );
 
   window.onresize = () => {
-    resizeViewport({ gl, canvas }, { dpr: 1.5 });
+    resizeViewport({ gl, canvas }, { dpr: 2 });
     camera.update(camera.eye, camera.lookAt);
 
     aoPass?.dispose();

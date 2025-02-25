@@ -43,24 +43,33 @@ float readDepthUnit(sampler2D depthTexture, ivec2 texCoord) {
 
 void main() {
     vec4 originScreenSpace = vec4((v_texCoord.xy * 2.0 - 1.0), (2.0 * texture(u_depthTexture, v_texCoord).r) - 1.0, 1.0);
+
     vec4 originWorldSpace = u_viewMatrixInv * originScreenSpace;
     originWorldSpace.xyz /= originWorldSpace.w;
 
-    vec3 offset = vec3(0.0, 0.0, 0.0);
-
-    vec4 samplePositionWorldSpace = vec4(originWorldSpace.xyz + offset, 1.0);
-    vec4 samplePositionScreenSpace = u_viewMatrix * samplePositionWorldSpace;
-    samplePositionScreenSpace.xyz /= samplePositionScreenSpace.w;
-
-    float sampleDepth = samplePositionScreenSpace.z;
-
-    vec2 samplePositionCoord = (samplePositionScreenSpace.xy + 1.0) / 2.0;
-    float depthAtSamplePosition = (2.0 * texture(u_depthTexture, samplePositionCoord).r - 1.0);
-
     // show the re-constructed position
-    fragColor = vec4((originWorldSpace.xyz + u_size) / (u_size * 2.0), 1.0);
+    // fragColor = vec4((originWorldSpace.xyz + u_size) / (u_size * 2.0), 1.0);
 
     vec3 normal = texture(u_normalTexture, v_texCoord).xyz * 2.0 - 1.0;
 
-    // for (int i = 0; i < sampleCount; i++) {}
+    float occlusion = 0.0;
+
+    for (int i = 0; i < sampleCount; i++) {
+        vec3 offset = u_kernel[i] * u_sampleRadius;
+
+        vec4 samplePositionWorldSpace = vec4(originWorldSpace.xyz + offset, 1.0);
+
+        vec4 samplePositionScreenSpace = u_viewMatrix * samplePositionWorldSpace;
+        samplePositionScreenSpace.xyz /= samplePositionScreenSpace.w;
+
+        float sampleDepth = samplePositionScreenSpace.z;
+
+        vec2 samplePositionCoord = (samplePositionScreenSpace.xy + 1.0) / 2.0;
+        float depthAtSamplePosition = (2.0 * texture(u_depthTexture, samplePositionCoord).r - 1.0);
+
+        occlusion += (sampleDepth < depthAtSamplePosition ? 1.0 : 0.0);
+    }
+
+    float o = occlusion / float(sampleCount);
+    fragColor = vec4(o, o, o, 1.0);
 }
