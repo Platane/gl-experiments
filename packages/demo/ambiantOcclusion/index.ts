@@ -12,6 +12,35 @@ import { createBoxGeometry } from "../../app/renderer/geometries/box";
 const CAMERA_NEAR = 0.5;
 const CAMERA_FAR = 8;
 
+const applyMat4 = (m: mat4, points: Float32Array) => {
+  const copy = new Float32Array(points.length);
+
+  const v = vec3.create();
+  for (let k = points.length / 3; k--; ) {
+    v[0] = points[k * 3 + 0];
+    v[1] = points[k * 3 + 1];
+    v[2] = points[k * 3 + 2];
+
+    vec3.transformMat4(v, v, m);
+
+    copy[k * 3 + 0] = v[0];
+    copy[k * 3 + 1] = v[1];
+    copy[k * 3 + 2] = v[2];
+  }
+
+  return copy;
+};
+
+const rotateGeometry = ({
+  positions,
+  normals,
+}: { positions: Float32Array; normals: Float32Array }) => {
+  const m = mat4.create();
+  mat4.rotateX(m, m, Math.PI / 2);
+
+  return { positions: applyMat4(m, positions), normals: applyMat4(m, normals) };
+};
+
 /**
  * references:
  * - https://medium.com/better-programming/depth-only-ssao-for-forward-renderers-1a3dcfa1873a
@@ -239,12 +268,14 @@ const createAOPass = (
 
   const gl = canvas.getContext("webgl2")!;
 
-  const modelGeometry = (await loadGLTFwithCache(
-    // "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
-    // "node_damagedHelmet_-6514",
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
-    "Dragon",
-  )) as { normals: Float32Array; positions: Float32Array };
+  const modelGeometry = rotateGeometry(
+    (await loadGLTFwithCache(
+      // "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+      // "node_damagedHelmet_-6514",
+      "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
+      "Dragon",
+    )) as { normals: Float32Array; positions: Float32Array },
+  );
 
   const boxGeometry = createBoxGeometry();
 
@@ -275,7 +306,7 @@ const createAOPass = (
   const camera = Object.assign(
     createLookAtCamera({ canvas }, { near: CAMERA_NEAR, far: CAMERA_FAR }),
     {
-      eye: [0, 0, 3] as vec3,
+      eye: [0, 0, 4.5] as vec3,
       lookAt: [0, 0, 0] as vec3,
     },
   );
