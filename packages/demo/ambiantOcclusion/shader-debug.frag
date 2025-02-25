@@ -14,6 +14,7 @@ uniform float u_near;
 uniform float u_far;
 
 uniform float u_sampleRadius;
+uniform float u_size;
 uniform vec3 u_kernel[sampleCount];
 
 in vec2 v_texCoord;
@@ -41,57 +42,25 @@ float readDepthUnit(sampler2D depthTexture, ivec2 texCoord) {
 }
 
 void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-
     vec4 originScreenSpace = vec4((v_texCoord.xy * 2.0 - 1.0), (2.0 * texture(u_depthTexture, v_texCoord).r) - 1.0, 1.0);
     vec4 originWorldSpace = u_viewMatrixInv * originScreenSpace;
     originWorldSpace.xyz /= originWorldSpace.w;
 
-    float l = 3.0;
-    fragColor = vec4((originWorldSpace.xyz + l) / (l * 2.0), 1.0);
+    vec3 offset = vec3(0.0, 0.0, 0.0);
 
-    // vec3 offset = vec3(0.2, 0.0, 0.0);
+    vec4 samplePositionWorldSpace = vec4(originWorldSpace.xyz + offset, 1.0);
+    vec4 samplePositionScreenSpace = u_viewMatrix * samplePositionWorldSpace;
+    samplePositionScreenSpace.xyz /= samplePositionScreenSpace.w;
 
-    // vec4 samplePositionWorldSpace = vec4(originWorldSpace.xyz + offset, 1.0);
-    // vec4 samplePositionScreenPosition = u_viewMatrix * samplePositionWorldSpace;
-    // samplePositionScreenPosition.xyz /= samplePositionScreenPosition.w;
+    float sampleDepth = samplePositionScreenSpace.z;
 
-    // vec2 samplePositionCoord = (samplePositionScreenPosition.xy + 1.0) / 2.0;
-    // float depthAtSamplePosition = texture(u_depthTexture, samplePositionCoord).r;
+    vec2 samplePositionCoord = (samplePositionScreenSpace.xy + 1.0) / 2.0;
+    float depthAtSamplePosition = (2.0 * texture(u_depthTexture, samplePositionCoord).r - 1.0);
 
-    // fragColor = vec4((samplePositionWorldSpace.xyz + 1.0) / 2.0, 1.0);
-    // fragColor = vec4(samplePositionCoord.xy, 0.0, 1.0);
+    // show the re-constructed position
+    fragColor = vec4((originWorldSpace.xyz + u_size) / (u_size * 2.0), 1.0);
 
     vec3 normal = texture(u_normalTexture, v_texCoord).xyz * 2.0 - 1.0;
-    // fragColor = vec4(normal, 1.0);
-
-    // vec3 color = texelFetch(u_colorTexture, coord, 0).xyz;
-    // float depth = readDepth(u_depthTexture, coord, u_near, u_far);
-
-    // //
-    // //
-
-    // float unitDepth = texelFetch(u_depthTexture, coord, 0).r;
-
-    // vec4 position = u_viewMatrixInv * screenPosition;
-
-    // float occlucion = 0.0;
-
-    // fragColor = vec4(position.www, 1.0);
-
-    // fragColor = vec4(0.3, 0.1, 0.8, 1.0);
-    // fragColor = vec4(position.xyz, 1.0);
-    // fragColor = vec4(position.xyz, 1.0);
-    // fragColor.r = position.x;
-    // fragColor.g = position.y;
-    // fragColor.b = position.z;
-    // fragColor.a = 1.0;
-
-    // ivec2 sampleCoord = ivec2(int(round(sampleScreenPosition.x)), int(round(sampleScreenPosition.y)));
-    // float sampleDepth = readDepth(u_depthTexture, sampleCoord, u_near, u_far);
-
-    // if (invLerp(u_near, u_far, sampleDepth) > sampleScreenPosition.z)
-    //     fragColor = vec4(1.0, 0.0, 0.5, 1.0);
 
     // for (int i = 0; i < sampleCount; i++) {}
 }

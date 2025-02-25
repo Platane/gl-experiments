@@ -41,6 +41,7 @@ const createAOPass = (
       "u_kernel",
       "u_viewMatrix",
       "u_viewMatrixInv",
+      "u_size",
     ],
   );
 
@@ -141,6 +142,8 @@ const createAOPass = (
 
     mat4.invert(worldMatrixInv, worldMatrix);
 
+    const size = 4;
+
     // debug pass
     {
       gl.useProgram(programDebug.program);
@@ -151,6 +154,7 @@ const createAOPass = (
       gl.uniform1f(programDebug.uniform.u_far, CAMERA_FAR);
       gl.uniform1f(programDebug.uniform.u_sampleRadius, sampleRadius);
       gl.uniform3fv(programDebug.uniform.u_kernel, kernel);
+      gl.uniform1f(programDebug.uniform.u_size, size);
       gl.uniformMatrix4fv(
         programDebug.uniform.u_viewMatrix,
         false,
@@ -194,7 +198,7 @@ const createAOPass = (
         );
 
         const fl = (x: number) => {
-          const l = (Math.round(x * 100) / 100).toFixed(2);
+          const l = x.toFixed(2);
           return " ".repeat(5 - l.length) + l;
         };
         document.getElementById("log")!.innerText =
@@ -202,17 +206,21 @@ const createAOPass = (
           "\n" +
           "x:" +
           fl(x) +
-          "\n" +
+          ", " +
           "y:" +
           fl(y) +
+          "\n\n" +
+          [...data.slice(0, 3)]
+            .map((x) => (x / 256) * (size * 2) - size)
+            .map(fl) +
           "\n" +
-          [...data.slice(0, 3)].map((x) => (x / 256) * 6 - 3).map(fl);
+          [...data.slice(0, 3)].map((x) => x / 256).map(fl);
       }
     }
   };
 
-  let x = 0;
-  let y = 0;
+  let x = 0.5;
+  let y = 0.5;
   document.body.addEventListener("mousemove", ({ pageX, pageY }) => {
     x = pageX / window.innerWidth;
     y = pageY / window.innerHeight;
@@ -283,7 +291,7 @@ const createAOPass = (
       //   JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
       // );
     },
-    { maxRadius: 8, minRadius: 5 },
+    { maxRadius: 6, minRadius: 4.5 },
   );
 
   window.onresize = () => {
