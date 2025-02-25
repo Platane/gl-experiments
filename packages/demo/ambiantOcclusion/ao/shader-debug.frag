@@ -69,6 +69,9 @@ void main() {
 
     mat3 basis = mat3(u, normal, v);
 
+    // fragColor = vec4((normal + 1.0) / 2.0, 1.0);
+    // return;
+
     //
     //
 

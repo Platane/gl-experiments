@@ -122,8 +122,8 @@ export const createAOPass = (
       let l = 0;
       while (((l = Math.hypot(x, y, z)), l > 1 || l <= 0)) {
         x = Math.random() * 2 - 1;
-        y = Math.random() * 2 - 1;
-        // y = -Math.random();
+        // y = Math.random() * 2 - 1;
+        y = Math.random();
         z = Math.random() * 2 - 1;
       }
       return [x, y, z];

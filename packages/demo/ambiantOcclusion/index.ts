@@ -66,10 +66,10 @@ const rotateGeometry = ({
   const renderer = createBasicMeshMaterial(
     { gl },
     {
-      // geometry: modelGeometry,
+      // geometry: boxGeometry,
       geometry: {
-        positions: boxGeometry.positions.map((u) => u * 1.24),
-        normals: boxGeometry.normals,
+        positions: modelGeometry.positions.map((u) => u * 0.24),
+        normals: modelGeometry.normals,
       },
     },
   );
@@ -107,7 +107,7 @@ const rotateGeometry = ({
   );
 
   let sampleRadius = 0.2;
-  let sampleCount = 90;
+  let sampleCount = 64;
 
   const update = () => {
     document.getElementById("controls-sample-radius-value")!.innerText =
