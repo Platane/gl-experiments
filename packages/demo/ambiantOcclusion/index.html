@@ -26,12 +26,25 @@
             white-space: pre-wrap;
             font-family: monospace;
         }
+        #controls{
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            font-family: monospace;
+        }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <canvas id="canvas"></canvas>
     <p id="log"></p>
+    <div id="controls">
+        <section>
+        <label for="controls-sample-radius">sample radius</label>
+        <input type="range" min="0.01" max="2" step="0.1" id="controls-sample-radius" style="width:200px"></input>
+        <div id="controls-sample-radius-value"></div>
+        </section>
+    </div>
     <script type="module" src="index.ts"></script>
   </body>
 </html>

@@ -10,7 +10,7 @@ import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSp
 import { createBoxGeometry } from "../../app/renderer/geometries/box";
 
 const CAMERA_NEAR = 0.5;
-const CAMERA_FAR = 6;
+const CAMERA_FAR = 8;
 
 /**
  * references:
@@ -74,6 +74,8 @@ const createAOPass = (
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texStorage2D(
     gl.TEXTURE_2D,
     1,
@@ -238,10 +240,10 @@ const createAOPass = (
   const gl = canvas.getContext("webgl2")!;
 
   const modelGeometry = (await loadGLTFwithCache(
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
-    "node_damagedHelmet_-6514",
-    // "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
-    // "Dragon",
+    // "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+    // "node_damagedHelmet_-6514",
+    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
+    "Dragon",
   )) as { normals: Float32Array; positions: Float32Array };
 
   const boxGeometry = createBoxGeometry();
@@ -256,11 +258,11 @@ const createAOPass = (
   const renderer = createBasicMeshMaterial(
     { gl },
     {
-      geometry: modelGeometry,
-      // {
-      //   positions: boxGeometry.positions.map((u) => u * 0.5),
-      //   normals: boxGeometry.positions,
-      // },
+      // geometry: modelGeometry,
+      geometry: {
+        positions: modelGeometry.positions.map((u) => u * 0.24),
+        normals: modelGeometry.normals,
+      },
     },
   );
 
@@ -273,7 +275,7 @@ const createAOPass = (
   const camera = Object.assign(
     createLookAtCamera({ canvas }, { near: CAMERA_NEAR, far: CAMERA_FAR }),
     {
-      eye: [0, 0, 2] as vec3,
+      eye: [0, 0, 3] as vec3,
       lookAt: [0, 0, 0] as vec3,
     },
   );
@@ -296,12 +298,30 @@ const createAOPass = (
     { maxRadius: 6, minRadius: 4.5 },
   );
 
+  let sampleRadius = 0.2;
+  let sampleCount = 64;
+
+  const update = () => {
+    document.getElementById("controls-sample-radius-value")!.innerText =
+      sampleRadius.toFixed(2);
+    (document.getElementById("controls-sample-radius") as any).value =
+      sampleRadius;
+  };
+  update();
+  document
+    .getElementById("controls-sample-radius")
+    ?.addEventListener("input", (e) => {
+      sampleRadius = +(e.target as any).value;
+      update();
+      (window.onresize as any)();
+    });
+
   window.onresize = () => {
     resizeViewport({ gl, canvas }, { dpr: 2 });
     camera.update(camera.eye, camera.lookAt);
 
     aoPass?.dispose();
-    aoPass = createAOPass({ gl });
+    aoPass = createAOPass({ gl }, { sampleRadius, sampleCount });
   };
   (window.onresize as any)();
 
