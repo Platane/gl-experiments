@@ -1,7 +1,8 @@
 import { mat4, quat, vec3 } from "gl-matrix";
 import { createScreenSpaceProgramWithUniforms } from "../../../app/utils/gl-screenSpaceProgram";
 
-import codeFragDebug from "./shader-composition.frag?raw";
+import codeFragBlur from "./shader-blur.frag?raw";
+import codeFragComposition from "./shader-composition.frag?raw";
 import codeFragAmbientOcclusion from "./shader-computeAmbientOcclusion.frag?raw";
 
 /**
@@ -12,29 +13,38 @@ import codeFragAmbientOcclusion from "./shader-computeAmbientOcclusion.frag?raw"
  * to improve:
  *  - use a int format for the noise texture
  *  - use a uint format for the ao textures
+ *  - better blur pass
  */
 export const createAOPass = (
   { gl }: { gl: WebGL2RenderingContext },
   {
+    noiseTextureSize = 4,
     textureDownsampling = 2,
     sampleCount = 32,
     sampleRadius = 0.1,
+    blurRadius = noiseTextureSize,
   }: {
+    noiseTextureSize?: number;
     textureDownsampling?: number;
     sampleCount?: number;
     sampleRadius?: number;
+    blurRadius?: number;
   } = {},
 ) => {
   //
   // programs
   //
 
-  const programDebug = createScreenSpaceProgramWithUniforms(gl, codeFragDebug, [
-    "u_depthTexture",
-    "u_colorTexture",
-    "u_normalTexture",
-    "u_ambientOcclusionTexture",
-  ]);
+  const programComposition = createScreenSpaceProgramWithUniforms(
+    gl,
+    codeFragComposition,
+    [
+      "u_depthTexture",
+      "u_colorTexture",
+      "u_normalTexture",
+      "u_ambientOcclusionTexture",
+    ],
+  );
 
   const programAmbientOcclusion = createScreenSpaceProgramWithUniforms(
     gl,
@@ -49,6 +59,11 @@ export const createAOPass = (
       "u_viewMatrixInv",
     ],
   );
+
+  const programBlur = createScreenSpaceProgramWithUniforms(gl, codeFragBlur, [
+    "u_texture",
+    "u_blurRadius",
+  ]);
 
   //
   // framebuffer to store depth and color
@@ -143,6 +158,22 @@ export const createAOPass = (
 
   gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 
+  const ambientOcclusionBlurredTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, ambientOcclusionBlurredTexture);
+  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.R8, aoBufferWidth, aoBufferHeight);
+
+  const ambientOcclusionBlurredFramebuffer = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, ambientOcclusionBlurredFramebuffer);
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.COLOR_ATTACHMENT0,
+    gl.TEXTURE_2D,
+    ambientOcclusionBlurredTexture,
+    0,
+  );
+
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
   //
@@ -164,7 +195,6 @@ export const createAOPass = (
   );
 
   const noiseTexture = gl.createTexture();
-  const noiseTextureSize = 4;
   const noise = new Float32Array(
     Array.from({ length: noiseTextureSize * noiseTextureSize * 3 }, () => [
       Math.random() * 2 - 1,
@@ -241,35 +271,51 @@ export const createAOPass = (
       programAmbientOcclusion.draw();
     }
 
-    // debug pass
+    // blur pass
     {
-      gl.useProgram(programDebug.program);
+      gl.useProgram(programBlur.program);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, ambientOcclusionBlurredFramebuffer);
+
+      gl.activeTexture(gl.TEXTURE0 + 0);
+      gl.bindTexture(gl.TEXTURE_2D, ambientOcclusionTexture);
+      gl.uniform1i(programBlur.uniform.u_texture, 0);
+
+      gl.uniform1i(programBlur.uniform.u_blurRadius, blurRadius);
+
+      gl.viewport(0, 0, aoBufferWidth, aoBufferHeight);
+      programBlur.draw();
+    }
+
+    // composition pass
+    {
+      gl.useProgram(programComposition.program);
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, colorTexture);
-      gl.uniform1i(programDebug.uniform.u_colorTexture, 0);
+      gl.uniform1i(programComposition.uniform.u_colorTexture, 0);
 
       gl.activeTexture(gl.TEXTURE0 + 1);
       gl.bindTexture(gl.TEXTURE_2D, normalTexture);
-      gl.uniform1i(programDebug.uniform.u_normalTexture, 1);
+      gl.uniform1i(programComposition.uniform.u_normalTexture, 1);
 
       gl.activeTexture(gl.TEXTURE0 + 2);
       gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-      gl.uniform1i(programDebug.uniform.u_depthTexture, 2);
+      gl.uniform1i(programComposition.uniform.u_depthTexture, 2);
 
       gl.activeTexture(gl.TEXTURE0 + 3);
-      gl.bindTexture(gl.TEXTURE_2D, ambientOcclusionTexture);
-      gl.uniform1i(programDebug.uniform.u_ambientOcclusionTexture, 3);
+      gl.bindTexture(gl.TEXTURE_2D, ambientOcclusionBlurredTexture);
+      gl.uniform1i(programComposition.uniform.u_ambientOcclusionTexture, 3);
 
       gl.viewport(0, 0, baseDrawingBufferWidth, baseDrawingBufferHeight);
-      programDebug.draw();
+      programComposition.draw();
     }
   };
 
   const dispose = () => {
-    programDebug.dispose();
+    programComposition.dispose();
 
     gl.deleteFramebuffer(baseFramebuffer);
 

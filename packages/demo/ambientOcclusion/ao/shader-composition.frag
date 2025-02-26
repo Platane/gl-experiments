@@ -17,6 +17,6 @@ void main() {
     vec3 normal = texture(u_normalTexture, v_texCoord).xyz;
 
     fragColor = vec4(color.xyz * ao, color.a);
-    fragColor = vec4((normal * 2.0 - 1.0), color.a);
+    // fragColor = vec4((normal * 2.0 - 1.0), color.a);
     fragColor = vec4(ao, ao, ao, 1.0);
 }
