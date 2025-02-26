@@ -105,9 +105,10 @@ const rotateGeometry = ({
     sampleRadius: 0.2,
     sampleCount: 32,
     textureDownsampling: 2,
-    blurRadius: 3,
-    noiseTextureSize: 16,
+    blurRadius: 2,
+    noiseTextureSize: 4,
   };
+
   gui.add(config, "sampleRadius", 0.001, 2);
   gui.add(config, "sampleCount", 1, 128);
   gui.add(config, "textureDownsampling", [1, 2, 4, 8]);
