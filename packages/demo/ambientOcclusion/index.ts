@@ -5,8 +5,6 @@ import { createOrbitControl } from "../../app/control/orbitCamera";
 import { loadGLTFwithCache } from "../../gltf-parser";
 
 import { createBasicMeshMaterial } from "./basicMesh";
-import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSphere";
-import { createBoxGeometry } from "../../app/renderer/geometries/box";
 import { createAOPass } from "./ao";
 
 const CAMERA_NEAR = 0.5;
@@ -48,21 +46,10 @@ const rotateGeometry = ({
 
   const modelGeometry = rotateGeometry(
     (await loadGLTFwithCache(
-      // "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
-      // "node_damagedHelmet_-6514",
       "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
       "Dragon",
     )) as { normals: Float32Array; positions: Float32Array },
   );
-
-  const boxGeometry = createBoxGeometry();
-
-  const sphereGeometry = (() => {
-    const positions = new Float32Array(
-      createRecursiveSphere({ tesselatationStep: 6 }),
-    );
-    return { positions: positions, normals: positions };
-  })();
 
   const renderer = createBasicMeshMaterial(
     { gl },
