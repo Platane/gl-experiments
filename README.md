@@ -6,6 +6,7 @@ demo
 - [int sampler](http://platane.github.io/gl-experiments/demo/intSampler)
 - [jump flood outline](http://platane.github.io/gl-experiments/demo/jumpFloodOutline)
 - [ambiant occlusion](http://platane.github.io/gl-experiments/demo/ambiantOcclusion)
+- [reconstruct fragment position](http://platane.github.io/gl-experiments/demo/reconstructFragmentPosition)
 
 # Usage
 
