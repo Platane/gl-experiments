@@ -8,13 +8,18 @@ import codeFragAmbientOcclusion from "./shader-computeAmbientOcclusion.frag?raw"
  * references:
  * - https://medium.com/better-programming/depth-only-ssao-for-forward-renderers-1a3dcfa1873a
  * - http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
+ *
+ * to improve:
+ *  - use a int format for the noise texture
  */
 export const createAOPass = (
   { gl }: { gl: WebGL2RenderingContext },
   {
+    textureDownsampling = 2,
     sampleCount = 64,
     sampleRadius = 0.1,
   }: {
+    textureDownsampling?: number;
     sampleCount?: number;
     sampleRadius?: number;
   } = {},
@@ -113,15 +118,17 @@ export const createAOPass = (
   // framebuffer to store the ambient occlusion
   //
 
+  const baseDrawingBufferWidth = gl.drawingBufferWidth;
+  const baseDrawingBufferHeight = gl.drawingBufferHeight;
+
+  const aoBufferWidth = Math.ceil(baseDrawingBufferWidth / textureDownsampling);
+  const aoBufferHeight = Math.ceil(
+    baseDrawingBufferHeight / textureDownsampling,
+  );
+
   const ambientOcclusionTexture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, ambientOcclusionTexture);
-  gl.texStorage2D(
-    gl.TEXTURE_2D,
-    1,
-    gl.R8,
-    gl.drawingBufferWidth,
-    gl.drawingBufferHeight,
-  );
+  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.R8, aoBufferWidth, aoBufferHeight);
 
   const ambientOcclusionFramebuffer = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, ambientOcclusionFramebuffer);
@@ -229,6 +236,7 @@ export const createAOPass = (
       gl.bindTexture(gl.TEXTURE_2D, noiseTexture);
       gl.uniform1i(programAmbientOcclusion.uniform.u_noiseTexture, 2);
 
+      gl.viewport(0, 0, aoBufferWidth, aoBufferHeight);
       programAmbientOcclusion.draw();
     }
 
@@ -254,6 +262,7 @@ export const createAOPass = (
       gl.bindTexture(gl.TEXTURE_2D, ambientOcclusionTexture);
       gl.uniform1i(programDebug.uniform.u_ambientOcclusionTexture, 3);
 
+      gl.viewport(0, 0, baseDrawingBufferWidth, baseDrawingBufferHeight);
       programDebug.draw();
     }
   };

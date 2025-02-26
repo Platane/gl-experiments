@@ -84,25 +84,14 @@ const rotateGeometry = ({
     createLookAtCamera({ canvas }, { near: CAMERA_NEAR, far: CAMERA_FAR }),
     {
       eye: [0, 0, 4.5] as vec3,
-      lookAt: [0, 0, 0] as vec3,
+      lookAt: [0, 1, 0] as vec3,
     },
   );
-  try {
-    Object.assign(
-      camera,
-      JSON.parse(localStorage.getItem("camera." + location.pathname) ?? ""),
-    );
-  } catch (e) {}
+
   createOrbitControl(
     { canvas },
     camera,
-    () => {
-      camera.update(camera.eye, camera.lookAt);
-      // localStorage.setItem(
-      //   "camera." + location.pathname,
-      //   JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
-      // );
-    },
+    () => camera.update(camera.eye, camera.lookAt),
     { maxRadius: 9, minRadius: 3.5 },
   );
 

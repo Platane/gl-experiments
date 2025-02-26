@@ -54,7 +54,6 @@ void main() {
     ivec2 noiseTextureSize = textureSize(u_noiseTexture, 0);
     ivec2 noiseCoord = ivec2(mod(gl_FragCoord.x, float(noiseTextureSize.x)), mod(gl_FragCoord.y, float(noiseTextureSize.y)));
     vec3 randomVector = texelFetch(u_noiseTexture, noiseCoord, 0).xyz;
-    // vec3 randomVector = vec3(1.0, 0.0, 0.0);
 
     // use the Gram-Schmidt process to compute an orthogonal basis
     // * the random vector is supposed to have z=0, and supposedly the normal never have z=0, so they are never collinear
