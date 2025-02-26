@@ -11,12 +11,13 @@ import codeFragAmbientOcclusion from "./shader-computeAmbientOcclusion.frag?raw"
  *
  * to improve:
  *  - use a int format for the noise texture
+ *  - use a uint format for the ao textures
  */
 export const createAOPass = (
   { gl }: { gl: WebGL2RenderingContext },
   {
     textureDownsampling = 2,
-    sampleCount = 64,
+    sampleCount = 32,
     sampleRadius = 0.1,
   }: {
     textureDownsampling?: number;
@@ -179,7 +180,7 @@ export const createAOPass = (
   gl.texImage2D(
     gl.TEXTURE_2D,
     0, // level
-    gl.RGB32F, // internal format
+    gl.RGB16F, // internal format
     noiseTextureSize,
     noiseTextureSize,
     0, // border
