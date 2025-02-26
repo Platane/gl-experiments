@@ -9,7 +9,7 @@ import { createBoxGeometry } from "../../app/renderer/geometries/box";
 import { createAOPass } from "./ao";
 
 const CAMERA_NEAR = 0.5;
-const CAMERA_FAR = 8;
+const CAMERA_FAR = 10;
 
 const applyMat4 = (m: mat4, points: Float32Array) => {
   const copy = new Float32Array(points.length);
@@ -103,7 +103,7 @@ const rotateGeometry = ({
       //   JSON.stringify({ eye: camera.eye, lookAt: camera.lookAt }),
       // );
     },
-    { maxRadius: 6, minRadius: 4.5 },
+    { maxRadius: 9, minRadius: 3.5 },
   );
 
   let sampleRadius = 0.2;
@@ -134,8 +134,6 @@ const rotateGeometry = ({
       {
         sampleRadius,
         sampleCount,
-        cameraFar: CAMERA_FAR,
-        cameraNear: CAMERA_NEAR,
       },
     );
   };
