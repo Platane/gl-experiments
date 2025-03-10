@@ -12,8 +12,8 @@ in uvec4 a_boneIndexes;
 in vec2 a_instancePosition;
 in uint a_instanceColorPaletteIndex;
 in vec2 a_instanceDirection;
-in vec4 a_instancePoseWeights;
-in uvec4 a_instancePoseIndexes;
+in vec2 a_instancePoseWeights;
+in uvec2 a_instancePoseIndexes;
 
 // uniforms
 uniform mat4 u_viewMatrix;

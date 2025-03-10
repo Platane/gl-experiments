@@ -178,13 +178,13 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     const instancePoseIndexesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseIndexesBuffer);
     gl.enableVertexAttribArray(a_instancePoseIndexes);
-    gl.vertexAttribIPointer(a_instancePoseIndexes, 4, gl.UNSIGNED_BYTE, 0, 0);
+    gl.vertexAttribIPointer(a_instancePoseIndexes, 2, gl.UNSIGNED_BYTE, 0, 0);
     gl.vertexAttribDivisor(a_instancePoseIndexes, 1);
 
     const instancePoseWeightsBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseWeightsBuffer);
     gl.enableVertexAttribArray(a_instancePoseWeights);
-    gl.vertexAttribPointer(a_instancePoseWeights, 4, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(a_instancePoseWeights, 2, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(a_instancePoseWeights, 1);
 
     gl.bindVertexArray(null);
@@ -262,6 +262,8 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     renderers: ReturnType<typeof createRenderer>[],
   ) => {
     gl.useProgram(program);
+
+    gl.enable(gl.DEPTH_TEST);
 
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
