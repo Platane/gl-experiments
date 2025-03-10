@@ -8,6 +8,7 @@ import { createAnimationParamsGetter } from "../../app/renderer/materials/instan
 import { lerp } from "../../app/utils/math";
 import { loadGLTFwithCache } from "../../gltf-parser/loadGLTF";
 import GUI from "lil-gui";
+import Stats from "three/examples/jsm/libs/stats.module";
 
 // @ts-ignore
 import hash from "hash-int";
@@ -30,7 +31,7 @@ import hash from "hash-int";
     colorCount,
     colorIndexes,
     colorPalette,
-  } = await loadGLTFwithCache(model_glb, "fox");
+  } = await loadGLTFwithCache(model_glb, "fox", { colorEqualsThreehold: 150 });
 
   const { boneWeights, boneIndexes } = computeWeights(bindPose, positions);
 
@@ -46,7 +47,22 @@ import hash from "hash-int";
       colorCount: colorCount!,
       colorIndexes: colorIndexes!,
     },
-    colorPalettes: new Uint8Array([...colorPalette!]),
+    colorPalettes: new Uint8Array([
+      ...colorPalette!,
+
+      ...Array.from({ length: 20 }, (_, i) => {
+        const r = 80 + (hash(i + 31289) % 160);
+        const g = 80 + (hash(i + 1823) % 160);
+        const b = 80 + (hash(i + 5189) % 160);
+
+        // biome-ignore format: better
+        return [
+          254, 248, 242,
+          r,   g,   b,
+          40,  40,  40,
+        ]
+      }).flat(),
+    ]),
     poses: animationParams.poses,
   });
   //
@@ -84,11 +100,14 @@ import hash from "hash-int";
     poseIndexes: new Uint8Array(N * 2),
     poseWeights: new Float32Array(N * 2),
     colorPaletteIndexes: new Uint8Array(
-      Array.from({ length: N }, (_, i) => hash(i + 312) % 1),
+      Array.from({ length: N }, (_, i) => hash(i + 312) % 20),
     ),
-    animations: Array.from({ length: N }, () => ({ index: 1, time: 0 })),
+    animations: Array.from({ length: N }, (_, i) => ({
+      index: 1 + (hash(i + 3081) % 2),
+      time: 0,
+    })),
     entropies: Array.from({ length: N }, (_, i) => {
-      const A = lerp(1 - ((hash(i + 31233) % 4823) / 4823) ** 2, 300, 5000);
+      const A = lerp(1 - ((hash(i + 31233) % 4823) / 4823) ** 2, 300, 8000);
 
       const angleOffset = ((hash(i + 5891) % 631) / 631) * Math.PI * 2;
 
@@ -103,15 +122,22 @@ import hash from "hash-int";
   //
   const gui = new GUI();
   const config = {
-    instanceCount: 1 << 10,
+    instanceCount: 1 << 12,
   };
 
-  gui.add(config, "instanceCount", 1, 1 << 15);
+  gui.add(config, "instanceCount", [1, 1 << 4, 1 << 12, 1 << 14, 1 << 15]);
   gui.onChange(() => {
     config.instanceCount = Math.round(config.instanceCount);
   });
+  const stats = new Stats();
+  stats.dom.style.margin = "4px";
+  stats.dom.style.height = "48px";
+  stats.dom.style.position = "static";
+  gui.domElement.appendChild(stats.dom);
 
   const loop = () => {
+    stats.update();
+
     const t = Date.now() / 1000;
     for (let i = config.instanceCount; i--; ) {
       const { A, angleOffset, timingOffset } = world.entropies[i];

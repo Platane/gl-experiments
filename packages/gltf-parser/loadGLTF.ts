@@ -5,7 +5,11 @@ import * as indexedDBCache from "./indexedDB-cache";
 import { extractAnimationsPoses } from "./animation";
 import { extractVertexColors } from "./color";
 
-export const loadGLTF = async (uri: string, name: string) => {
+export const loadGLTF = async (
+  uri: string,
+  name: string,
+  options: { colorEqualsThreehold?: number } = {},
+) => {
   const loader = new GLTFLoader();
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath(
@@ -31,11 +35,15 @@ export const loadGLTF = async (uri: string, name: string) => {
     positions,
     normals,
     ...(mesh.skeleton && extractAnimationsPoses(res.animations, mesh.skeleton)),
-    ...extractVertexColors(uvs, mesh.material),
+    ...extractVertexColors(uvs, mesh.material, options),
   };
 };
 
-export const loadGLTFwithCache = async (uri: string, name: string) => {
+export const loadGLTFwithCache = async (
+  uri: string,
+  name: string,
+  o?: Parameters<typeof loadGLTF>[2],
+) => {
   let content = await indexedDBCache.get(uri);
 
   if (!content) {
@@ -48,7 +56,7 @@ export const loadGLTFwithCache = async (uri: string, name: string) => {
 
   const blobUri = URL.createObjectURL(new Blob([content]));
 
-  const res = await loadGLTF(blobUri, name);
+  const res = await loadGLTF(blobUri, name, o);
 
   URL.revokeObjectURL(blobUri);
 

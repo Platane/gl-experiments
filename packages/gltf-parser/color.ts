@@ -3,6 +3,7 @@ import * as THREE from "three";
 export const extractVertexColors = (
   uvs: Float32Array | undefined,
   materials: THREE.Material | THREE.Material[],
+  { colorEqualsThreehold = 1 }: { colorEqualsThreehold?: number } = {},
 ) => {
   const material = Array.isArray(materials) ? materials[0] : materials;
 
@@ -50,7 +51,24 @@ export const extractVertexColors = (
     const keys = colors.map(packColor);
 
     // pick the keys with the highest count
-    const key = keys[0] === keys[1] ? keys[0] : keys[1];
+    const color = keys[0] === keys[1] ? colors[0] : colors[1];
+
+    const closeColor = [...colorMap.keys()]
+      .map((key) => {
+        const c = unpackColor(key);
+        const distance = Math.hypot(
+          c[0] - color[0],
+          c[1] - color[1],
+          c[2] - color[2],
+        );
+        return { distance, key };
+      })
+      .sort((a, b) => a.distance - b.distance)[0];
+
+    const key =
+      closeColor && closeColor.distance < colorEqualsThreehold
+        ? closeColor.key
+        : packColor(color);
 
     let index = colorMap.get(key);
     if (index === undefined) colorMap.set(key, (index = colorMap.size));

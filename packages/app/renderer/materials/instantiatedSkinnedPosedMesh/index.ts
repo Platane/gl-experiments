@@ -94,7 +94,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     gl.texImage2D(
       gl.TEXTURE_2D,
       0, // level
-      gl.RGBA32F, // internal format
+      gl.RGBA16F, // internal format
       4 * geometry.boneCount, // 4 pixels, each pixel has RGBA so 4 pixels is 16 values ( = one matrix ). one row contains all bones
       poses.length / (16 * geometry.boneCount), // one row per pose
       0, // border
@@ -107,6 +107,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
 
     const colorPalettesTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, colorPalettesTexture);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
