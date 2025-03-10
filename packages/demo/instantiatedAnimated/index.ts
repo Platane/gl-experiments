@@ -50,7 +50,7 @@ import hash from "hash-int";
     colorPalettes: new Uint8Array([
       ...colorPalette!,
 
-      ...Array.from({ length: 20 }, (_, i) => {
+      ...Array.from({ length: 29 }, (_, i) => {
         const r = 80 + (hash(i + 31289) % 160);
         const g = 80 + (hash(i + 1823) % 160);
         const b = 80 + (hash(i + 5189) % 160);
@@ -100,7 +100,7 @@ import hash from "hash-int";
     poseIndexes: new Uint8Array(N * 2),
     poseWeights: new Float32Array(N * 2),
     colorPaletteIndexes: new Uint8Array(
-      Array.from({ length: N }, (_, i) => hash(i + 312) % 20),
+      Array.from({ length: N }, (_, i) => hash(i + 312) % 30),
     ),
     animations: Array.from({ length: N }, (_, i) => ({
       index: 1 + (hash(i + 3081) % 2),
