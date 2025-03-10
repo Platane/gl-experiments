@@ -65,7 +65,6 @@ void main() {
         );
 
     vec4 p = vec4((rot * (bm * a_position).xyz), 1.0);
-    // p = vec4((rot * (a_position).xyz), 1.0);
 
     p.x += a_instancePosition.x;
     p.z += a_instancePosition.y;
@@ -79,48 +78,40 @@ void main() {
 
     v_color = texelFetch(u_colorPalettesTexture, ivec2(a_colorIndex, a_instanceColorPaletteIndex), 0).xyz;
 
-    //
-    // debugger weight
-    if (false) {
-        uvec3 debugIndexes = uvec3(1, 2, 0);
-        vec3 debugWeights = vec3(0.0, 0.0, 0.0);
-        if (a_boneIndexes[0] == debugIndexes[0]) {
-            debugWeights[0] = a_boneWeights[0];
-        } else if (a_boneIndexes[1] == debugIndexes[0]) {
-            debugWeights[0] = a_boneWeights[1];
-        } else if (a_boneIndexes[2] == debugIndexes[0]) {
-            debugWeights[0] = a_boneWeights[2];
-        } else if (a_boneIndexes[3] == debugIndexes[0]) {
-            debugWeights[0] = a_boneWeights[3];
-        }
+    // //
+    // // debugger weight
+    // if (false) {
+    //     uvec3 debugIndexes = uvec3(1, 2, 0);
+    //     vec3 debugWeights = vec3(0.0, 0.0, 0.0);
+    //     if (a_boneIndexes[0] == debugIndexes[0]) {
+    //         debugWeights[0] = a_boneWeights[0];
+    //     } else if (a_boneIndexes[1] == debugIndexes[0]) {
+    //         debugWeights[0] = a_boneWeights[1];
+    //     } else if (a_boneIndexes[2] == debugIndexes[0]) {
+    //         debugWeights[0] = a_boneWeights[2];
+    //     } else if (a_boneIndexes[3] == debugIndexes[0]) {
+    //         debugWeights[0] = a_boneWeights[3];
+    //     }
 
-        if (a_boneIndexes[0] == debugIndexes[1]) {
-            debugWeights[1] = a_boneWeights[0];
-        } else if (a_boneIndexes[1] == debugIndexes[1]) {
-            debugWeights[1] = a_boneWeights[1];
-        } else if (a_boneIndexes[2] == debugIndexes[1]) {
-            debugWeights[1] = a_boneWeights[2];
-        } else if (a_boneIndexes[3] == debugIndexes[1]) {
-            debugWeights[1] = a_boneWeights[3];
-        }
+    //     if (a_boneIndexes[0] == debugIndexes[1]) {
+    //         debugWeights[1] = a_boneWeights[0];
+    //     } else if (a_boneIndexes[1] == debugIndexes[1]) {
+    //         debugWeights[1] = a_boneWeights[1];
+    //     } else if (a_boneIndexes[2] == debugIndexes[1]) {
+    //         debugWeights[1] = a_boneWeights[2];
+    //     } else if (a_boneIndexes[3] == debugIndexes[1]) {
+    //         debugWeights[1] = a_boneWeights[3];
+    //     }
 
-        if (a_boneIndexes[0] == debugIndexes[2]) {
-            debugWeights[2] = a_boneWeights[0];
-        } else if (a_boneIndexes[1] == debugIndexes[2]) {
-            debugWeights[2] = a_boneWeights[1];
-        } else if (a_boneIndexes[2] == debugIndexes[2]) {
-            debugWeights[2] = a_boneWeights[2];
-        } else if (a_boneIndexes[3] == debugIndexes[2]) {
-            debugWeights[2] = a_boneWeights[3];
-        }
-        v_color = debugWeights;
-    }
-
-    // v_color = vec3(a_boneWeights);
-    // v_color = vec3(float(a_instancePoseIndexes[0]) / 10.0, a_instancePoseWeights[0], float(a_boneIndexes[0]));
-    // v_color = vec3(a_instanceDirection, 0.0);
-    // v_color = vec3(float(gl_InstanceID) / 100.0, 1.0, 0.0);
-
-    // float de = gl_Position.z / 25.0;
-    // v_color = vec3(de, de, de);
+    //     if (a_boneIndexes[0] == debugIndexes[2]) {
+    //         debugWeights[2] = a_boneWeights[0];
+    //     } else if (a_boneIndexes[1] == debugIndexes[2]) {
+    //         debugWeights[2] = a_boneWeights[1];
+    //     } else if (a_boneIndexes[2] == debugIndexes[2]) {
+    //         debugWeights[2] = a_boneWeights[2];
+    //     } else if (a_boneIndexes[3] == debugIndexes[2]) {
+    //         debugWeights[2] = a_boneWeights[3];
+    //     }
+    //     v_color = debugWeights;
+    // }
 }

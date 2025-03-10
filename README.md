@@ -7,6 +7,7 @@ demo
 - [jump flood outline](http://platane.github.io/gl-experiments/demo/jumpFloodOutline)
 - [ambient occlusion](http://platane.github.io/gl-experiments/demo/ambientOcclusion)
 - [reconstruct fragment position](http://platane.github.io/gl-experiments/demo/reconstructFragmentPosition)
+- [instantiated animated](http://platane.github.io/gl-experiments/demo/instantiatedAnimated)
 
 # Usage
 
