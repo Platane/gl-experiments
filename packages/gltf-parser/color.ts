@@ -37,24 +37,32 @@ export const extractVertexColors = (
     (color[0] << 16) + (color[1] << 8) + color[2];
   const unpackColor = (key: number) => [key >> 16, (key >> 8) % 256, key % 256];
 
-  const colors = new Map<number, number>();
+  const colorMap = new Map<number, number>();
 
   const colorIndexes = new Uint8Array(uvs.length / 2);
 
-  for (let i = colorIndexes.length; i--; ) {
-    const color = readPixel(uvs[i * 2 + 0], uvs[i * 2 + 1]);
+  for (let i = 0; i < colorIndexes.length; i += 3) {
+    const colors = [
+      readPixel(uvs[(i + 0) * 2 + 0], uvs[(i + 0) * 2 + 1]),
+      readPixel(uvs[(i + 1) * 2 + 0], uvs[(i + 1) * 2 + 1]),
+      readPixel(uvs[(i + 2) * 2 + 0], uvs[(i + 2) * 2 + 1]),
+    ];
+    const keys = colors.map(packColor);
 
-    const key = packColor(color);
+    // pick the keys with the highest count
+    const key = keys[0] === keys[1] ? keys[0] : keys[1];
 
-    let index = colors.get(key);
-    if (index === undefined) colors.set(key, (index = colors.size));
+    let index = colorMap.get(key);
+    if (index === undefined) colorMap.set(key, (index = colorMap.size));
 
-    colorIndexes[i] = index;
+    colorIndexes[i + 0] = index;
+    colorIndexes[i + 1] = index;
+    colorIndexes[i + 2] = index;
   }
 
-  const colorCount = colors.size;
+  const colorCount = colorMap.size;
   const colorPalette = new Uint8Array(
-    [...colors.entries()]
+    [...colorMap.entries()]
       .sort(([, a], [, b]) => a - b)
       .flatMap(([c]) => unpackColor(c)),
   );

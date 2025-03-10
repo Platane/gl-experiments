@@ -27,12 +27,12 @@ import { getSharkModel } from "./renderer/geometries/shark";
 
   const loop = () => {
     const o = Date.now() / 1000;
-    world.player.positions[0] = Math.sin(o) * 2;
-    world.player.positions[1] = Math.cos(o) * 2;
+    world.player.positions[0] = Math.sin(o) * 1.5;
+    world.player.positions[1] = Math.cos(o) * 1.5;
     world.player.directions[0] = Math.sin(o + 3.14 / 2);
     world.player.directions[1] = Math.cos(o + 3.14 / 2);
     world.player.animation.index = 9;
-    world.player.animation.time = (Date.now() / 1000) * 1.2;
+    world.player.animation.time = Date.now() / 1000;
 
     render(world);
 
