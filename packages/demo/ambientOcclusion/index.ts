@@ -1,8 +1,8 @@
 import GUI from "lil-gui";
-import { mat4, quat, vec3 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
 import { createOrbitControl } from "../../app/control/orbitCamera";
-import { loadGLTFwithCache } from "../../gltf-parser";
+import { loadGLTFwithCache } from "../../gltf-parser/loadGLTF";
 
 import { createBasicMeshMaterial } from "./basicMesh";
 import { createAOPass } from "./ao";
@@ -10,54 +10,22 @@ import { createAOPass } from "./ao";
 const CAMERA_NEAR = 0.5;
 const CAMERA_FAR = 10;
 
-const applyMat4 = (m: mat4, points: Float32Array) => {
-  const copy = new Float32Array(points.length);
-
-  const v = vec3.create();
-  for (let k = points.length / 3; k--; ) {
-    v[0] = points[k * 3 + 0];
-    v[1] = points[k * 3 + 1];
-    v[2] = points[k * 3 + 2];
-
-    vec3.transformMat4(v, v, m);
-
-    copy[k * 3 + 0] = v[0];
-    copy[k * 3 + 1] = v[1];
-    copy[k * 3 + 2] = v[2];
-  }
-
-  return copy;
-};
-
-const rotateGeometry = ({
-  positions,
-  normals,
-}: { positions: Float32Array; normals: Float32Array }) => {
-  const m = mat4.create();
-  mat4.rotateX(m, m, Math.PI / 2);
-
-  return { positions: applyMat4(m, positions), normals: applyMat4(m, normals) };
-};
-
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
   const gl = canvas.getContext("webgl2")!;
 
-  const modelGeometry = rotateGeometry(
-    (await loadGLTFwithCache(
-      "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
-      "Dragon",
-    )) as { normals: Float32Array; positions: Float32Array },
+  const modelGeometry = await loadGLTFwithCache(
+    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
+    "Dragon",
   );
 
   const renderer = createBasicMeshMaterial(
     { gl },
     {
-      // geometry: boxGeometry,
       geometry: {
-        positions: modelGeometry.positions.map((u) => u * 0.24),
-        normals: modelGeometry.normals,
+        positions: modelGeometry.positions,
+        normals: modelGeometry.normals!,
       },
     },
   );
@@ -72,7 +40,7 @@ const rotateGeometry = ({
     createLookAtCamera({ canvas }, { near: CAMERA_NEAR, far: CAMERA_FAR }),
     {
       eye: [0, 0, 4.5] as vec3,
-      lookAt: [0, 1, 0] as vec3,
+      lookAt: [0, 0, 0] as vec3,
     },
   );
 

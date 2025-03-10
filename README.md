@@ -30,3 +30,4 @@ bun vite packages/demo/basicMesh
 - [webgl 2 examples](https://github.com/tsherif/webgl2examples)
 - [framebuffer object technique](https://www.youtube.com/@osakaandrew/videos)
 - [isampler2d usage](https://github.com/aadebdeb/Sample_WebGL2_IntegerTexture)
+- [poly.pizza model store](https://poly.pizza/)

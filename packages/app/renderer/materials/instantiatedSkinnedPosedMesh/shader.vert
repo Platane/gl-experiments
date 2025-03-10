@@ -23,7 +23,6 @@ uniform sampler2D u_colorPalettesTexture;
 out vec3 v_normal;
 out vec3 v_color;
 flat out int v_instanceIndex;
-flat out int v_colorIndex;
 
 mat4 getBoneMatrix(sampler2D posesTexture, uint poseIndex, uint boneIndex) {
     return mat4(
@@ -66,6 +65,7 @@ void main() {
         );
 
     vec4 p = vec4((rot * (bm * a_position).xyz), 1.0);
+    // p = vec4((rot * (a_position).xyz), 1.0);
 
     p.x += a_instancePosition.x;
     p.z += a_instancePosition.y;
@@ -73,10 +73,11 @@ void main() {
     gl_Position = u_viewMatrix * p;
 
     v_normal = rot * vec3(a_normal);
+    v_normal = normalize(v_normal);
 
     v_instanceIndex = gl_InstanceID;
 
-    v_colorIndex = int(a_colorIndex);
+    v_color = texelFetch(u_colorPalettesTexture, ivec2(a_colorIndex, a_instanceColorPaletteIndex), 0).xyz;
 
     //
     // debugger weight
@@ -122,6 +123,4 @@ void main() {
 
     // float de = gl_Position.z / 25.0;
     // v_color = vec3(de, de, de);
-
-    v_color = texelFetch(u_colorPalettesTexture, ivec2(a_colorIndex, a_instanceColorPaletteIndex), 0).xyz;
 }

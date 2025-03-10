@@ -84,6 +84,9 @@ export const createGridMaterial = (
 
     gl.disable(gl.DEPTH_TEST);
 
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.DEPTH_TEST);

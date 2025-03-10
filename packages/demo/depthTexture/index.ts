@@ -2,7 +2,6 @@ import { mat4, quat, vec3 } from "gl-matrix";
 import { createRecursiveSphere } from "../../app/renderer/geometries/recursiveSphere";
 import { createBasicMeshMaterial } from "../../app/renderer/materials/basicMesh";
 import { getFlatShadingNormals } from "../../app/utils/geometry-normals";
-import { getGeometry as getFoxGeometry } from "../../app/renderer/geometries/fox";
 import {
   CAMERA_FAR,
   CAMERA_NEAR,
@@ -14,6 +13,7 @@ import { createScreenSpaceProgram } from "../../app/utils/gl-screenSpaceProgram"
 import { getUniformLocation } from "../../app/utils/gl";
 
 import codeFrag from "./shader.frag?raw";
+import { loadGLTFwithCache } from "../../gltf-parser/loadGLTF";
 
 const createDepthPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   //
@@ -145,8 +145,16 @@ const createDepthPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   const sphereColor = new Float32Array([0.4, 0.4, 0.7]);
   const sphereTransform = mat4.create() as Float32Array;
 
-  const foxGeometry = await getFoxGeometry();
-  const foxRenderer = basicMaterial.createRenderer({ geometry: foxGeometry });
+  const foxGeometry = await loadGLTFwithCache(
+    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb",
+    "fox",
+  );
+  const foxRenderer = basicMaterial.createRenderer({
+    geometry: {
+      positions: foxGeometry.positions,
+      normals: getFlatShadingNormals(foxGeometry.positions),
+    },
+  });
   const foxColor = new Float32Array([0.72, 0.7, 0.4]);
   const foxTransform = mat4.create() as Float32Array;
 
