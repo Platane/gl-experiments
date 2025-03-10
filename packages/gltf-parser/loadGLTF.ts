@@ -30,10 +30,18 @@ export const loadGLTF = async (
   const positions = geo.getAttribute("position").array as Float32Array;
   const normals = geo.getAttribute("normal")?.array as Float32Array | undefined;
   const uvs = geo.getAttribute("uv")?.array as Float32Array | undefined;
+  const boneIndexes = geo.getAttribute("skinIndex")?.array as
+    | Uint16Array
+    | undefined;
+  const boneWeights = geo.getAttribute("skinWeight")?.array as
+    | Float32Array
+    | undefined;
 
   return {
     positions,
     normals,
+    boneIndexes,
+    boneWeights,
     ...(mesh.skeleton && extractAnimationsPoses(res.animations, mesh.skeleton)),
     ...extractVertexColors(uvs, mesh.material, options),
   };

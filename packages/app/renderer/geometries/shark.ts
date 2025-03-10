@@ -12,15 +12,17 @@ export const getSharkModel = async () => {
     colorCount,
     colorIndexes,
     colorPalette,
+    boneIndexes,
+    boneWeights,
   } = await loadGLTFwithCache(model_glb, "Sharky");
 
-  const { boneWeights, boneIndexes } = computeWeights(bindPose, positions);
+  // const { boneWeights, boneIndexes } = computeWeights(bindPose, positions);
 
   const geometry = {
     positions,
     normals: normals!,
-    boneWeights,
-    boneIndexes,
+    boneWeights: boneWeights!,
+    boneIndexes: new Uint8Array(boneIndexes!),
     boneCount: bindPose.length,
     colorCount: colorCount!,
     colorIndexes: colorIndexes!,

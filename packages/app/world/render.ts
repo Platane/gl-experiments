@@ -2,13 +2,14 @@ import { mat4, vec2, vec3 } from "gl-matrix";
 import type { World } from "../world/state";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "../renderer/materials/instantiatedSkinnedPosedMesh";
 import { createAnimationParamsGetter } from "../renderer/materials/instantiatedSkinnedPosedMesh/animation";
-import { createGizmoMaterial } from "../renderer/materials/gizmos";
 import { createGridMaterial } from "../renderer/materials/grid";
 import { getSharkModel } from "../renderer/geometries/shark";
 
 export const createRenderer = (
   { gl }: { gl: WebGL2RenderingContext },
-  model: { shark: Awaited<ReturnType<typeof getSharkModel>> },
+  model: {
+    shark: Awaited<ReturnType<typeof getSharkModel>>;
+  },
 ) => {
   //
   // camera
@@ -30,7 +31,7 @@ export const createRenderer = (
     poses: sharkAnimationParams.poses,
   });
 
-  const gridRenderer = createGridMaterial({ gl });
+  const gridRenderer = createGridMaterial({ gl }, { gridSize: 10 });
 
   const render = (world: World) => {
     //
@@ -68,8 +69,6 @@ export const createRenderer = (
     //
     // draw
     //
-
-    // console.log(world.camera.viewportSize);
 
     gl.viewport(
       0,
