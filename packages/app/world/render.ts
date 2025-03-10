@@ -57,13 +57,9 @@ export const createRenderer = (
     sharkAnimationParams.applyAnimationParams(world.player, [
       world.player.animation,
     ]);
-    sharkRenderer.update(
-      world.player.positions,
-      world.player.directions,
-      world.player.poseIndexes,
-      world.player.poseWeights,
-      world.player.colorPaletteIndexes,
-      1,
+    sharkAnimationParams.applyAnimationParams(
+      world.enemies,
+      world.enemies.animations,
     );
 
     //
@@ -80,10 +76,40 @@ export const createRenderer = (
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gridRenderer.draw(viewMatrix);
-    skinnedMeshMaterial.draw(viewMatrix, [sharkRenderer]);
+    skinnedMeshMaterial.draw(viewMatrix, () => {
+      //
+      // render player
+
+      sharkRenderer.update(
+        world.player.positions,
+        world.player.directions,
+        world.player.poseIndexes,
+        world.player.poseWeights,
+        world.player.colorPaletteIndexes,
+        1,
+      );
+      sharkRenderer.render();
+
+      //
+      // render enemies
+
+      sharkRenderer.update(
+        world.enemies.positions,
+        world.enemies.directions,
+        world.enemies.poseIndexes,
+        world.enemies.poseWeights,
+        world.enemies.colorPaletteIndexes,
+        world.enemies.count,
+      );
+      sharkRenderer.render();
+    });
   };
 
-  const dispose = () => {};
+  const dispose = () => {
+    gridRenderer.dispose();
+    sharkRenderer.dispose();
+    skinnedMeshMaterial.dispose();
+  };
 
   return { render, dispose };
 };

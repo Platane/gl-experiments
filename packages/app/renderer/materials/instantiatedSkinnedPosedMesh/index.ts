@@ -193,7 +193,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     let nInstances = 0;
     const nVertices = geometry.positions.length / 3;
 
-    const _draw = () => {
+    const render = () => {
       gl.bindVertexArray(vao);
 
       gl.activeTexture(gl.TEXTURE0 + 0);
@@ -255,13 +255,10 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
       gl.deleteBuffer(instanceColorPaletteIndexBuffer);
     };
 
-    return { _draw, update, dispose };
+    return { render, update, dispose };
   };
 
-  const draw = (
-    viewMatrix: mat4,
-    renderers: ReturnType<typeof createRenderer>[],
-  ) => {
+  const draw = (viewMatrix: mat4, callRenderers: () => void) => {
     gl.useProgram(program);
 
     gl.enable(gl.DEPTH_TEST);
@@ -274,7 +271,7 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     gl.uniform1i(u_posesTexture, 0);
     gl.uniform1i(u_colorPalettesTexture, 1);
 
-    for (const r of renderers) r._draw();
+    callRenderers();
 
     gl.useProgram(null);
   };

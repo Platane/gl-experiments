@@ -171,7 +171,7 @@ import hash from "hash-int";
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    skinnedMeshMaterial.draw(camera.worldMatrix, [foxRenderer]);
+    skinnedMeshMaterial.draw(camera.worldMatrix, () => foxRenderer.render());
 
     requestAnimationFrame(loop);
   };

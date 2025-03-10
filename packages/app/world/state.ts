@@ -1,23 +1,40 @@
 import { vec3 } from "gl-matrix";
 
+export const MAX_ENEMIES = 1 << 10;
+
 export const createWorld = () => {
   return {
+    time: 0,
+    dt: 1 / 60,
     enemies: {
-      health: new Uint8Array(),
-      positions: new Float32Array(), // as (x,y)
-      directions: new Float32Array(), // as (x,y)
+      count: 0,
+      health: new Uint8Array(MAX_ENEMIES),
+      positions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
+      directions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
 
       lastHitDate: new Float32Array(),
       lastAttackDate: new Float32Array(),
+
+      animations: Array.from({ length: MAX_ENEMIES }, () => ({
+        index: 0,
+        time: 0,
+        startTime: 0,
+      })),
+
+      colorPaletteIndexes: new Uint8Array(MAX_ENEMIES),
+
+      poseIndexes: new Uint8Array(MAX_ENEMIES * 2),
+      poseWeights: new Float32Array(MAX_ENEMIES * 2),
     },
     player: {
       health: 10,
       positions: new Float32Array([0, 0]),
       directions: new Float32Array([0, 1]),
 
-      animation: { index: 0, time: 0 },
+      animation: { index: 0, time: 0, startTime: 0 },
 
       colorPaletteIndexes: new Uint8Array([0]),
+
       poseIndexes: new Uint8Array([0, 0]),
       poseWeights: new Float32Array([1, 0]),
     },

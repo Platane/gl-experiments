@@ -13,7 +13,7 @@ export const loadGLTF = async (
   const loader = new GLTFLoader();
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath(
-    "https://www.gstatic.com/draco/versioned/decoders/1.4.3/",
+    "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
   );
   loader.setDRACOLoader(dracoLoader);
 

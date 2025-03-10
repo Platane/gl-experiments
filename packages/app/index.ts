@@ -3,6 +3,9 @@ import { createRenderer } from "./world/render";
 import { createEventListeners } from "./control/inputs";
 import { createOrbitControl } from "./control/orbitCamera";
 import { getSharkModel } from "./renderer/geometries/shark";
+import { movePlayer } from "./world/system/move-player";
+import { cameraFollow } from "./world/system/camera-follow";
+import { moveEnemies } from "./world/system/move-enemies";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -25,14 +28,15 @@ import { getSharkModel } from "./renderer/geometries/shark";
   // loop
   //
 
+  const startDate = Date.now();
   const loop = () => {
-    const o = Date.now() / 1000;
-    world.player.positions[0] = Math.sin(o) * 1.5;
-    world.player.positions[1] = Math.cos(o) * 1.5;
-    world.player.directions[0] = Math.sin(o + 3.14 / 2);
-    world.player.directions[1] = Math.cos(o + 3.14 / 2);
-    world.player.animation.index = 9;
-    world.player.animation.time = Date.now() / 1000;
+    world.time = (Date.now() - startDate) / 1000;
+
+    movePlayer(world);
+    moveEnemies(world);
+    cameraFollow(world);
+
+    //
 
     render(world);
 
