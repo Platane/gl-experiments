@@ -9,6 +9,7 @@ import { moveEnemies } from "./world/system/move-enemies";
 import { getTrexModel } from "./renderer/geometries/trex";
 import { getVelociraptorModel } from "./renderer/geometries/velociraptor";
 import { getParaModel } from "./renderer/geometries/para";
+import { stompEnemies } from "./world/system/stomp-enemies";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -39,6 +40,7 @@ import { getParaModel } from "./renderer/geometries/para";
     world.time = (Date.now() - startDate) / 1000;
 
     movePlayer(world);
+    stompEnemies(world);
     moveEnemies(world);
     cameraFollow(world);
 

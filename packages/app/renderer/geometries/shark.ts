@@ -1,4 +1,5 @@
 import { loadGLTFwithCache } from "../../../gltf-parser/loadGLTF";
+import { getFlatShadingNormals } from "../../utils/geometry-normals";
 
 // import model_glb from "../../assets/models/Sharky.glb?url";
 const model_glb =
@@ -21,8 +22,8 @@ export const getSharkModel = async () => {
 
   const geometry = {
     positions,
-    normals: normals!,
-    // normals: getFlatShadingNormals(positions),
+    // normals: normals!,
+    normals: getFlatShadingNormals(positions),
     boneWeights: boneWeights!,
     boneIndexes: new Uint8Array(boneIndexes!),
     boneCount: bindPose.length,
@@ -43,6 +44,9 @@ export const getSharkModel = async () => {
 
     // biome-ignore format: better
     colorPalettes: new Uint8Array([
+
+      //
+      ...colorPalette!,
 
       178, 146, 212,
       128, 100, 169,
@@ -71,8 +75,6 @@ export const getSharkModel = async () => {
       194, 181, 162,
       34, 34, 34,
 
-      //
-      ...colorPalette!,
     ]),
 
     bindPose,

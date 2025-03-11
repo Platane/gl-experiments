@@ -22,16 +22,16 @@ export const movePlayer = (world: World) => {
     world.player.positions[0] += dir[0] * SPEED * world.dt;
     world.player.positions[1] += dir[1] * SPEED * world.dt;
 
-    if (world.player.animation.index != characterAnimation.run) {
-      world.player.animation.index = characterAnimation.run;
-      world.player.animation.startTime = world.time;
+    if (world.player.animationIndexes[0] != characterAnimation.run) {
+      world.player.animationIndexes[0] = characterAnimation.run;
+      world.player.animationTimes[0] = 0;
     }
   } else {
-    if (world.player.animation.index != characterAnimation.idle) {
-      world.player.animation.index = characterAnimation.idle;
-      world.player.animation.startTime = world.time;
+    if (world.player.animationIndexes[0] != characterAnimation.idle) {
+      world.player.animationIndexes[0] = characterAnimation.idle;
+      world.player.animationTimes[0] = 0;
     }
   }
 
-  world.player.animation.time = world.time - world.player.animation.startTime;
+  world.player.animationTimes[0] += world.dt;
 };

@@ -11,14 +11,8 @@ export const createWorld = () => {
       positions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
       directions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
 
-      lastHitDate: new Float32Array(),
-      lastAttackDate: new Float32Array(),
-
-      animations: Array.from({ length: MAX_ENEMIES }, () => ({
-        index: 0,
-        time: 0,
-        startTime: 0,
-      })),
+      animationIndexes: new Uint8Array(MAX_ENEMIES), // as ( animationIndex1, animationIndex2 )
+      animationTimes: new Float32Array(MAX_ENEMIES), // as ( animationTime1, animationTime2 )
 
       colorPaletteIndexes: new Uint8Array(MAX_ENEMIES),
 
@@ -38,7 +32,8 @@ export const createWorld = () => {
       positions: new Float32Array([0, 0]),
       directions: new Float32Array([0, 1]),
 
-      animation: { index: 0, time: 0, startTime: 0 },
+      animationIndexes: new Uint8Array([0]), // as ( animationIndex1, animationIndex2 )
+      animationTimes: new Float32Array([0]), // as ( animationTime1, animationTime2 )
 
       colorPaletteIndexes: new Uint8Array([0]),
 

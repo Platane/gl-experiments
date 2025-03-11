@@ -50,13 +50,20 @@ export const createAnimationParamsGetter = (animationMap: AnimationMap) => {
       poseWeights: Float32Array;
     },
 
-    animations: { index: number; time: number }[],
+    {
+      animationIndexes,
+      animationTimes,
+    }: {
+      animationIndexes: Uint8Array;
+      animationTimes: Float32Array;
+    },
 
-    n: number = animations.length,
+    n: number = animationIndexes.length,
     offset = 0,
   ) => {
     for (let i = offset; i < offset + n; i++) {
-      const { index, time } = animations[i];
+      const index = animationIndexes[i];
+      const time = animationTimes[i];
 
       const { duration, keyFrames } = map[index];
 

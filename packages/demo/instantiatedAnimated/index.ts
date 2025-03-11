@@ -102,18 +102,18 @@ import hash from "hash-int";
     colorPaletteIndexes: new Uint8Array(
       Array.from({ length: N }, (_, i) => hash(i + 312) % 30),
     ),
-    animations: Array.from({ length: N }, (_, i) => ({
-      index: 1 + (hash(i + 3081) % 2),
-      time: 0,
-    })),
+    animationIndexes: new Uint8Array(
+      Array.from({ length: N }, (_, i) => 1 + (hash(i) % 2)),
+    ),
+    animationTimes: new Float32Array(
+      Array.from({ length: N }, (_, i) => 1 + (hash(i + 31) % 1000) / 500),
+    ),
     entropies: Array.from({ length: N }, (_, i) => {
       const A = lerp(1 - ((hash(i + 31233) % 4823) / 4823) ** 2, 300, 8000);
 
       const angleOffset = ((hash(i + 5891) % 631) / 631) * Math.PI * 2;
 
-      const timingOffset = hash(i + 31783) % 5000;
-
-      return { A, angleOffset, timingOffset };
+      return { A, angleOffset };
     }),
   };
 
@@ -135,12 +135,17 @@ import hash from "hash-int";
   stats.dom.style.position = "static";
   gui.domElement.appendChild(stats.dom);
 
+  let lastDate = Date.now() / 1000;
+
   const loop = () => {
     stats.update();
 
     const t = Date.now() / 1000;
+    const dt = t - lastDate;
+    lastDate = t;
+
     for (let i = config.instanceCount; i--; ) {
-      const { A, angleOffset, timingOffset } = world.entropies[i];
+      const { A, angleOffset } = world.entropies[i];
 
       const angle = t / (A / 90) + angleOffset;
 
@@ -150,9 +155,9 @@ import hash from "hash-int";
       world.directions[i * 2 + 0] = Math.sin(angle + Math.PI / 2);
       world.directions[i * 2 + 1] = Math.cos(angle + Math.PI / 2);
 
-      world.animations[i].time = t + timingOffset;
+      world.animationTimes[i] += dt;
     }
-    animationParams.applyAnimationParams(world, world.animations);
+    animationParams.applyAnimationParams(world, world);
 
     //
     //

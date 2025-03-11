@@ -72,7 +72,7 @@ export const createRenderer = (
 
       animationParams.applyAnimationParams(
         world.enemies,
-        world.enemies.animations,
+        world.enemies,
         indexRange[1] - indexRange[0],
         indexRange[0],
       );
@@ -84,9 +84,7 @@ export const createRenderer = (
       );
     }
 
-    sharkAnimationParams.applyAnimationParams(world.player, [
-      world.player.animation,
-    ]);
+    sharkAnimationParams.applyAnimationParams(world.player, world.player);
     sharkRenderer.update(world.player, 1);
 
     //
