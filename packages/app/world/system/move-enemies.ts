@@ -1,5 +1,5 @@
 import { World } from "../state";
-import { sharkAnimation } from "../../renderer/geometries/shark";
+import { characterAnimation } from "../../renderer/geometries/shark";
 import { vec2 } from "gl-matrix";
 
 const v = vec2.create();
@@ -23,7 +23,7 @@ export const moveEnemies = (world: World) => {
 
 const spawn = (world: World, x: number, y: number) => {
   const i = world.enemies.count;
-  world.enemies.animations[i].index = sharkAnimation.idle;
+  world.enemies.animations[i].index = characterAnimation.idle;
   world.enemies.animations[i].startTime = world.time - i * 0.2;
 
   world.enemies.directions[i * 2 + 0] = 0;
@@ -32,7 +32,7 @@ const spawn = (world: World, x: number, y: number) => {
   world.enemies.positions[i * 2 + 0] = x;
   world.enemies.positions[i * 2 + 1] = y;
 
-  world.enemies.colorPaletteIndexes[i] = (i % 3) + 1;
+  world.enemies.colorPaletteIndexes[i] = i % 2;
 
   world.enemies.count++;
 };

@@ -235,7 +235,10 @@ const createDepthPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     depthPass.draw(() => {
-      basicMaterial.draw(camera.worldMatrix, [foxRenderer, sphereRenderer]);
+      basicMaterial.draw(camera.worldMatrix, () => {
+        foxRenderer.render();
+        sphereRenderer.render();
+      });
     });
 
     //

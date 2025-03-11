@@ -401,10 +401,10 @@ const createOutlinePass = ({ gl }: { gl: WebGL2RenderingContext }) => {
 
     outlinePass.draw(
       () => {
-        basicMaterial.draw(camera.worldMatrix, [foxRenderer]);
+        basicMaterial.draw(camera.worldMatrix, foxRenderer.render);
       },
       () => {
-        basicMaterial.draw(camera.worldMatrix, [sphereRenderer]);
+        basicMaterial.draw(camera.worldMatrix, sphereRenderer.render);
       },
       { lineWidth: 34 },
     );

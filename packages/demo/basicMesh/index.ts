@@ -61,7 +61,7 @@ const loop = () => {
   //
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
-  sphereMaterial.draw(worldMatrix, [sphereRenderer]);
+  sphereMaterial.draw(worldMatrix, sphereRenderer.render);
 
   //
   // loop

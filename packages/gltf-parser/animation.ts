@@ -1,16 +1,32 @@
 import * as THREE from "three";
 import { invLerp, lerp } from "../app/utils/math";
 
-const pruneRedundantKeyFrames = (
-  keyframes: { time: number; pose: THREE.Matrix4Tuple[] }[],
-) => {
-  const matrixLerp = (
-    a1: THREE.Matrix4Tuple,
-    a2: THREE.Matrix4Tuple,
-    k: number,
-  ) => a1.map((_, i) => lerp(k, a1[i], a2[i])) as THREE.Matrix4Tuple;
+type Mat4 = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];
 
-  const matrixEquals = (a1: THREE.Matrix4Tuple, a2: THREE.Matrix4Tuple) =>
+const pruneRedundantKeyFrames = (
+  keyframes: { time: number; pose: Mat4[] }[],
+) => {
+  const matrixLerp = (a1: Mat4, a2: Mat4, k: number) =>
+    a1.map((_, i) => lerp(k, a1[i], a2[i])) as Mat4;
+
+  const matrixEquals = (a1: Mat4, a2: Mat4) =>
     a1.every((_, i) => Math.abs(a1[i] - a2[i]) < 0.0001);
 
   for (let i = keyframes.length - 2; i > 0; i--) {
@@ -43,7 +59,7 @@ export const extractAnimationsPoses = (
 
   bones.forEach((b) => b.updateWorldMatrix(true, false));
 
-  const bindPose = bones.map((b) => b.matrixWorld.toArray());
+  const bindPose = bones.map((b) => b.matrixWorld.toArray() as Mat4);
   const bindPoseInverses = bones.map((b) => b.matrixWorld.clone().invert());
 
   const mesh = new THREE.SkinnedMesh();
@@ -73,7 +89,7 @@ export const extractAnimationsPoses = (
 
           return new THREE.Matrix4()
             .multiplyMatrices(bone.matrixWorld, inv)
-            .toArray();
+            .toArray() as Mat4;
         });
 
         return { time, pose };

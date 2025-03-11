@@ -1,6 +1,6 @@
 import { vec2 } from "gl-matrix";
 import { World } from "../state";
-import { sharkAnimation } from "../../renderer/geometries/shark";
+import { characterAnimation } from "../../renderer/geometries/shark";
 
 const dir = vec2.create();
 export const movePlayer = (world: World) => {
@@ -23,13 +23,13 @@ export const movePlayer = (world: World) => {
     world.player.positions[0] += dir[0] * SPEED * world.dt;
     world.player.positions[1] += dir[1] * SPEED * world.dt;
 
-    if (world.player.animation.index != sharkAnimation.run) {
-      world.player.animation.index = sharkAnimation.run;
+    if (world.player.animation.index != characterAnimation.run) {
+      world.player.animation.index = characterAnimation.run;
       world.player.animation.startTime = world.time;
     }
   } else {
-    if (world.player.animation.index != sharkAnimation.idle) {
-      world.player.animation.index = sharkAnimation.idle;
+    if (world.player.animation.index != characterAnimation.idle) {
+      world.player.animation.index = characterAnimation.idle;
       world.player.animation.startTime = world.time;
     }
   }

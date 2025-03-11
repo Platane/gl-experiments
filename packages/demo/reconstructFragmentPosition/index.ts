@@ -230,7 +230,7 @@ export const createReconstructPositionPass = ({
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     reconstructPositionPass.draw(camera.worldMatrix as Float32Array, () =>
-      material.draw(camera.worldMatrix, [renderer]),
+      material.draw(camera.worldMatrix, renderer.render),
     );
 
     //

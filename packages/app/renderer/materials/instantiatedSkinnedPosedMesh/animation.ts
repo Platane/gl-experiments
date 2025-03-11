@@ -3,7 +3,7 @@ import { invLerp } from "../../../utils/math";
 
 export type AnimationMap = {
   duration: number;
-  keyFrames: { time: number; pose: mat4 }[];
+  keyFrames: { time: number; pose: mat4[] }[];
 }[];
 
 /**
@@ -36,9 +36,9 @@ export const createAnimationParamsGetter = (animationMap: AnimationMap) => {
   });
 
   const poses = new Float32Array(
-    animationMap
-      .flatMap((a) => a.keyFrames.flatMap((k) => k.pose as number[]))
-      .flat(),
+    animationMap.flatMap((a) =>
+      a.keyFrames.flatMap((k) => k.pose.flatMap((p) => [...p])),
+    ),
   );
 
   const applyAnimationParams = (

@@ -1,13 +1,14 @@
 import { loadGLTFwithCache } from "../../../gltf-parser/loadGLTF";
-import { computeWeights } from "../../utils/bones";
 
-import model_glb from "../../assets/models/Sharky.glb?url";
-import { getFlatShadingNormals } from "../../utils/geometry-normals";
+// import model_glb from "../../assets/models/Sharky.glb?url";
+const model_glb =
+  "https://raw.githubusercontent.com/platane/gl-experiments/assets/Sharky.glb";
 
-export enum sharkAnimation {
-  run = 9,
-  idle = 3,
-  death = 0,
+export enum characterAnimation {
+  idle = 0,
+  run = 1,
+  attack = 2,
+  death = 3,
 }
 
 export const getSharkModel = async () => {
@@ -15,7 +16,7 @@ export const getSharkModel = async () => {
     normals,
     positions,
     bindPose,
-    animations,
+    animations: animations_,
     colorCount,
     colorIndexes,
     colorPalette,
@@ -35,6 +36,13 @@ export const getSharkModel = async () => {
     colorCount: colorCount!,
     colorIndexes: colorIndexes!,
   };
+
+  const animations = [
+    animations_[3], // idle
+    animations_[9], // run
+    animations_[4], // attack
+    animations_[0], // death
+  ];
 
   return {
     geometry,

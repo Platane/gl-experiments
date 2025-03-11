@@ -49,7 +49,7 @@ export const loadGLTF = async (
 
 export const loadGLTFwithCache = async (
   uri: string,
-  name: string,
+  name: Parameters<typeof loadGLTF>[1],
   o?: Parameters<typeof loadGLTF>[2],
 ) => {
   let content = await indexedDBCache.get(uri);

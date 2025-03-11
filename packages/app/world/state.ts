@@ -25,6 +25,11 @@ export const createWorld = () => {
 
       poseIndexes: new Uint8Array(MAX_ENEMIES * 2),
       poseWeights: new Float32Array(MAX_ENEMIES * 2),
+
+      kindIndexes: {
+        seagul: [0, 0],
+        flatSeagul: [0, 0],
+      },
     },
     player: {
       health: 10,

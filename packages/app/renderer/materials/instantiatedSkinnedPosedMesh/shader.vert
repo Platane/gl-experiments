@@ -78,6 +78,8 @@ void main() {
 
     v_color = texelFetch(u_colorPalettesTexture, ivec2(a_colorIndex, a_instanceColorPaletteIndex), 0).xyz;
 
+    // v_color = vec3(float(a_colorIndex) / 5.0, float(a_colorIndex) / 5.0, float(a_colorIndex) / 5.0);
+
     // //
     // // debugger weight
     // if (false) {

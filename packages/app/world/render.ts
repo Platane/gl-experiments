@@ -9,6 +9,8 @@ export const createRenderer = (
   { gl }: { gl: WebGL2RenderingContext },
   model: {
     shark: Awaited<ReturnType<typeof getSharkModel>>;
+    trex: Awaited<ReturnType<typeof getSharkModel>>;
+    raptor: Awaited<ReturnType<typeof getSharkModel>>;
   },
 ) => {
   //
@@ -24,11 +26,27 @@ export const createRenderer = (
   });
 
   const sharkAnimationParams = createAnimationParamsGetter(
-    model.shark.animations as any,
+    model.shark.animations,
   );
   const sharkRenderer = skinnedMeshMaterial.createRenderer({
     ...model.shark,
     poses: sharkAnimationParams.poses,
+  });
+
+  const trexAnimationParams = createAnimationParamsGetter(
+    model.trex.animations,
+  );
+  const trexRenderer = skinnedMeshMaterial.createRenderer({
+    ...model.trex,
+    poses: trexAnimationParams.poses,
+  });
+
+  const raptorAnimationParams = createAnimationParamsGetter(
+    model.raptor.animations,
+  );
+  const raptorRenderer = skinnedMeshMaterial.createRenderer({
+    ...model.raptor,
+    poses: raptorAnimationParams.poses,
   });
 
   const gridRenderer = createGridMaterial({ gl }, { gridSize: 10 });
@@ -57,9 +75,39 @@ export const createRenderer = (
     sharkAnimationParams.applyAnimationParams(world.player, [
       world.player.animation,
     ]);
-    sharkAnimationParams.applyAnimationParams(
+    sharkRenderer.update(
+      world.player.positions,
+      world.player.directions,
+      world.player.poseIndexes,
+      world.player.poseWeights,
+      world.player.colorPaletteIndexes,
+      1,
+    );
+
+    raptorAnimationParams.applyAnimationParams(
       world.enemies,
       world.enemies.animations,
+    );
+    raptorRenderer.update(
+      world.enemies.positions,
+      world.enemies.directions,
+      world.enemies.poseIndexes,
+      world.enemies.poseWeights,
+      world.enemies.colorPaletteIndexes,
+      world.enemies.count,
+    );
+
+    trexAnimationParams.applyAnimationParams(
+      world.enemies,
+      world.enemies.animations,
+    );
+    trexRenderer.update(
+      world.enemies.positions,
+      world.enemies.directions,
+      world.enemies.poseIndexes,
+      world.enemies.poseWeights,
+      world.enemies.colorPaletteIndexes,
+      world.enemies.count,
     );
 
     //
@@ -77,31 +125,9 @@ export const createRenderer = (
 
     gridRenderer.draw(viewMatrix);
     skinnedMeshMaterial.draw(viewMatrix, () => {
-      //
-      // render player
-
-      sharkRenderer.update(
-        world.player.positions,
-        world.player.directions,
-        world.player.poseIndexes,
-        world.player.poseWeights,
-        world.player.colorPaletteIndexes,
-        1,
-      );
       sharkRenderer.render();
-
-      //
-      // render enemies
-
-      sharkRenderer.update(
-        world.enemies.positions,
-        world.enemies.directions,
-        world.enemies.poseIndexes,
-        world.enemies.poseWeights,
-        world.enemies.colorPaletteIndexes,
-        world.enemies.count,
-      );
-      sharkRenderer.render();
+      raptorRenderer.render();
+      trexRenderer.render();
     });
   };
 
