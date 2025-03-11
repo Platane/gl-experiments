@@ -8,6 +8,7 @@ import { cameraFollow } from "./world/system/camera-follow";
 import { moveEnemies } from "./world/system/move-enemies";
 import { getTrexModel } from "./renderer/geometries/trex";
 import { getVelociraptorModel } from "./renderer/geometries/velociraptor";
+import { getParaModel } from "./renderer/geometries/para";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -24,6 +25,7 @@ import { getVelociraptorModel } from "./renderer/geometries/velociraptor";
     shark: await getSharkModel(),
     trex: await getTrexModel(),
     raptor: await getVelociraptorModel(),
+    para: await getParaModel(),
   };
 
   const { render } = createRenderer({ gl }, models);

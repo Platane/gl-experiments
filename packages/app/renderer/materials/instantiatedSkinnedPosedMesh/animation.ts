@@ -51,8 +51,11 @@ export const createAnimationParamsGetter = (animationMap: AnimationMap) => {
     },
 
     animations: { index: number; time: number }[],
+
+    n: number = animations.length,
+    offset = 0,
   ) => {
-    for (let i = 0; i < animations.length; i++) {
+    for (let i = offset; i < offset + n; i++) {
       const { index, time } = animations[i];
 
       const { duration, keyFrames } = map[index];

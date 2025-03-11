@@ -1,6 +1,5 @@
 import { vec2 } from "gl-matrix";
-import { World } from "../state";
-import { characterAnimation } from "../../renderer/geometries/shark";
+import { characterAnimation, World } from "../state";
 
 const dir = vec2.create();
 export const movePlayer = (world: World) => {

@@ -4,13 +4,6 @@ import { loadGLTFwithCache } from "../../../gltf-parser/loadGLTF";
 const model_glb =
   "https://raw.githubusercontent.com/platane/gl-experiments/assets/Sharky.glb";
 
-export enum characterAnimation {
-  idle = 0,
-  run = 1,
-  attack = 2,
-  death = 3,
-}
-
 export const getSharkModel = async () => {
   const {
     normals,

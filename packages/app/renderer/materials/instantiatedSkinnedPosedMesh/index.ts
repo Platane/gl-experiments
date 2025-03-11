@@ -211,29 +211,68 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
      * update the instances
      */
     const update = (
-      positions: Float32Array, // as ( x, y )
-      directions: Float32Array, // as ( x, y )
-      poseIndexes: Uint8Array, // as ( pose1, pose2 )
-      poseWeights: Float32Array, // as ( weight1, weight2 )
-      colorPaletteIndexes: Uint8Array, // as ( colorPaletteIndex )
+      {
+        positions,
+        directions,
+        poseIndexes,
+        poseWeights,
+        colorPaletteIndexes,
+      }: {
+        positions: Float32Array; // as ( x, y )
+        directions: Float32Array; // as ( x, y )
+        poseIndexes: Uint8Array; // as ( pose1, pose2 )
+        poseWeights: Float32Array; // as ( weight1, weight2 )
+        colorPaletteIndexes: Uint8Array; // as ( colorPaletteIndex )
+      },
       n: number,
+      offset: number = 0,
     ) => {
       nInstances = n;
 
       gl.bindBuffer(gl.ARRAY_BUFFER, instancePositionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        positions,
+        gl.DYNAMIC_DRAW,
+        offset * 2,
+        n * 2,
+      );
 
       gl.bindBuffer(gl.ARRAY_BUFFER, instanceDirectionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, directions, gl.DYNAMIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        directions,
+        gl.DYNAMIC_DRAW,
+        offset * 2,
+        n * 2,
+      );
 
       gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseIndexesBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, poseIndexes, gl.DYNAMIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        poseIndexes,
+        gl.DYNAMIC_DRAW,
+        offset * 2,
+        n * 2,
+      );
 
       gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseWeightsBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, poseWeights, gl.DYNAMIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        poseWeights,
+        gl.DYNAMIC_DRAW,
+        offset * 2,
+        n * 2,
+      );
 
       gl.bindBuffer(gl.ARRAY_BUFFER, instanceColorPaletteIndexBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, colorPaletteIndexes, gl.DYNAMIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        colorPaletteIndexes,
+        gl.DYNAMIC_DRAW,
+        offset * 1,
+        n * 1,
+      );
     };
 
     const dispose = () => {

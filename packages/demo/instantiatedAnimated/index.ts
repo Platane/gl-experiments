@@ -157,14 +157,7 @@ import hash from "hash-int";
     //
     //
 
-    foxRenderer.update(
-      world.positions,
-      world.directions,
-      world.poseIndexes,
-      world.poseWeights,
-      world.colorPaletteIndexes,
-      config.instanceCount,
-    );
+    foxRenderer.update(world, config.instanceCount);
 
     //
     //

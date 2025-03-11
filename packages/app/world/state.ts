@@ -7,7 +7,6 @@ export const createWorld = () => {
     time: 0,
     dt: 1 / 60,
     enemies: {
-      count: 0,
       health: new Uint8Array(MAX_ENEMIES),
       positions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
       directions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
@@ -26,10 +25,13 @@ export const createWorld = () => {
       poseIndexes: new Uint8Array(MAX_ENEMIES * 2),
       poseWeights: new Float32Array(MAX_ENEMIES * 2),
 
-      kindIndexes: {
-        seagul: [0, 0],
-        flatSeagul: [0, 0],
-      },
+      kind: new Uint8Array(MAX_ENEMIES),
+
+      kindIndexes: [
+        [0, 0], // interval index for EnemyKind.trex
+        [0, 0],
+        [0, 0],
+      ],
     },
     player: {
       health: 10,
@@ -58,6 +60,19 @@ export const createWorld = () => {
     },
   };
 };
+
+export enum characterAnimation {
+  idle = 0,
+  run = 1,
+  attack = 2,
+  death = 3,
+}
+
+export enum EnemyKind {
+  trex = 0,
+  raptor = 1,
+  para = 2,
+}
 
 export type Key =
   | "arrow_up"
