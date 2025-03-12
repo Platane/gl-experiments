@@ -1,49 +1,42 @@
-import { EnemyKind, World } from "../state";
+import { EntityKind, World } from "../state";
 
-export const spawn = (world: World, entityKind: EnemyKind) => {
-  const i = world.enemies.kindIndexes[entityKind][1];
+export const addEntity = (world: World, entityKind: EntityKind) => {
+  const i = world.entities.kindIndexes[entityKind];
 
-  world.enemies.positions.copyWithin((i + 1) * 2, i * 2);
-  world.enemies.directions.copyWithin((i + 1) * 2, i * 2);
-  world.enemies.animationIndexes.copyWithin(i + 1, i);
-  world.enemies.animationTimes.copyWithin(i + 1, i);
-  world.enemies.colorPaletteIndexes.copyWithin(i + 1, i);
-  world.enemies.kind.copyWithin(i + 1, i);
-  world.enemies.health.copyWithin(i + 1, i);
+  world.entities.positions.copyWithin((i + 1) * 2, i * 2);
+  world.entities.directions.copyWithin((i + 1) * 2, i * 2);
+  world.entities.animationIndexes.copyWithin(i + 1, i);
+  world.entities.animationTimes.copyWithin(i + 1, i);
+  world.entities.colorPaletteIndexes.copyWithin(i + 1, i);
+  world.entities.kind.copyWithin(i + 1, i);
+  world.entities.health.copyWithin(i + 1, i);
+  world.entities.boudingCircleRadius.copyWithin(i + 1, i);
 
-  world.enemies.kindIndexes[entityKind][1]++;
-  for (let k = entityKind + 1; k < world.enemies.kindIndexes.length; k++) {
-    world.enemies.kindIndexes[k][0]++;
-    world.enemies.kindIndexes[k][1]++;
-  }
+  for (let k = entityKind; k < world.entities.kindIndexes.length; k++)
+    world.entities.kindIndexes[k]++;
 
-  world.enemies.kind[i] = entityKind;
+  world.entities.kind[i] = entityKind;
 
   return i;
 };
 
-export const remove = (world: World, i: number) => {
+export const removeEntity = (world: World, i: number) => {
   let k = 0;
   for (
     ;
-    k < world.enemies.kindIndexes.length &&
-    i >= world.enemies.kindIndexes[k][1];
+    k < world.entities.kindIndexes.length && i >= world.entities.kindIndexes[k];
     k++
   );
 
-  world.enemies.kindIndexes[k][1]--;
-  k++;
+  for (; k < world.entities.kindIndexes.length; k++)
+    world.entities.kindIndexes[k]--;
 
-  for (; k < world.enemies.kindIndexes.length; k++) {
-    world.enemies.kindIndexes[k][0]--;
-    world.enemies.kindIndexes[k][1]--;
-  }
-
-  world.enemies.positions.copyWithin(i * 2, (i + 1) * 2);
-  world.enemies.directions.copyWithin(i * 2, (i + 1) * 2);
-  world.enemies.animationTimes.copyWithin(i, i + 1);
-  world.enemies.animationIndexes.copyWithin(i, i + 1);
-  world.enemies.colorPaletteIndexes.copyWithin(i, i + 1);
-  world.enemies.kind.copyWithin(i, i + 1);
-  world.enemies.health.copyWithin(i, i + 1);
+  world.entities.positions.copyWithin(i * 2, (i + 1) * 2);
+  world.entities.directions.copyWithin(i * 2, (i + 1) * 2);
+  world.entities.animationTimes.copyWithin(i, i + 1);
+  world.entities.animationIndexes.copyWithin(i, i + 1);
+  world.entities.colorPaletteIndexes.copyWithin(i, i + 1);
+  world.entities.kind.copyWithin(i, i + 1);
+  world.entities.health.copyWithin(i, i + 1);
+  world.entities.boudingCircleRadius.copyWithin(i + 1, i);
 };

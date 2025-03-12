@@ -26,22 +26,16 @@ export const createRenderer = (
     gl,
   });
 
-  const sharkAnimationParams = createAnimationParamsGetter(
-    model.shark.animations,
+  const renderers = [model.shark, model.trex, model.raptor, model.para].map(
+    (model) => {
+      const animationParams = createAnimationParamsGetter(model.animations);
+      const renderer = skinnedMeshMaterial.createRenderer({
+        ...model,
+        poses: animationParams.poses,
+      });
+      return { renderer, animationParams };
+    },
   );
-  const sharkRenderer = skinnedMeshMaterial.createRenderer({
-    ...model.shark,
-    poses: sharkAnimationParams.poses,
-  });
-
-  const enemyRenderers = [model.trex, model.raptor, model.para].map((model) => {
-    const animationParams = createAnimationParamsGetter(model.animations);
-    const renderer = skinnedMeshMaterial.createRenderer({
-      ...model,
-      poses: animationParams.poses,
-    });
-    return { renderer, animationParams };
-  });
 
   const gridRenderer = createGridMaterial({ gl }, { gridSize: 10 });
 
@@ -66,26 +60,20 @@ export const createRenderer = (
     //
     //
 
-    for (let i = 0; i < enemyRenderers.length; i++) {
-      const { renderer, animationParams } = enemyRenderers[i];
-      const indexRange = world.enemies.kindIndexes[i];
+    for (let i = 0; i < renderers.length; i++) {
+      const { renderer, animationParams } = renderers[i];
+      const offset = world.entities.kindIndexes[i - 1] ?? 0;
+      const length = world.entities.kindIndexes[i] - offset;
 
       animationParams.applyAnimationParams(
-        world.enemies,
-        world.enemies,
-        indexRange[1] - indexRange[0],
-        indexRange[0],
+        world.entities,
+        world.entities,
+        length,
+        offset,
       );
 
-      renderer.update(
-        world.enemies,
-        indexRange[1] - indexRange[0],
-        indexRange[0],
-      );
+      renderer.update(world.entities, length, offset);
     }
-
-    sharkAnimationParams.applyAnimationParams(world.player, world.player);
-    sharkRenderer.update(world.player, 1);
 
     //
     // draw
@@ -102,17 +90,14 @@ export const createRenderer = (
 
     gridRenderer.draw(viewMatrix);
     skinnedMeshMaterial.draw(viewMatrix, () => {
-      sharkRenderer.render();
-
-      for (const { renderer } of enemyRenderers) renderer.render();
+      for (const { renderer } of renderers) renderer.render();
     });
   };
 
   const dispose = () => {
     gridRenderer.dispose();
-    sharkRenderer.dispose();
     skinnedMeshMaterial.dispose();
-    for (const { renderer } of enemyRenderers) renderer.dispose();
+    for (const { renderer } of renderers) renderer.dispose();
   };
 
   return { render, dispose };

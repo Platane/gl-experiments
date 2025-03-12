@@ -3,13 +3,10 @@ import { createRenderer } from "./world/render";
 import { createEventListeners } from "./control/inputs";
 import { createOrbitControl } from "./control/orbitCamera";
 import { getSharkModel } from "./renderer/geometries/shark";
-import { movePlayer } from "./world/system/move-player";
-import { cameraFollow } from "./world/system/camera-follow";
-import { moveEnemies } from "./world/system/move-enemies";
 import { getTrexModel } from "./renderer/geometries/trex";
 import { getVelociraptorModel } from "./renderer/geometries/velociraptor";
 import { getParaModel } from "./renderer/geometries/para";
-import { stompEnemies } from "./world/system/stomp-enemies";
+import { updateWorld } from "./world/system";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -17,6 +14,7 @@ import { stompEnemies } from "./world/system/stomp-enemies";
   const gl = canvas.getContext("webgl2")!;
 
   const world = createWorld();
+  world.camera.devicePixelRatio = Math.min(window.devicePixelRatio, 2);
 
   createOrbitControl({ canvas }, world.camera);
 
@@ -35,16 +33,14 @@ import { stompEnemies } from "./world/system/stomp-enemies";
   // loop
   //
 
-  const startDate = Date.now();
+  let lastDate = Date.now() / 1000;
   const loop = () => {
-    world.time = (Date.now() - startDate) / 1000;
+    world.dt = Date.now() / 1000 - lastDate;
+    lastDate += world.dt;
 
-    movePlayer(world);
-    stompEnemies(world);
-    moveEnemies(world);
-    cameraFollow(world);
+    world.time += world.dt;
 
-    //
+    updateWorld(world);
 
     render(world);
 

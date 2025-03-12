@@ -2,11 +2,14 @@ import { vec2 } from "gl-matrix";
 import { World } from "../state";
 
 export const cameraFollow = (world: World) => {
-  world.camera.eye[0] = world.player.positions[0];
-  world.camera.eye[1] = 4;
-  world.camera.eye[2] = world.player.positions[1] + 5;
+  const px = world.entities.positions[0];
+  const py = world.entities.positions[1];
 
-  world.camera.lookAt[0] = world.player.positions[0];
+  world.camera.eye[0] = px;
+  world.camera.eye[1] = 4;
+  world.camera.eye[2] = py + 5;
+
+  world.camera.lookAt[0] = px;
   world.camera.lookAt[1] = 1;
-  world.camera.lookAt[2] = world.player.positions[1];
+  world.camera.lookAt[2] = py;
 };
