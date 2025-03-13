@@ -3,7 +3,7 @@ import { createWorld, EntityKind } from "../../state";
 import { addEntity, removeEntity } from "../enemyListHelper";
 
 describe("entity list", () => {
-  it("should restore to intial state with add / remove", () => {
+  it("should restore to initial state with add / remove", () => {
     const world = createWorld();
     addEntity(world, EntityKind.para);
     addEntity(world, EntityKind.trex);
