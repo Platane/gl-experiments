@@ -26,6 +26,15 @@ const getContainingInterval = (steps: { time: number }[], time: number) => {
   return a;
 };
 
+export const getPosesData = (
+  animationMap: { keyFrames: { pose: mat4[] }[] }[],
+) =>
+  new Float32Array(
+    animationMap.flatMap((a) =>
+      a.keyFrames.flatMap((k) => k.pose.flatMap((p) => [...p])),
+    ),
+  );
+
 export const createAnimationParamsGetter = (animationMap: AnimationMap) => {
   let i = 0;
   const map = animationMap.map((a) => {

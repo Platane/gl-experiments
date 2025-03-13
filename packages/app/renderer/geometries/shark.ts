@@ -34,8 +34,9 @@ export const getSharkModel = async () => {
   const animations = [
     animations_[3], // idle
     animations_[9], // run
-    animations_[4], // attack
+    animations_[8], // attack
     animations_[0], // death
+    animations_[2], // hurt
   ];
 
   return {

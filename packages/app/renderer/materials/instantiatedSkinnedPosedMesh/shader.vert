@@ -12,8 +12,8 @@ in uvec4 a_boneIndexes;
 in vec2 a_instancePosition;
 in uint a_instanceColorPaletteIndex;
 in vec2 a_instanceDirection;
-in vec2 a_instancePoseWeights;
-in uvec2 a_instancePoseIndexes;
+in vec4 a_instancePoseWeights;
+in uvec4 a_instancePoseIndexes;
 
 // uniforms
 uniform mat4 u_viewMatrix;
@@ -24,6 +24,8 @@ out vec3 v_normal;
 out vec3 v_color;
 flat out int v_instanceIndex;
 
+//
+// read the transform for the bone <boneIndex> of the pose <poseIndex>
 mat4 getBoneMatrix(sampler2D posesTexture, uint poseIndex, uint boneIndex) {
     return mat4(
         texelFetch(posesTexture, ivec2(4 * int(boneIndex) + 0, int(poseIndex)), 0),
@@ -33,27 +35,47 @@ mat4 getBoneMatrix(sampler2D posesTexture, uint poseIndex, uint boneIndex) {
     );
 }
 
-mat4 getWeightedBoneMatrix(sampler2D posesTexture, uvec2 instancePoseIndexes, vec2 instancePoseWeights, uvec4 boneIndexes, vec4 poseWeights) {
-    mat4 bm0 =
-        getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[0]) * poseWeights[0] +
-            getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[1]) * poseWeights[1] +
-            getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[2]) * poseWeights[2] +
-            getBoneMatrix(posesTexture, a_instancePoseIndexes[0], boneIndexes[3]) * poseWeights[3];
+//
+// compute the interpolated transform for a point with the given boneIndexes / bonesWeights in a pose
+mat4 getSkinTransform(sampler2D posesTexture, uint poseIndex, uvec4 boneIndexes, vec4 boneWeights) {
+    return getBoneMatrix(posesTexture, poseIndex, boneIndexes[0]) * boneWeights[0] +
+        getBoneMatrix(posesTexture, poseIndex, boneIndexes[1]) * boneWeights[1] +
+        getBoneMatrix(posesTexture, poseIndex, boneIndexes[2]) * boneWeights[2] +
+        getBoneMatrix(posesTexture, poseIndex, boneIndexes[3]) * boneWeights[3];
+}
+mat4 getSkinTransform(sampler2D posesTexture, uint poseIndex, uvec2 boneIndexes, vec2 boneWeights) {
+    return getBoneMatrix(posesTexture, poseIndex, boneIndexes[0]) * boneWeights[0] +
+        getBoneMatrix(posesTexture, poseIndex, boneIndexes[1]) * boneWeights[1];
+}
 
-    mat4 bm1 =
-        getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[0]) * poseWeights[0] +
-            getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[1]) * poseWeights[1] +
-            getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[2]) * poseWeights[2] +
-            getBoneMatrix(posesTexture, a_instancePoseIndexes[1], boneIndexes[3]) * poseWeights[3];
-
-    return bm0 * instancePoseWeights[0] + bm1 * instancePoseWeights[1];
+//
+// compute the interpolated transform for a point with the given boneIndexes / bonesWeights , with a given  poseIndexes / poseWeights
+mat4 getAnimatedSkinTransform(sampler2D posesTexture, uvec4 poseIndexes, vec4 poseWeights, uvec4 boneIndexes, vec4 boneWeights) {
+    return getSkinTransform(posesTexture, poseIndexes[0], boneIndexes, boneWeights) * poseWeights[0] +
+        getSkinTransform(posesTexture, poseIndexes[1], boneIndexes, boneWeights) * poseWeights[1] +
+        getSkinTransform(posesTexture, poseIndexes[2], boneIndexes, boneWeights) * poseWeights[2] +
+        getSkinTransform(posesTexture, poseIndexes[3], boneIndexes, boneWeights) * poseWeights[3];
+}
+mat4 getAnimatedSkinTransform(sampler2D posesTexture, uvec4 poseIndexes, vec4 poseWeights, uvec2 boneIndexes, vec2 boneWeights) {
+    return getSkinTransform(posesTexture, poseIndexes[0], boneIndexes, boneWeights) * poseWeights[0] +
+        getSkinTransform(posesTexture, poseIndexes[1], boneIndexes, boneWeights) * poseWeights[1] +
+        getSkinTransform(posesTexture, poseIndexes[2], boneIndexes, boneWeights) * poseWeights[2] +
+        getSkinTransform(posesTexture, poseIndexes[3], boneIndexes, boneWeights) * poseWeights[3];
+}
+mat4 getAnimatedSkinTransform(sampler2D posesTexture, uvec2 poseIndexes, vec2 poseWeights, uvec4 boneIndexes, vec4 boneWeights) {
+    return getSkinTransform(posesTexture, poseIndexes[0], boneIndexes, boneWeights) * poseWeights[0] +
+        getSkinTransform(posesTexture, poseIndexes[1], boneIndexes, boneWeights) * poseWeights[1];
+}
+mat4 getAnimatedSkinTransform(sampler2D posesTexture, uvec2 poseIndexes, vec2 poseWeights, uvec2 boneIndexes, vec2 boneWeights) {
+    return getSkinTransform(posesTexture, poseIndexes[0], boneIndexes, boneWeights) * poseWeights[0] +
+        getSkinTransform(posesTexture, poseIndexes[1], boneIndexes, boneWeights) * poseWeights[1];
 }
 
 void main() {
-    mat4 bm = getWeightedBoneMatrix(
+    mat4 bm = getAnimatedSkinTransform(
             u_posesTexture,
-            uvec2(a_instancePoseIndexes),
-            vec2(a_instancePoseWeights),
+            a_instancePoseIndexes,
+            a_instancePoseWeights,
             a_boneIndexes,
             a_boneWeights
         );

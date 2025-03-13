@@ -18,9 +18,10 @@ import hash from "hash-int";
 
   const gl = canvas.getContext("webgl2")!;
 
-  const skinnedMeshMaterial = createInstantiatedSkinnedPosedMeshMaterial({
-    gl,
-  });
+  const skinnedMeshMaterial = createInstantiatedSkinnedPosedMeshMaterial(
+    { gl },
+    { posePerVertex: 2, bonePerVertex: 2 },
+  );
 
   const model_glb =
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb";
@@ -34,6 +35,19 @@ import hash from "hash-int";
   } = await loadGLTFwithCache(model_glb, "fox", { colorEqualsThreehold: 150 });
 
   const { boneWeights, boneIndexes } = computeWeights(bindPose, positions);
+
+  // reduce from 4 bones per vertex to 2
+  for (let i = 0; i < positions.length / 3; i++) {
+    const w1 = boneWeights[i * 4 + 0];
+    const w2 = boneWeights[i * 4 + 1];
+    const sum = w1 + w2;
+
+    boneWeights[i * 2 + 0] = w1 / sum;
+    boneWeights[i * 2 + 1] = w2 / sum;
+
+    boneIndexes[i * 2 + 0] = boneIndexes[i * 4 + 0];
+    boneIndexes[i * 2 + 1] = boneIndexes[i * 4 + 1];
+  }
 
   const animationParams = createAnimationParamsGetter(animations as any);
 

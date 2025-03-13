@@ -15,6 +15,7 @@ import { updateWorld } from "./world/system";
 
   const world = createWorld();
   world.camera.devicePixelRatio = Math.min(window.devicePixelRatio, 2);
+  world.entities.directions[0] = 1;
 
   createOrbitControl({ canvas }, world.camera);
 

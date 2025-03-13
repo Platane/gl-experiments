@@ -13,12 +13,35 @@ import codeVert from "./shader.vert?raw";
  * render an instantiated geometry,
  * each instance have it's own position / direction / mix of poses
  */
-export const createInstantiatedSkinnedPosedMeshMaterial = ({
-  gl,
-}: {
-  gl: WebGL2RenderingContext;
-}) => {
-  const program = createProgram(gl, codeVert, codeFrag);
+export const createInstantiatedSkinnedPosedMeshMaterial = (
+  {
+    gl,
+  }: {
+    gl: WebGL2RenderingContext;
+  },
+  {
+    bonePerVertex = 4,
+    posePerVertex = 2,
+  }: { bonePerVertex?: 2 | 4; posePerVertex?: 2 | 4 } = {},
+) => {
+  const program = createProgram(
+    gl,
+    codeVert
+      .replace("in vec4 a_boneWeights", `in vec${bonePerVertex} a_boneWeights`)
+      .replace(
+        "in uvec4 a_boneIndexes",
+        `in uvec${bonePerVertex} a_boneIndexes`,
+      )
+      .replace(
+        "in vec4 a_instancePoseWeights",
+        `in vec${posePerVertex} a_instancePoseWeights`,
+      )
+      .replace(
+        "in uvec4 a_instancePoseIndexes",
+        `in uvec${posePerVertex} a_instancePoseIndexes`,
+      ),
+    codeFrag,
+  );
   linkProgram(gl, program);
 
   //
@@ -144,13 +167,21 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     gl.bindBuffer(gl.ARRAY_BUFFER, boneWeightsBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.boneWeights, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(a_boneWeights);
-    gl.vertexAttribPointer(a_boneWeights, 4, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(a_boneWeights, bonePerVertex, gl.FLOAT, false, 0, 0);
 
     const boneIndexesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boneIndexesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.boneIndexes, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(a_boneIndexes);
-    gl.vertexAttribIPointer(a_boneIndexes, 4, gl.UNSIGNED_BYTE, 0, 0);
+    gl.vertexAttribIPointer(
+      a_boneIndexes,
+      bonePerVertex,
+      gl.UNSIGNED_BYTE,
+      0,
+      0,
+    );
+
+    //
 
     const instancePositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, instancePositionBuffer);
@@ -179,13 +210,26 @@ export const createInstantiatedSkinnedPosedMeshMaterial = ({
     const instancePoseIndexesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseIndexesBuffer);
     gl.enableVertexAttribArray(a_instancePoseIndexes);
-    gl.vertexAttribIPointer(a_instancePoseIndexes, 2, gl.UNSIGNED_BYTE, 0, 0);
+    gl.vertexAttribIPointer(
+      a_instancePoseIndexes,
+      posePerVertex,
+      gl.UNSIGNED_BYTE,
+      0,
+      0,
+    );
     gl.vertexAttribDivisor(a_instancePoseIndexes, 1);
 
     const instancePoseWeightsBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, instancePoseWeightsBuffer);
     gl.enableVertexAttribArray(a_instancePoseWeights);
-    gl.vertexAttribPointer(a_instancePoseWeights, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(
+      a_instancePoseWeights,
+      posePerVertex,
+      gl.FLOAT,
+      false,
+      0,
+      0,
+    );
     gl.vertexAttribDivisor(a_instancePoseWeights, 1);
 
     gl.bindVertexArray(null);
