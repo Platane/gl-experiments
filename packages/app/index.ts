@@ -7,6 +7,7 @@ import { getTrexModel } from "./renderer/geometries/trex";
 import { getVelociraptorModel } from "./renderer/geometries/velociraptor";
 import { getParaModel } from "./renderer/geometries/para";
 import { updateWorld } from "./world/system";
+import { getAnimationParamsMap } from "./renderer/materials/instantiatedSkinnedPosedMesh/animation";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -27,6 +28,9 @@ import { updateWorld } from "./world/system";
     raptor: await getVelociraptorModel(),
     para: await getParaModel(),
   };
+  world.animation = [models.shark, models.trex, models.raptor, models.para].map(
+    (m) => getAnimationParamsMap(m.animations),
+  );
 
   const { render } = createRenderer({ gl }, models);
 

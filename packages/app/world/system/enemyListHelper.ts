@@ -5,8 +5,6 @@ export const addEntity = (world: World, entityKind: EntityKind) => {
 
   world.entities.positions.copyWithin((i + 1) * 2, i * 2);
   world.entities.directions.copyWithin((i + 1) * 2, i * 2);
-  world.entities.animationIndexes.copyWithin(i + 1, i);
-  world.entities.animationTimes.copyWithin(i + 1, i);
   world.entities.colorPaletteIndexes.copyWithin(i + 1, i);
   world.entities.kind.copyWithin(i + 1, i);
   world.entities.health.copyWithin(i + 1, i);
@@ -33,8 +31,6 @@ export const removeEntity = (world: World, i: number) => {
 
   world.entities.positions.copyWithin(i * 2, (i + 1) * 2);
   world.entities.directions.copyWithin(i * 2, (i + 1) * 2);
-  world.entities.animationTimes.copyWithin(i, i + 1);
-  world.entities.animationIndexes.copyWithin(i, i + 1);
   world.entities.colorPaletteIndexes.copyWithin(i, i + 1);
   world.entities.kind.copyWithin(i, i + 1);
   world.entities.health.copyWithin(i, i + 1);

@@ -6,6 +6,11 @@ export type AnimationMap = {
   keyFrames: { time: number; pose: mat4[] }[];
 }[];
 
+export type AnimationParamsMap = {
+  duration: number;
+  keyFrames: { index: number; time: number }[];
+}[];
+
 /**
  * return the index i such as
  * steps[i].time < t  &&  t <= steps[i+1].time
@@ -35,38 +40,76 @@ export const getPosesData = (
     ),
   );
 
-export const createAnimationParamsGetter = (animationMap: AnimationMap) => {
+export const getAnimationParamsMap = (animationMap: AnimationMap) => {
   let i = 0;
-  const map = animationMap.map((a) => {
+  return animationMap.map((a) => {
     return {
       ...a,
       keyFrames: a.keyFrames.map((k) => ({ ...k, index: i++ })),
     };
   });
+};
 
-  const fillAnimationParams = (
-    poseIndexes: Uint8Array,
-    poseWeights: Float32Array,
-    index: number,
+export const fillAnimationParams = (
+  map: AnimationParamsMap,
 
-    animationIndex: number,
-    animationTime: number,
-  ) => {
-    const { duration, keyFrames } = map[animationIndex];
+  poseIndexes: Uint8Array,
+  poseWeights: Float32Array,
+  index: number,
 
-    const t = animationTime % duration;
+  animationIndex: number,
+  animationTime: number,
+) => {
+  const { duration, keyFrames } = map[animationIndex];
 
-    const a = getContainingInterval(keyFrames, t);
-    const b = a + 1;
+  const t = animationTime % duration;
 
-    const k = invLerp(t, keyFrames[a].time, keyFrames[b].time);
+  const a = getContainingInterval(keyFrames, t);
+  const b = a + 1;
 
-    poseIndexes[index + 0] = keyFrames[a].index;
-    poseIndexes[index + 1] = keyFrames[b].index;
+  const k = invLerp(t, keyFrames[a].time, keyFrames[b].time);
 
-    poseWeights[index + 0] = 1 - k;
-    poseWeights[index + 1] = k;
-  };
+  poseIndexes[index + 0] = keyFrames[a].index;
+  poseIndexes[index + 1] = keyFrames[b].index;
 
-  return { fillAnimationParams };
+  poseWeights[index + 0] = 1 - k;
+  poseWeights[index + 1] = k;
+};
+
+export const fillBlendedAnimationParams = (
+  map: AnimationParamsMap,
+
+  poseIndexes: Uint8Array,
+  poseWeights: Float32Array,
+  index: number,
+
+  animation1Index: number,
+  animation1Time: number,
+  animation1Weight: number,
+
+  animation2Index: number,
+  animation2Time: number,
+  animation2Weight: number,
+) => {
+  fillAnimationParams(
+    map,
+    poseIndexes,
+    poseWeights,
+    index,
+    animation1Index,
+    animation1Time,
+  );
+  fillAnimationParams(
+    map,
+    poseIndexes,
+    poseWeights,
+    index + 2,
+    animation2Index,
+    animation2Time,
+  );
+
+  poseWeights[index + 0] *= animation1Weight;
+  poseWeights[index + 1] *= animation1Weight;
+  poseWeights[index + 2] *= animation2Weight;
+  poseWeights[index + 3] *= animation2Weight;
 };

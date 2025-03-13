@@ -1,4 +1,5 @@
 import { vec3 } from "gl-matrix";
+import { getAnimationParamsMap } from "../renderer/materials/instantiatedSkinnedPosedMesh/animation";
 
 export const MAX_ENEMIES = 1 << 8;
 
@@ -6,13 +7,18 @@ export const createWorld = () => {
   return {
     time: 0,
     dt: 1 / 60,
+
+    // one for each kind
+    animation: [
+      getAnimationParamsMap([]),
+      getAnimationParamsMap([]),
+      getAnimationParamsMap([]),
+      getAnimationParamsMap([]),
+    ],
     entities: {
       health: new Uint8Array(MAX_ENEMIES),
       positions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
       directions: new Float32Array(MAX_ENEMIES * 2), // as (x,y)
-
-      animationIndexes: new Uint8Array(MAX_ENEMIES),
-      animationTimes: new Float32Array(MAX_ENEMIES),
 
       colorPaletteIndexes: new Uint8Array(MAX_ENEMIES),
 
@@ -35,6 +41,10 @@ export const createWorld = () => {
     },
     player: {
       targetDirection: [0, 1] as [number, number],
+      state: {
+        running: 0,
+        attacking: 0,
+      },
     },
     inputs: {
       keyDown: new Set<Key>(),
@@ -52,7 +62,7 @@ export const createWorld = () => {
   };
 };
 
-export enum characterAnimation {
+export enum CharacterAnimation {
   idle = 0,
   run = 1,
   attack = 2,

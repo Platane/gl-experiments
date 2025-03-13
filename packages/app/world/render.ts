@@ -1,10 +1,7 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
 import type { World } from "../world/state";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "../renderer/materials/instantiatedSkinnedPosedMesh";
-import {
-  createAnimationParamsGetter,
-  getPosesData,
-} from "../renderer/materials/instantiatedSkinnedPosedMesh/animation";
+import { getPosesData } from "../renderer/materials/instantiatedSkinnedPosedMesh/animation";
 import { createGridMaterial } from "../renderer/materials/grid";
 import { getSharkModel } from "../renderer/geometries/shark";
 
@@ -37,9 +34,6 @@ export const createRenderer = (
       poses: getPosesData(model.animations),
     }),
   );
-  const animationParams = models.map((model) =>
-    createAnimationParamsGetter(model.animations),
-  );
 
   const gridRenderer = createGridMaterial({ gl }, { gridSize: 10 });
 
@@ -68,14 +62,14 @@ export const createRenderer = (
       const offset = world.entities.kindIndexes[i - 1] ?? 0;
       const length = world.entities.kindIndexes[i] - offset;
 
-      for (let j = offset; j < offset + length; j++)
-        animationParams[i].fillAnimationParams(
-          world.entities.poseIndexes,
-          world.entities.poseWeights,
-          j * 2,
-          world.entities.animationIndexes[j],
-          world.entities.animationTimes[j],
-        );
+      // for (let j = offset; j < offset + length; j++)
+      //   animationParams[i].fillAnimationParams(
+      //     world.entities.poseIndexes,
+      //     world.entities.poseWeights,
+      //     j * 2,
+      //     world.entities.animationIndexes[j],
+      //     world.entities.animationTimes[j],
+      //   );
 
       renderers[i].update(world.entities, length, offset);
     }

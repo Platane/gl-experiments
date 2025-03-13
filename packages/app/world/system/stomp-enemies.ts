@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import { characterAnimation, World } from "../state";
+import { CharacterAnimation, World } from "../state";
 import { removeEntity } from "./enemyListHelper";
 
 const p = vec2.create();

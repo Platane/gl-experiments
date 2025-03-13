@@ -1,6 +1,7 @@
-import { characterAnimation, EntityKind, World } from "../state";
+import { CharacterAnimation, EntityKind, World } from "../state";
 import { vec2 } from "gl-matrix";
 import { addEntity } from "./enemyListHelper";
+import { fillAnimationParams } from "../../renderer/materials/instantiatedSkinnedPosedMesh/animation";
 
 const v = vec2.create();
 export const moveEnemies = (world: World) => {
@@ -17,8 +18,15 @@ export const moveEnemies = (world: World) => {
     world.entities.directions[i * 2 + 0] = -v[0];
     world.entities.directions[i * 2 + 1] = -v[1];
 
-    world.entities.animationIndexes[i] = characterAnimation.idle;
-    world.entities.animationTimes[i] += world.dt;
+    const kind = world.entities.kind[i] as EntityKind;
+    fillAnimationParams(
+      world.animation[kind],
+      world.entities.poseIndexes,
+      world.entities.poseWeights,
+      i * 2,
+      CharacterAnimation.idle,
+      world.time,
+    );
   }
 };
 
