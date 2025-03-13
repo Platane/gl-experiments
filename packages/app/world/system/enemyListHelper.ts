@@ -10,7 +10,7 @@ export const addEntity = (world: World, entityKind: EntityKind) => {
   world.entities.colorPaletteIndexes.copyWithin(i + 1, i);
   world.entities.kind.copyWithin(i + 1, i);
   world.entities.health.copyWithin(i + 1, i);
-  world.entities.boudingCircleRadius.copyWithin(i + 1, i);
+  world.entities.boundingCircleRadius.copyWithin(i + 1, i);
 
   for (let k = entityKind; k < world.entities.kindIndexes.length; k++)
     world.entities.kindIndexes[k]++;
@@ -38,5 +38,5 @@ export const removeEntity = (world: World, i: number) => {
   world.entities.colorPaletteIndexes.copyWithin(i, i + 1);
   world.entities.kind.copyWithin(i, i + 1);
   world.entities.health.copyWithin(i, i + 1);
-  world.entities.boudingCircleRadius.copyWithin(i + 1, i);
+  world.entities.boundingCircleRadius.copyWithin(i + 1, i);
 };

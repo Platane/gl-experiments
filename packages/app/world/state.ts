@@ -20,7 +20,7 @@ export const createWorld = () => {
       poseWeights: new Float32Array(MAX_ENEMIES * 2),
 
       kind: new Uint8Array(MAX_ENEMIES),
-      boudingCircleRadius: new Float32Array(MAX_ENEMIES),
+      boundingCircleRadius: new Float32Array(MAX_ENEMIES),
 
       /**
        * end interval of each kind
@@ -33,7 +33,9 @@ export const createWorld = () => {
         1,
       ],
     },
-    player: {},
+    player: {
+      targetDirection: [0, 1] as [number, number],
+    },
     inputs: {
       keyDown: new Set<Key>(),
     },
