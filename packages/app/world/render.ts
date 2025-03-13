@@ -15,7 +15,7 @@ export const createRenderer = (
     trex: Awaited<ReturnType<typeof getSharkModel>>;
     raptor: Awaited<ReturnType<typeof getSharkModel>>;
     para: Awaited<ReturnType<typeof getSharkModel>>;
-  }
+  },
 ) => {
   //
   // camera
@@ -27,7 +27,7 @@ export const createRenderer = (
 
   const skinnedMeshMaterial = createInstantiatedSkinnedPosedMeshMaterial(
     { gl },
-    { bonePerVertex: 4, posePerVertex: 4 }
+    { bonePerVertex: 4, posePerVertex: 2 },
   );
 
   const models = [model.shark, model.trex, model.raptor, model.para];
@@ -35,10 +35,10 @@ export const createRenderer = (
     skinnedMeshMaterial.createRenderer({
       ...model,
       poses: getPosesData(model.animations),
-    })
+    }),
   );
   const animationParams = models.map((model) =>
-    createAnimationParamsGetter(model.animations)
+    createAnimationParamsGetter(model.animations),
   );
 
   const gridRenderer = createGridMaterial({ gl }, { gridSize: 10 });
@@ -53,7 +53,7 @@ export const createRenderer = (
       world.camera.fovX,
       world.camera.aspect,
       world.camera.near,
-      world.camera.far
+      world.camera.far,
     );
 
     mat4.lookAt(lookAtMatrix, world.camera.eye, world.camera.lookAt, up);
@@ -68,12 +68,14 @@ export const createRenderer = (
       const offset = world.entities.kindIndexes[i - 1] ?? 0;
       const length = world.entities.kindIndexes[i] - offset;
 
-      animationParams[i].applyAnimationParams(
-        world.entities,
-        world.entities,
-        length,
-        offset
-      );
+      for (let j = offset; j < offset + length; j++)
+        animationParams[i].fillAnimationParams(
+          world.entities.poseIndexes,
+          world.entities.poseWeights,
+          j * 2,
+          world.entities.animationIndexes[j],
+          world.entities.animationTimes[j],
+        );
 
       renderers[i].update(world.entities, length, offset);
     }
@@ -86,7 +88,7 @@ export const createRenderer = (
       0,
       0,
       world.camera.viewportSize[0],
-      world.camera.viewportSize[1]
+      world.camera.viewportSize[1],
     );
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

@@ -6,7 +6,7 @@ export const cameraFollow = (world: World) => {
   const py = world.entities.positions[1];
 
   world.camera.eye[0] = px;
-  world.camera.eye[1] = 4;
+  world.camera.eye[1] = 6;
   world.camera.eye[2] = py + 5;
 
   world.camera.lookAt[0] = px;

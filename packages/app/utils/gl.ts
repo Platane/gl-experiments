@@ -16,6 +16,9 @@ export const createProgram = (
   // console.log(
   //   gl
   //     .getExtension("WEBGL_debug_shaders")!
+  //     .getTranslatedShaderSource(vertShader),
+  //   gl
+  //     .getExtension("WEBGL_debug_shaders")!
   //     .getTranslatedShaderSource(fragShader),
   // );
 

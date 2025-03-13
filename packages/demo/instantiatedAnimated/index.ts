@@ -3,8 +3,10 @@ import { getFlatShadingNormals } from "../../app/utils/geometry-normals";
 import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
 import { createOrbitControl } from "../../app/control/orbitCamera";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "../../app/renderer/materials/instantiatedSkinnedPosedMesh";
-import { computeWeights } from "../../app/utils/bones";
-import { createAnimationParamsGetter } from "../../app/renderer/materials/instantiatedSkinnedPosedMesh/animation";
+import {
+  createAnimationParamsGetter,
+  getPosesData,
+} from "../../app/renderer/materials/instantiatedSkinnedPosedMesh/animation";
 import { lerp } from "../../app/utils/math";
 import { loadGLTFwithCache } from "../../gltf-parser/loadGLTF";
 import GUI from "lil-gui";
@@ -12,16 +14,12 @@ import Stats from "three/examples/jsm/libs/stats.module";
 
 // @ts-ignore
 import hash from "hash-int";
+import { runBenchmark } from "../../app/renderer/materials/instantiatedSkinnedPosedMesh/__tests__/typedArrayAccessBenchmark.spec";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
   const gl = canvas.getContext("webgl2")!;
-
-  const skinnedMeshMaterial = createInstantiatedSkinnedPosedMeshMaterial(
-    { gl },
-    { posePerVertex: 2, bonePerVertex: 2 },
-  );
 
   const model_glb =
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb";
@@ -32,9 +30,41 @@ import hash from "hash-int";
     colorCount,
     colorIndexes,
     colorPalette,
+    boneIndexes: boneIndexes_,
+    boneWeights: boneWeights_,
   } = await loadGLTFwithCache(model_glb, "fox", { colorEqualsThreehold: 150 });
 
-  const { boneWeights, boneIndexes } = computeWeights(bindPose, positions);
+  const boneIndexes = new Uint8Array(boneIndexes_!);
+  const boneWeights = boneWeights_!;
+
+  const normals = getFlatShadingNormals(positions);
+
+  const colorPalettes = new Uint8Array([
+    ...colorPalette!,
+
+    ...Array.from({ length: 29 }, (_, i) => {
+      const r = 80 + (hash(i + 31289) % 160);
+      const g = 80 + (hash(i + 1823) % 160);
+      const b = 80 + (hash(i + 5189) % 160);
+
+      // biome-ignore format: better
+      return [
+        254, 248, 242,
+        r,   g,   b,
+        40,  40,  40,
+      ]
+    }).flat(),
+  ]);
+
+  const animationParams = createAnimationParamsGetter(animations);
+  const poses = getPosesData(animations);
+
+  //
+
+  const skinnedMeshMaterial = createInstantiatedSkinnedPosedMeshMaterial(
+    { gl },
+    { posePerVertex: 2, bonePerVertex: 2 },
+  );
 
   // reduce from 4 bones per vertex to 2
   for (let i = 0; i < positions.length / 3; i++) {
@@ -48,36 +78,18 @@ import hash from "hash-int";
     boneIndexes[i * 2 + 0] = boneIndexes[i * 4 + 0];
     boneIndexes[i * 2 + 1] = boneIndexes[i * 4 + 1];
   }
-
-  const animationParams = createAnimationParamsGetter(animations as any);
-
   const foxRenderer = skinnedMeshMaterial.createRenderer({
     geometry: {
       positions,
-      normals: getFlatShadingNormals(positions),
+      normals,
       boneWeights,
       boneIndexes,
       boneCount: bindPose.length,
       colorCount: colorCount!,
       colorIndexes: colorIndexes!,
     },
-    colorPalettes: new Uint8Array([
-      ...colorPalette!,
-
-      ...Array.from({ length: 29 }, (_, i) => {
-        const r = 80 + (hash(i + 31289) % 160);
-        const g = 80 + (hash(i + 1823) % 160);
-        const b = 80 + (hash(i + 5189) % 160);
-
-        // biome-ignore format: better
-        return [
-          254, 248, 242,
-          r,   g,   b,
-          40,  40,  40,
-        ]
-      }).flat(),
-    ]),
-    poses: animationParams.poses,
+    colorPalettes,
+    poses,
   });
   //
   // camera
@@ -111,23 +123,20 @@ import hash from "hash-int";
   const world = {
     positions: new Float32Array(N * 2),
     directions: new Float32Array(N * 2),
-    poseIndexes: new Uint8Array(N * 2),
-    poseWeights: new Float32Array(N * 2),
+    poseIndexes: new Uint8Array(N * 4),
+    poseWeights: new Float32Array(N * 4),
     colorPaletteIndexes: new Uint8Array(
       Array.from({ length: N }, (_, i) => hash(i + 312) % 30),
-    ),
-    animationIndexes: new Uint8Array(
-      Array.from({ length: N }, (_, i) => 1 + (hash(i) % 2)),
-    ),
-    animationTimes: new Float32Array(
-      Array.from({ length: N }, (_, i) => 1 + (hash(i + 31) % 1000) / 500),
     ),
     entropies: Array.from({ length: N }, (_, i) => {
       const A = lerp(1 - ((hash(i + 31233) % 4823) / 4823) ** 2, 300, 8000);
 
       const angleOffset = ((hash(i + 5891) % 631) / 631) * Math.PI * 2;
 
-      return { A, angleOffset };
+      const animationTimeOffset = (hash(i + 2105) % 1281) / 1281;
+      const animationIndex = 1 + (hash(i) % 2);
+
+      return { A, angleOffset, animationTimeOffset, animationIndex };
     }),
   };
 
@@ -139,7 +148,15 @@ import hash from "hash-int";
     instanceCount: 1 << 12,
   };
 
-  gui.add(config, "instanceCount", [1, 1 << 4, 1 << 12, 1 << 14, 1 << 15]);
+  gui.add(config, "instanceCount", [
+    1,
+    1 << 4,
+    1 << 12,
+    1 << 13,
+    1 << 14,
+    1 << 15,
+    1 << 16,
+  ]);
   gui.onChange(() => {
     config.instanceCount = Math.round(config.instanceCount);
   });
@@ -149,17 +166,14 @@ import hash from "hash-int";
   stats.dom.style.position = "static";
   gui.domElement.appendChild(stats.dom);
 
-  let lastDate = Date.now() / 1000;
-
   const loop = () => {
     stats.update();
 
     const t = Date.now() / 1000;
-    const dt = t - lastDate;
-    lastDate = t;
 
     for (let i = config.instanceCount; i--; ) {
-      const { A, angleOffset } = world.entropies[i];
+      const { A, angleOffset, animationIndex, animationTimeOffset } =
+        world.entropies[i];
 
       const angle = t / (A / 90) + angleOffset;
 
@@ -169,9 +183,16 @@ import hash from "hash-int";
       world.directions[i * 2 + 0] = Math.sin(angle + Math.PI / 2);
       world.directions[i * 2 + 1] = Math.cos(angle + Math.PI / 2);
 
-      world.animationTimes[i] += dt;
+      const animationTime = t + animationTimeOffset;
+
+      animationParams.fillAnimationParams(
+        world.poseIndexes,
+        world.poseWeights,
+        i * 2,
+        animationIndex,
+        animationTime,
+      );
     }
-    animationParams.applyAnimationParams(world, world);
 
     //
     //

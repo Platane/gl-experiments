@@ -44,52 +44,29 @@ export const createAnimationParamsGetter = (animationMap: AnimationMap) => {
     };
   });
 
-  const poses = new Float32Array(
-    animationMap.flatMap((a) =>
-      a.keyFrames.flatMap((k) => k.pose.flatMap((p) => [...p])),
-    ),
-  );
+  const fillAnimationParams = (
+    poseIndexes: Uint8Array,
+    poseWeights: Float32Array,
+    index: number,
 
-  const applyAnimationParams = (
-    {
-      poseIndexes,
-      poseWeights,
-    }: {
-      poseIndexes: Uint8Array;
-      poseWeights: Float32Array;
-    },
-
-    {
-      animationIndexes,
-      animationTimes,
-    }: {
-      animationIndexes: Uint8Array;
-      animationTimes: Float32Array;
-    },
-
-    n: number = animationIndexes.length,
-    offset = 0,
+    animationIndex: number,
+    animationTime: number,
   ) => {
-    for (let i = offset; i < offset + n; i++) {
-      const index = animationIndexes[i];
-      const time = animationTimes[i];
+    const { duration, keyFrames } = map[animationIndex];
 
-      const { duration, keyFrames } = map[index];
+    const t = animationTime % duration;
 
-      const t = time % duration;
+    const a = getContainingInterval(keyFrames, t);
+    const b = a + 1;
 
-      const a = getContainingInterval(keyFrames, t);
-      const b = a + 1;
+    const k = invLerp(t, keyFrames[a].time, keyFrames[b].time);
 
-      const k = invLerp(t, keyFrames[a].time, keyFrames[b].time);
+    poseIndexes[index + 0] = keyFrames[a].index;
+    poseIndexes[index + 1] = keyFrames[b].index;
 
-      poseIndexes[i * 2 + 0] = keyFrames[a].index;
-      poseIndexes[i * 2 + 1] = keyFrames[b].index;
-
-      poseWeights[i * 2 + 0] = 1 - k;
-      poseWeights[i * 2 + 1] = k;
-    }
+    poseWeights[index + 0] = 1 - k;
+    poseWeights[index + 1] = k;
   };
 
-  return { applyAnimationParams, poses };
+  return { fillAnimationParams };
 };
