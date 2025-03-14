@@ -8,6 +8,7 @@ import { getVelociraptorModel } from "./renderer/geometries/velociraptor";
 import { getParaModel } from "./renderer/geometries/para";
 import { updateWorld } from "./world/system";
 import { getAnimationParamsMap } from "./renderer/materials/instantiatedSkinnedPosedMesh/animation";
+import { createUI } from "./ui";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -21,6 +22,9 @@ import { getAnimationParamsMap } from "./renderer/materials/instantiatedSkinnedP
   createOrbitControl({ canvas }, world.camera);
 
   createEventListeners(world, { canvas });
+
+  const ui = createUI();
+  document.body.appendChild(ui.containerDom);
 
   const models = {
     shark: await getSharkModel(),
@@ -46,6 +50,8 @@ import { getAnimationParamsMap } from "./renderer/materials/instantiatedSkinnedP
     world.time += world.dt;
 
     updateWorld(world);
+
+    ui.update(world);
 
     render(world);
 
