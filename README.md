@@ -8,6 +8,7 @@ demo
 - [ambient occlusion](http://platane.github.io/gl-experiments/demo/ambientOcclusion)
 - [reconstruct fragment position](http://platane.github.io/gl-experiments/demo/reconstructFragmentPosition)
 - [instantiated animated](http://platane.github.io/gl-experiments/demo/instantiatedAnimated)
+- [parallel logic](http://platane.github.io/gl-experiments/demo/parallelLogic)
 
 # Usage
 
