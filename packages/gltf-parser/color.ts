@@ -3,13 +3,30 @@ import * as THREE from "three";
 export const extractVertexColors = (
   uvs: Float32Array | undefined,
   materials: THREE.Material | THREE.Material[],
+  vertexCount: number,
   { colorEqualsThreehold = 1 }: { colorEqualsThreehold?: number } = {},
 ) => {
-  const material = Array.isArray(materials) ? materials[0] : materials;
+  const material = (
+    Array.isArray(materials) ? materials[0] : materials
+  ) as THREE.MeshStandardMaterial;
 
-  const map = (material as THREE.MeshStandardMaterial)?.map;
+  const map = material?.map;
 
-  if (!map || !uvs || !(map.source.data instanceof ImageBitmap)) return;
+  if (!map || !uvs || !(map.source.data instanceof ImageBitmap)) {
+    if (material.color) {
+      return {
+        colorIndexes: new Uint8Array(Array.from({ length: vertexCount })),
+        colorCount: 1,
+        colorPalette: new Uint8Array([
+          material.color.r * 256,
+          material.color.g * 256,
+          material.color.b * 256,
+        ]),
+      };
+    }
+
+    return;
+  }
 
   const canvas = document.createElement("canvas");
   canvas.width = map.source.data.width;

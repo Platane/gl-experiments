@@ -1,19 +1,16 @@
 import { loadGLTFwithCache } from "../../../gltf-parser/loadGLTF";
 import { computeWeights } from "../../utils/bones";
 
-// import model_glb from "../../assets/models/T-Rex.glb?url";
 const model_glb =
-  "https://raw.githubusercontent.com/platane/gl-experiments/assets/Apatosaurus.glb";
+  "https://raw.githubusercontent.com/platane/gl-experiments/assets/Parasaurolophus.glb";
 
 export const getParaModel = async () => {
-  const parts = [await loadGLTFwithCache(model_glb, "Parasaurolophus_1")];
-  for (const name of [
+  const parts = await loadGLTFwithCache(model_glb, [
+    "Parasaurolophus_1",
     "Parasaurolophus_2",
     "Parasaurolophus_3",
     "Parasaurolophus_4",
-  ]) {
-    parts.push(await loadGLTFwithCache(model_glb, name));
-  }
+  ]);
   parts.forEach((p, i) => {
     p.colorIndexes = new Uint8Array(
       Array.from({ length: p.positions.length / 3 }, () => i),

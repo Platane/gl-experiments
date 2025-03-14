@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html >
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>parallel logic</title>
+    <style>
+        html, body {
+            overscroll-behavior: none;
+        }
+        #canvas{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+
+        }
+        #log {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            margin: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            color: #555;
+        }
+    </style>
+  </head>
+  <body>
+    <p id="log"></p>
+    <canvas id="canvas"></canvas>
+    <script type="module" src="index.ts"></script>
+  </body>
+</html>

@@ -5,10 +5,11 @@ const model_glb =
   "https://raw.githubusercontent.com/platane/gl-experiments/assets/Raptor.glb";
 
 export const getVelociraptorModel = async () => {
-  const parts = [await loadGLTFwithCache(model_glb, "Velociraptor_1")];
-  for (const name of ["Velociraptor_2", "Velociraptor_3"]) {
-    parts.push(await loadGLTFwithCache(model_glb, name));
-  }
+  const parts = await loadGLTFwithCache(model_glb, [
+    "Velociraptor_1",
+    "Velociraptor_2",
+    "Velociraptor_3",
+  ]);
   parts.forEach((p, i) => {
     p.colorIndexes = new Uint8Array(
       Array.from({ length: p.positions.length / 3 }, () => i),

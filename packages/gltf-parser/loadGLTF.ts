@@ -1,24 +1,15 @@
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import * as THREE from "three";
 import * as indexedDBCache from "./indexedDB-cache";
 import { extractAnimationsPoses } from "./animation";
 import { extractVertexColors } from "./color";
 
-export const loadGLTF = async (
-  uri: string,
+const extractOneMesh = (
+  res: GLTF,
   name: string,
-  options: { colorEqualsThreehold?: number } = {},
+  options?: { colorEqualsThreehold?: number },
 ) => {
-  const loader = new GLTFLoader();
-  const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath(
-    "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
-  );
-  loader.setDRACOLoader(dracoLoader);
-
-  const res = await loader.loadAsync(uri);
-
   const mesh = res.scene.getObjectByName(name) as THREE.SkinnedMesh;
 
   const geo = mesh.geometry.index
@@ -43,15 +34,31 @@ export const loadGLTF = async (
     boneIndexes,
     boneWeights,
     ...(mesh.skeleton && extractAnimationsPoses(res.animations, mesh.skeleton)),
-    ...extractVertexColors(uvs, mesh.material, options),
+    ...extractVertexColors(uvs, mesh.material, positions.length / 3, options),
   };
 };
 
-export const loadGLTFwithCache = async (
+export const loadGLTF = async (
   uri: string,
-  name: Parameters<typeof loadGLTF>[1],
-  o?: Parameters<typeof loadGLTF>[2],
+  names: string[],
+  options?: { colorEqualsThreehold?: number },
 ) => {
+  const loader = new GLTFLoader();
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath(
+    "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+  );
+  loader.setDRACOLoader(dracoLoader);
+
+  const res = await loader.loadAsync(uri);
+
+  return names.map((name) => extractOneMesh(res, name, options));
+};
+
+export const loadGLTFwithCache = async (
+  ...params: Parameters<typeof loadGLTF>
+) => {
+  const [uri, ...rest] = params;
   let content = await indexedDBCache.get(uri);
 
   if (!content) {
@@ -64,9 +71,40 @@ export const loadGLTFwithCache = async (
 
   const blobUri = URL.createObjectURL(new Blob([content]));
 
-  const res = await loadGLTF(blobUri, name, o);
+  const res = await loadGLTF(blobUri, ...rest);
 
   URL.revokeObjectURL(blobUri);
 
   return res;
+};
+
+export const mergeModels = (parts: ReturnType<typeof extractOneMesh>[]) => {
+  let colorIndexOffset = 0;
+  return {
+    positions: Float32Array.from(parts.flatMap((a) => [...a.positions])),
+    normals:
+      parts[0].normals &&
+      Float32Array.from(parts.flatMap((a) => [...a.normals!])),
+    colorIndexes:
+      parts[0].colorIndexes &&
+      Uint8Array.from(
+        parts.flatMap((a) => {
+          const colorIndexes = a.colorIndexes!.map((i) => i + colorIndexOffset);
+
+          colorIndexOffset += a.colorCount ?? 0;
+
+          return [...colorIndexes];
+        }),
+      ),
+    boneIndexes:
+      parts[0].normals &&
+      Uint8Array.from(parts.flatMap((a) => [...a.boneIndexes!])),
+    boneWeights:
+      parts[0].normals &&
+      Float32Array.from(parts.flatMap((a) => [...a.boneWeights!])),
+    colorCount: colorIndexOffset,
+    colorPalette:
+      parts[0].colorPalette &&
+      Float32Array.from(parts.flatMap((a) => [...a.colorPalette!])),
+  };
 };

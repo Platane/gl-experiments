@@ -145,9 +145,9 @@ const createDepthPass = ({ gl }: { gl: WebGL2RenderingContext }) => {
   const sphereColor = new Float32Array([0.4, 0.4, 0.7]);
   const sphereTransform = mat4.create() as Float32Array;
 
-  const foxGeometry = await loadGLTFwithCache(
+  const [foxGeometry] = await loadGLTFwithCache(
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb",
-    "fox",
+    ["fox"],
   );
   const foxRenderer = basicMaterial.createRenderer({
     geometry: {

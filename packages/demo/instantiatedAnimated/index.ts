@@ -23,24 +23,15 @@ import hash from "hash-int";
 
   const model_glb =
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Fox/glTF-Binary/Fox.glb";
-  const {
-    positions,
-    bindPose,
-    animations,
-    colorCount,
-    colorIndexes,
-    colorPalette,
-    boneIndexes: boneIndexes_,
-    boneWeights: boneWeights_,
-  } = await loadGLTFwithCache(model_glb, "fox", { colorEqualsThreehold: 150 });
+  const [model] = await loadGLTFwithCache(model_glb, ["fox"], {
+    colorEqualsThreehold: 150,
+  });
 
-  const boneIndexes = new Uint8Array(boneIndexes_!);
-  const boneWeights = boneWeights_!;
-
-  const normals = getFlatShadingNormals(positions);
+  const boneIndexes = new Uint8Array(model.boneIndexes!);
+  const boneWeights = model.boneWeights!;
 
   const colorPalettes = new Uint8Array([
-    ...colorPalette!,
+    ...model.colorPalette!,
 
     ...Array.from({ length: 29 }, (_, i) => {
       const r = 80 + (hash(i + 31289) % 160);
@@ -56,8 +47,8 @@ import hash from "hash-int";
     }).flat(),
   ]);
 
-  const animationParamsMap = getAnimationParamsMap(animations);
-  const poses = getPosesData(animations);
+  const animationParamsMap = getAnimationParamsMap(model.animations);
+  const poses = getPosesData(model.animations);
 
   //
 
@@ -67,7 +58,7 @@ import hash from "hash-int";
   );
 
   // reduce from 4 bones per vertex to 2
-  for (let i = 0; i < positions.length / 3; i++) {
+  for (let i = 0; i < model.positions.length / 3; i++) {
     const w1 = boneWeights[i * 4 + 0];
     const w2 = boneWeights[i * 4 + 1];
     const sum = w1 + w2;
@@ -80,13 +71,13 @@ import hash from "hash-int";
   }
   const foxRenderer = skinnedMeshMaterial.createRenderer({
     geometry: {
-      positions,
-      normals,
+      positions: model.positions,
+      normals: getFlatShadingNormals(model.positions),
       boneWeights,
       boneIndexes,
-      boneCount: bindPose.length,
-      colorCount: colorCount!,
-      colorIndexes: colorIndexes!,
+      boneCount: model.bindPose.length,
+      colorCount: model.colorCount!,
+      colorIndexes: model.colorIndexes!,
     },
     colorPalettes,
     poses,

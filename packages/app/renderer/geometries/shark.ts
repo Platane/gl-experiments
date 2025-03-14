@@ -6,17 +6,19 @@ const model_glb =
   "https://raw.githubusercontent.com/platane/gl-experiments/assets/Sharky.glb";
 
 export const getSharkModel = async () => {
-  const {
-    normals,
-    positions,
-    bindPose,
-    animations: animations_,
-    colorCount,
-    colorIndexes,
-    colorPalette,
-    boneIndexes,
-    boneWeights,
-  } = await loadGLTFwithCache(model_glb, "Sharky");
+  const [
+    {
+      normals,
+      positions,
+      bindPose,
+      animations: animations_,
+      colorCount,
+      colorIndexes,
+      colorPalette,
+      boneIndexes,
+      boneWeights,
+    },
+  ] = await loadGLTFwithCache(model_glb, ["Sharky"]);
 
   // const { boneWeights, boneIndexes } = computeWeights(bindPose, positions);
 

@@ -15,9 +15,9 @@ const CAMERA_FAR = 10;
 
   const gl = canvas.getContext("webgl2")!;
 
-  const modelGeometry = await loadGLTFwithCache(
+  const [modelGeometry] = await loadGLTFwithCache(
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
-    "Dragon",
+    ["Dragon"],
   );
 
   const renderer = createBasicMeshMaterial(
