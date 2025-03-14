@@ -6,6 +6,7 @@ export const movePlayer = (world: World) => {
   fromInput(world);
   animation(world);
   directionBlending(world);
+  weapons(world);
 };
 
 const dir = vec2.create();
@@ -36,7 +37,16 @@ const fromInput = (world: World) => {
 };
 
 const animation = (world: World) => {
-  if (world.player.state.running) {
+  if (world.player.weapons[0].firing) {
+    fillAnimationParams(
+      world.animation[EntityKind.player],
+      world.entities.poseIndexes,
+      world.entities.poseWeights,
+      0,
+      CharacterAnimation.attack,
+      world.time - world.player.weapons[0].firing,
+    );
+  } else if (world.player.state.running) {
     fillAnimationParams(
       world.animation[EntityKind.player],
       world.entities.poseIndexes,
@@ -82,5 +92,30 @@ const directionBlending = (world: World) => {
 
     world.entities.directions[0] = Math.cos(a);
     world.entities.directions[1] = Math.sin(a);
+  }
+};
+
+const weapons = (world: World) => {
+  for (let i = world.player.weapons.length; i--; ) {
+    world.player.weapons[i].cooldown -= world.dt;
+
+    const weaponDefinition = world.weaponList[world.player.weapons[i].kind];
+
+    if (world.player.weapons[i].firing) {
+      const firingDuration = world.time - world.player.weapons[i].firing;
+
+      if (firingDuration > weaponDefinition.firingDuration) {
+        world.player.weapons[i].firing = 0;
+        world.player.weapons[i].cooldown = weaponDefinition.cooldown;
+      }
+    } else {
+      world.player.weapons[i].cooldown -= world.dt;
+
+      if (world.player.weapons[i].cooldown <= 0) {
+        // auto-fire
+
+        world.player.weapons[i].firing = world.time;
+      }
+    }
   }
 };

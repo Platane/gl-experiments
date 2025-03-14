@@ -1,5 +1,7 @@
 import { vec3 } from "gl-matrix";
 import { getAnimationParamsMap } from "../renderer/materials/instantiatedSkinnedPosedMesh/animation";
+import { weaponList } from "./data/weaponList";
+import { enemyList } from "./data/enemyList";
 
 export const MAX_ENEMIES = 1 << 8;
 
@@ -45,6 +47,7 @@ export const createWorld = () => {
         running: 0,
         attacking: 0,
       },
+      weapons: [{ kind: 0 as WeaponKind, cooldown: 3, firing: 0 }],
     },
     inputs: {
       keyDown: new Set<Key>(),
@@ -59,6 +62,8 @@ export const createWorld = () => {
       eye: [0, 3, 4] as vec3,
       lookAt: [0, 0, 0] as vec3,
     },
+    weaponList,
+    enemyList,
   };
 };
 
@@ -75,6 +80,8 @@ export enum EntityKind {
   raptor = 2,
   para = 3,
 }
+
+export type WeaponKind = number;
 
 export type Key =
   | "arrow_up"
