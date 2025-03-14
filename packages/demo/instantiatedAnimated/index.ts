@@ -4,7 +4,8 @@ import { createLookAtCamera, resizeViewport } from "../../app/renderer/camera";
 import { createOrbitControl } from "../../app/control/orbitCamera";
 import { createInstantiatedSkinnedPosedMeshMaterial } from "../../app/renderer/materials/instantiatedSkinnedPosedMesh";
 import {
-  createAnimationParamsGetter,
+  fillAnimationParams,
+  getAnimationParamsMap,
   getPosesData,
 } from "../../app/renderer/materials/instantiatedSkinnedPosedMesh/animation";
 import { lerp } from "../../app/utils/math";
@@ -14,7 +15,6 @@ import Stats from "three/examples/jsm/libs/stats.module";
 
 // @ts-ignore
 import hash from "hash-int";
-import { runBenchmark } from "../../app/renderer/materials/instantiatedSkinnedPosedMesh/__tests__/typedArrayAccessBenchmark.spec";
 
 (async () => {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -56,7 +56,7 @@ import { runBenchmark } from "../../app/renderer/materials/instantiatedSkinnedPo
     }).flat(),
   ]);
 
-  const animationParams = createAnimationParamsGetter(animations);
+  const animationParamsMap = getAnimationParamsMap(animations);
   const poses = getPosesData(animations);
 
   //
@@ -185,7 +185,8 @@ import { runBenchmark } from "../../app/renderer/materials/instantiatedSkinnedPo
 
       const animationTime = t + animationTimeOffset;
 
-      animationParams.fillAnimationParams(
+      fillAnimationParams(
+        animationParamsMap,
         world.poseIndexes,
         world.poseWeights,
         i * 2,
