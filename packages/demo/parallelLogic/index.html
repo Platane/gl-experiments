@@ -21,7 +21,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: calc( 100% - 300px );
             margin: 6px;
             white-space: pre-wrap;
             font-family: monospace;
@@ -30,7 +30,14 @@
     </style>
   </head>
   <body>
-    <p id="log"></p>
+    <p id="log">
+Toggle "worker" to run the world logic either on the main thread or on a worker.
+
+The worker option has little cost due to the world being in a shared array buffer (so no transport cost between main thread and worker)
+
+However It seems like moving the world logic inside a worker has no benefit here. Because on the main thread, the work is mostly done on gpu and is non blocking.
+
+<span id="stats"></span></p>
     <canvas id="canvas"></canvas>
     <script type="module" src="index.ts"></script>
   </body>
