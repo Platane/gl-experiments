@@ -1,14 +1,14 @@
 # GL
 
 demo
-- [basic mesh](http://platane.github.io/gl-experiments/demo/basicMesh)
-- [depth texture](http://platane.github.io/gl-experiments/demo/depthTexture)
-- [int sampler](http://platane.github.io/gl-experiments/demo/intSampler)
-- [jump flood outline](http://platane.github.io/gl-experiments/demo/jumpFloodOutline)
-- [ambient occlusion](http://platane.github.io/gl-experiments/demo/ambientOcclusion)
-- [reconstruct fragment position](http://platane.github.io/gl-experiments/demo/reconstructFragmentPosition)
-- [instantiated animated](http://platane.github.io/gl-experiments/demo/instantiatedAnimated)
-- [parallel logic](http://platane.github.io/gl-experiments/demo/parallelLogic)
+- [basic mesh](https://platane.github.io/gl-experiments/demo/basicMesh)
+- [depth texture](https://platane.github.io/gl-experiments/demo/depthTexture)
+- [int sampler](https://platane.github.io/gl-experiments/demo/intSampler)
+- [jump flood outline](https://platane.github.io/gl-experiments/demo/jumpFloodOutline)
+- [ambient occlusion](https://platane.github.io/gl-experiments/demo/ambientOcclusion)
+- [reconstruct fragment position](https://platane.github.io/gl-experiments/demo/reconstructFragmentPosition)
+- [instantiated animated](https://platane.github.io/gl-experiments/demo/instantiatedAnimated)
+- [parallel logic](https://platane.github.io/gl-experiments/demo/parallelLogic)
 
 # Usage
 
