@@ -24,7 +24,7 @@ bun vite packages/demo/basicMesh
 - [ ] use bun build eventually
       `bun build ./packages/demo/basicMesh/index.html --outdir=dist --loader=.vert:text --loader=.frag:text`
       so far the bundler does not dead code eliminate gl-matrix
-- [ ] test animation pose VS uploading a texture with all instances skeleton (likely pretty cheap?) = less texture read in vertex shader
+- [ ] learn multisampling buffers
 
 # References
 
