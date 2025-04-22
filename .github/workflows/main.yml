@@ -35,6 +35,8 @@ jobs:
 
       - run: bun test
 
-      # - run: bunx biome check .
+      - run: bun fmt
 
-      - run: bunx tsc --noEmit
+      - run: bun type
+
+      # - run: bunx biome check .
