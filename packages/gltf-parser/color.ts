@@ -18,9 +18,9 @@ export const extractVertexColors = (
         colorIndexes: new Uint8Array(Array.from({ length: vertexCount })),
         colorCount: 1,
         colorPalette: new Uint8Array([
-          material.color.r * 256,
-          material.color.g * 256,
-          material.color.b * 256,
+          material.color.r * 255,
+          material.color.g * 255,
+          material.color.b * 255,
         ]),
       };
     }

@@ -40,7 +40,7 @@ const extractOneMesh = (
 
 export const loadGLTF = async (
   uri: string,
-  names: string[],
+  names: string[] | "all",
   options?: { colorEqualsThreehold?: number },
 ) => {
   const loader = new GLTFLoader();
@@ -51,6 +51,14 @@ export const loadGLTF = async (
   loader.setDRACOLoader(dracoLoader);
 
   const res = await loader.loadAsync(uri);
+
+  if (names === "all") {
+    const n = new Set<string>();
+    res.scene.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) n.add(o.name);
+    });
+    names = [...n.keys()];
+  }
 
   return names.map((name) => extractOneMesh(res, name, options));
 };
