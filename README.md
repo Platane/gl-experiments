@@ -4,6 +4,7 @@ demo
 - [basic mesh](https://platane.github.io/gl-experiments/demo/basicMesh)
 - [depth texture](https://platane.github.io/gl-experiments/demo/depthTexture)
 - [int sampler](https://platane.github.io/gl-experiments/demo/intSampler)
+- [clipping plane](https://platane.github.io/gl-experiments/demo/clippingPlane)
 - [jump flood outline](https://platane.github.io/gl-experiments/demo/jumpFloodOutline)
 - [ambient occlusion](https://platane.github.io/gl-experiments/demo/ambientOcclusion)
 - [reconstruct fragment position](https://platane.github.io/gl-experiments/demo/reconstructFragmentPosition)
